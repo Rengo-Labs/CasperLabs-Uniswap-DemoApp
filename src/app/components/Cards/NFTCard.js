@@ -59,15 +59,15 @@ function NFTCard(props) {
                             <div class="mainDiv">
                                 <div className="square" onClick={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 2000);
+                                    setTimeout(() => setHide(false), 10000);
                                 }}></div>
                                 <div className="square2" onClick={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 2000);
+                                    setTimeout(() => setHide(false), 10000);
                                 }}></div>
                                 <div className="square3" onClick={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 2000);
+                                    setTimeout(() => setHide(false), 10000);
                                 }}></div>
                             </div>
                         )}

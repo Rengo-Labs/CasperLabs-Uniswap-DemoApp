@@ -56,7 +56,7 @@ function NFTCube(props) {
 
                                     }}
                                 >
-                                    <Cube size={230} index="right">
+                                    <Cube size={230} index="front">
                                         <img src={r1} alt="front" />
                                         <img src={r2} alt="right" />
                                         <img src={r3} alt="back" />
@@ -71,15 +71,15 @@ function NFTCube(props) {
                             <div class="mainDiv">
                                 <div className="square" onClick={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 4000);
+                                    setTimeout(() => setHide(false), 10000);
                                 }}></div>
                                 <div className="square2" onClick={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 4000);
+                                    setTimeout(() => setHide(false), 10000);
                                 }}></div>
                                 <div className="square3" onClick={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 4000);
+                                    setTimeout(() => setHide(false), 10000);
                                 }}></div>
                             </div>
                         )}
