@@ -22,11 +22,12 @@ function HomeScreen() {
           <Header selectedNav={"home"} />
 
           <HomeBanner />
-          
+
           <TrendingCollections />
           <DigitalArt />
-          <VirtailWorlds />
           <Collectible /> 
+          <VirtailWorlds />
+
         </div>
 
         <Footer position={"relative"} />

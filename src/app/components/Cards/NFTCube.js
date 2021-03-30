@@ -18,7 +18,8 @@ import r5 from '../../assets/img/r5.jpg';
 import r6 from '../../assets/img/r6.jpg';
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
-
+import ReactDOM from "react-dom";
+import Cube from "react-3d-cube";
 
 
 const useStyles = makeStyles({
@@ -30,9 +31,10 @@ const useStyles = makeStyles({
     },
 });
 
-function NFTCard(props) {
+function NFTCube(props) {
     const classes = useStyles();
     const [hide, setHide] = useState(false);
+
     return (
         <Grid item xs={12} sm={6} md={3}>
             <Card className={classes.root}>
@@ -41,37 +43,46 @@ function NFTCard(props) {
 
                     <CardMedia
                         className={classes.media}
-                        // image={img}
                         title=""
                     >
                         {hide ? (
-                            <div class="wrapper">
-                                <div class="cube-box">
-                                    <img src={r1} alt="" />
-                                    <img src={r2} alt="" />
-                                    <img src={r3} alt="" />
-                                    <img src={r4} alt="" />
-                                    <img src={r5} alt="" />
-                                    <img src={r6} alt="" />
+                            <div className="App">
+                                <div
+                                    style={{
+                                        width: 230,
+                                        height: 230,
+                                        marginTop: '100px',
+                                        marginBottom: '120px'
+
+                                    }}
+                                >
+                                    <Cube size={230} index="right">
+                                        <img src={r1} alt="front" />
+                                        <img src={r2} alt="right" />
+                                        <img src={r3} alt="back" />
+                                        <img src={r4} alt="left" />
+                                        <img src={r5} alt="top" />
+                                        <img src={r6} alt="bottom" />
+                                    </Cube>
                                 </div>
                             </div>
+
                         ) : (
                             <div class="mainDiv">
                                 <div className="square" onClick={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 2000);
+                                    setTimeout(() => setHide(false), 4000);
                                 }}></div>
                                 <div className="square2" onClick={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 2000);
+                                    setTimeout(() => setHide(false), 4000);
                                 }}></div>
                                 <div className="square3" onClick={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 2000);
+                                    setTimeout(() => setHide(false), 4000);
                                 }}></div>
                             </div>
                         )}
-
 
                     </CardMedia>
                     <CardContent>
@@ -96,4 +107,4 @@ function NFTCard(props) {
     );
 }
 
-export default NFTCard;
+export default NFTCube;
