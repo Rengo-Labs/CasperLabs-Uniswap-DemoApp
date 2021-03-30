@@ -1,0 +1,1 @@
+export const USDTTokenAddress = '0xd60c953142753c1339e5686d48256a90F59e53CA';
