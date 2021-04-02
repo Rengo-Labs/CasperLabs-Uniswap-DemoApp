@@ -54,7 +54,7 @@ function ExporterDashboardDefaultScreen(props) {
             <ul className="breadcrumb">
               <li
                 className="breadcrumb-item active"
-                style={{ color: "#174153" }}
+                style={{ color: "rgb(167, 0, 0)" }}
               >
                 Dashboard
               </li>

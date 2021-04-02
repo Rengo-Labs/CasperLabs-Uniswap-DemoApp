@@ -15,6 +15,7 @@ import AdminSidebar from "./Admin/AdminSidebar";
 import DisputedOrders from "./Admin/DisputedOrders";
 import DisputedResolved from "./Admin/DisputedResolved";
 import EarningsList from "./Admin/EarningsList";
+import NewNFT from "./Admin/NewNFT";
 import PendingUserAccountScreen from "./Admin/PendingUserAccountScreen";
 import ReferralEarningList from "./Admin/ReferralEarning";
 import TotalUserAccountScreen from "./Admin/TotalUserAccountScreen";
@@ -48,10 +49,11 @@ function AdminDashboard(props) {
     pendingUserAccount: "",
     resolvedDisputedOrders: "",
     tradeListOrders: "",
-    earningsList:"",
-    referralEarnings:"",
+    earningsList: "",
+    referralEarnings: "",
     settings: "",
     changePassword: "",
+    newNFT: "",
   });
 
   return (
@@ -66,8 +68,8 @@ function AdminDashboard(props) {
             onClick={(e) => e.preventDefault()}
             style={{ color: 'rgb(167,0,0)' }}
           >
-            <img src={Logo} alt="Logo" />
-            {/* IMEX */}
+            {/* <img src={Logo} alt="Logo" /> */}
+            Robot Drop
           </a>
           <a
             href="/"
@@ -75,8 +77,8 @@ function AdminDashboard(props) {
             onClick={(e) => e.preventDefault()}
             style={{ color: 'rgb(167,0,0)' }}
           >
-            <img src={Logo} alt="Logo" width="30" height="30" />
-            {/* IMEX */}
+            {/* <img src={Logo} alt="Logo" width="30" height="30" /> */}
+            Robot Drop
           </a>
         </div>
         {/* <!-- /Logo --> */}
@@ -181,7 +183,9 @@ function AdminDashboard(props) {
             <Route exact path={`${path}/referralEarnings`}>
               <ReferralEarningList setActiveTab={setActiveTab} />
             </Route>
-            
+            <Route exact path={`${path}/newNFT`}>
+              <NewNFT setActiveTab={setActiveTab} />
+            </Route>
 
             <Route exact path={`${path}/profilesettings`}>
               <ProfileSetting

@@ -114,7 +114,7 @@ function Header(props) {
                   setMenuOpenedClass("");
                 }}
               >
-                            <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+                <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
               </a>
             </li>
             <li>
@@ -181,7 +181,13 @@ function Header(props) {
                 </span>
               </Link>
             </li>
-            
+            <li>
+              <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
+                <span style={selectedNavStyle.Community}>
+                  Login
+                  </span>
+              </Link>
+            </li>
           </ul>
         </div>
         <ul className="nav header-navbar-rht">

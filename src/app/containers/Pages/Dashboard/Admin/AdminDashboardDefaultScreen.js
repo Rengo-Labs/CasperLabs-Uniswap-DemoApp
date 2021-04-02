@@ -34,7 +34,7 @@ function AdminDashboardDefaultScreen(props) {
       settings: "",
       changePassword: "",
     });
-    getCounts();// eslint-disable-next-line
+    // getCounts();// eslint-disable-next-line
   }, []);
 
   return (
@@ -47,7 +47,7 @@ function AdminDashboardDefaultScreen(props) {
             <ul className="breadcrumb">
               <li
                 className="breadcrumb-item active"
-                style={{ color: "#174153" }}
+                style={{ color: "rgb(167, 0, 0)" }}
               >
                 Dashboard
               </li>
@@ -57,7 +57,7 @@ function AdminDashboardDefaultScreen(props) {
       </div>
       {/* <!-- /Page Header --> */}
 
-      <div className="row">
+      {/* <div className="row">
         <div className="col-12 col-sm-3">
           <Link to={`${props.match.url}/totalUserAccount`}>
             <div className="card">
@@ -171,6 +171,7 @@ function AdminDashboardDefaultScreen(props) {
           </Link>
         </div>
       </div>
+     */}
     </>
   );
 }

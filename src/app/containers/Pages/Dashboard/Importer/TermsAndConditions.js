@@ -48,7 +48,7 @@ function TermsAndConditions(props) {
     return (
         <>
             <div className="card">
-                <ul className="breadcrumb" style={{ backgroundColor: "#174153" }}>
+                <ul className="breadcrumb" style={{ backgroundColor: "rgb(167, 0, 0)" }}>
                     <li className="breadcrumb-item">
                         <a href="/">Dashboard</a>
                     </li>

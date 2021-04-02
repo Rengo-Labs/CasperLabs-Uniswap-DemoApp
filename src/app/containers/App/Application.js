@@ -40,51 +40,24 @@ function App() {
 
   const PrivateRoute = ({ path, ...rest }) => {
     checkLoginStatus();
-    if (jwtDecoded && isLoggedIn) {
-      if (jwtDecoded.roles[0] === "admin") {
+    // if (jwtDecoded && isLoggedIn) {
+    //   if (jwtDecoded.roles[0] === "admin") {
         return (
           <Route
             {...rest}
             render={(props) =>
-              isLoggedIn ? (
+              !isLoggedIn ? (
                 <AdminDashboard {...props} jwtDecoded={jwtDecoded} />
               ) : (
-                  <Redirect to="/login" />
-                )
+                <Redirect to="/login" />
+              )
             }
           />
         );
-      } else if (jwtDecoded.roles[0] === "importer") {
-        return (
-          <Route
-            {...rest}
-            render={(props) =>
-              isLoggedIn ? (
-                <ImporterDashboard {...props} jwtDecoded={jwtDecoded} />
-              ) : (
-                  <Redirect to="/login" />
-                )
-            }
-          />
-        );
-      }
-      else if (jwtDecoded.roles[0] === "exporter") {
-        return (
-          <Route
-            {...rest}
-            render={(props) =>
-              isLoggedIn ? (
-                <ExporterDashboard {...props} jwtDecoded={jwtDecoded} />
-              ) : (
-                  <Redirect to="/login" />
-                )
-            }
-          />
-        );
-      }
-    } else {
-      return <Redirect to="/" />;
-    }
+      // }
+    // } else {
+    //   return <Redirect to="/" />;
+    // }
   };
 
   const LoginRegisterRedirectCheck = ({ path, ...rest }) => {
@@ -117,7 +90,7 @@ function App() {
           <Route path="/termsandconditions" component={TermsAndConditions} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
 
-          
+
 
 
           <PrivateRoute path="/dashboard" />
