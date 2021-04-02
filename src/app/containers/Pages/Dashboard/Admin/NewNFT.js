@@ -416,13 +416,13 @@ function NewNFT(props) {
                     inputList.length === 0 ? (
                         <div className="submit-section">
                             <button type="button" disabled className="btn submit-btn">
-                                Create Order
+                                Create NFT
                     </button>
                         </div>
                     ) : (
                         <div className="submit-section">
                             <button type="button" onClick={handleSubmitEvent} className="btn submit-btn">
-                                Create Order
+                                Create NFT
                   </button>
                         </div>
                     )
