@@ -15,6 +15,7 @@ import AdminSidebar from "./Admin/AdminSidebar";
 import DisputedOrders from "./Admin/DisputedOrders";
 import DisputedResolved from "./Admin/DisputedResolved";
 import EarningsList from "./Admin/EarningsList";
+import NewDrop from "./Admin/NewDrop";
 import NewNFT from "./Admin/NewNFT";
 import PendingUserAccountScreen from "./Admin/PendingUserAccountScreen";
 import ReferralEarningList from "./Admin/ReferralEarning";
@@ -54,6 +55,7 @@ function AdminDashboard(props) {
     settings: "",
     changePassword: "",
     newNFT: "",
+    newDrop: "",
   });
 
   return (
@@ -185,6 +187,9 @@ function AdminDashboard(props) {
             </Route>
             <Route exact path={`${path}/newNFT`}>
               <NewNFT setActiveTab={setActiveTab} />
+            </Route>
+            <Route exact path={`${path}/newDrop`}>
+              <NewDrop setActiveTab={setActiveTab} />
             </Route>
 
             <Route exact path={`${path}/profilesettings`}>
