@@ -4983,13 +4983,13 @@ html.menu-opened body {
   margin-bottom: 1.5rem;
 }
 .change-photo-btn {
-  background-color: #34495E;
+  background-color: rgb(167,0,0);
   border-radius: 50px;
   color: #fff;
   cursor: pointer;
   display: block;
   font-size: 13px;
-  font-weight: 600;
+  /* font-weight: 600; */
   margin: 0 auto;
   padding: 10px 15px;
   position: relative;
@@ -7801,6 +7801,7 @@ object-fit: cover;
   width: 200px;
   height: 200px;
   margin: auto;
+  margin-bottom: 70px;
   transform-style:preserve-3d;
 }
 
