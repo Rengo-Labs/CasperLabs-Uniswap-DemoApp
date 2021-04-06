@@ -27,7 +27,11 @@ import audio from '../../../../assets/mp3/music.mp3';
 
 import ReactDOM from "react-dom";
 import Cube from "react-3d-cube";
-
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -119,6 +123,11 @@ function NewNFT(props) {
     let [types, setTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
     let [supplies, setSupplies] = useState(["Fixed Supply", "Variable Supply", "Mintable"]);
     let [supply, setSupply] = useState("");
+
+
+    let [collectionTypes, setCollectionTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+    let [collectionType, setCollectionType] = useState("New Collection");
+    let [collection, setCollection] = useState('');
     let [fileData, setFileData] = useState('');
     let [tokenSupply, setTokenSupply] = useState();
     let [importerName, setImporterName] = useState('');
@@ -162,6 +171,8 @@ function NewNFT(props) {
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",
+            newDrop:"",
+            newCollection:"",
         });
     }, []);
 
@@ -340,7 +351,7 @@ function NewNFT(props) {
                                             <div className="upload-img">
                                                 <div
                                                     className="change-photo-btn"
-                                                    // style={{ backgroundColor: "rgb(167,0,0)" }}
+                                                // style={{ backgroundColor: "rgb(167,0,0)" }}
                                                 >
                                                     <span>
                                                         <i className="fa fa-upload"></i>
@@ -472,8 +483,63 @@ function NewNFT(props) {
                                             accept=".mp3"
                                             className="form-control"
                                             onChange={(e) => uploadMusicHandler(e)}
+
                                         />
                                     </div>
+                                    <FormControl component="fieldset">
+                                        <lable component="legend">Select to add in Collection </lable>
+                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
+                                            <FormControlLabel style={{ color: 'black' }} value="New Collection" onChange={() => setCollectionType("New Collection")} checked={collectionType === 'New Collection'} control={<Radio color="secondary" />} label="New Collection" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Collection" onChange={() => setCollectionType("Existing Collection")} checked={collectionType === 'Existing Collection'} control={<Radio color="secondary" />} label="Existing Collection" />
+                                        </RadioGroup>
+                                    </FormControl>
+                                    {collectionType === 'New Collection' ? (
+                                        <div className="form-group">
+                                            <label>New Collection</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={collection}
+                                                placeholder="Enter Collection Name"
+                                                className="form-control"
+                                                onChange={(e) => {
+                                                    setCollection(e.target.value)
+                                                }}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="form-group">
+
+                                            <label>Select Collection</label>
+                                            <div className="filter-widget">
+                                                <Autocomplete
+                                                    id="combo-dox-demo"
+                                                    required
+                                                    options={collectionTypes}
+                                                    // disabled={isDisabledImporter}
+                                                    getOptionLabel={(option) =>
+                                                        option
+                                                    }
+                                                    onChange={(event, value) => {
+                                                        if (value == null) setCollection("");
+                                                        else {
+                                                            console.log(value);
+                                                            setCollection(value)
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Collections"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                    )}
+
                                     {/* {title === '' || description === '' || tokenSupply === '' || fileData === '' || setType === "" || typeof setType === "undefined" ? (
                                         <button
                                             className="btn"
@@ -541,7 +607,7 @@ function NewNFT(props) {
                 )}
             </div>
 
-        </div>
+        </div >
 
     );
 }

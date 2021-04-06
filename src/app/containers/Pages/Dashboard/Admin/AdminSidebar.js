@@ -35,6 +35,13 @@ function AdminSidebar(props) {
                 <i className="fa fa-file-medical"></i> <span>New Drop</span>
               </Link>
             </li>
+            <li className={props.activeTab.newCollection}>
+              <Link to={`${props.match.url}/newCollection`}>
+                <i className="fa fa-file-medical"></i> <span>New Collection</span>
+              </Link>
+            </li>
+            
+
             {/* <li className={props.activeTab.totalUserAccount}>
               <Link to={`${props.match.url}/totalUserAccount`}>
                 <i className="fa fa-file-medical"></i>{" "}
