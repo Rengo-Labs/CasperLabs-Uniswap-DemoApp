@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-function NewDrop(props) {
+function RandomDrop(props) {
 
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
@@ -60,14 +60,14 @@ function NewDrop(props) {
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
-            newDrop: "active",
+            newDrop: "",
+            newRandomDrop: "active",
             newCollection:"",
             orders: "",
             settings: "",
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",
-            newRandomDrop: ""
         });
     }, []);
     const handleRemoveClick = (index) => {
@@ -136,7 +136,7 @@ function NewDrop(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
-                <li className="breadcrumb-item active">New Drop</li>
+                <li className="breadcrumb-item active">New Random Drop</li>
             </ul>
             <div className="card-body">
                 <div className="row">
@@ -144,7 +144,7 @@ function NewDrop(props) {
                         <form onSubmit={handleSubmitEvent}>
                             <div className="form-group">
 
-                                <label>Select NFTs</label>
+                                {/* <label>Select NFTs</label>
                                 <div className="filter-widget">
                                     <Autocomplete
                                         id="combo-dox-demo"
@@ -173,7 +173,7 @@ function NewDrop(props) {
                                         )}
                                     />
                                 </div>
-
+ */}
                                 <div className="form-group">
                                     <label>Sale Price</label>
                                     <div className="filter-widget">
@@ -295,7 +295,7 @@ function NewDrop(props) {
                 ) : (
                     <div className="submit-section">
                         <button type="button" onClick={handleSubmitEvent} className="btn submit-btn">
-                            Create Drop
+                            Create Random Drop
                   </button>
                     </div>
                 )}
@@ -306,4 +306,4 @@ function NewDrop(props) {
     );
 }
 
-export default NewDrop;
+export default RandomDrop;

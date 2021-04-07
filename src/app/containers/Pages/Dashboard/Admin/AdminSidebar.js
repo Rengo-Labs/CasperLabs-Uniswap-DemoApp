@@ -32,15 +32,21 @@ function AdminSidebar(props) {
             </li>
             <li className={props.activeTab.newDrop}>
               <Link to={`${props.match.url}/newDrop`}>
-                <i className="fa fa-file-medical"></i> <span>New Drop</span>
+                <i className="fas fa-plus"></i>
+                <span>New Drop</span>
+              </Link>
+            </li>
+            <li className={props.activeTab.newRandomDrop}>
+              <Link to={`${props.match.url}/newRandomDrop`}>
+                <i className="fas fa-random"></i> <span>New Random Drop</span>
               </Link>
             </li>
             <li className={props.activeTab.newCollection}>
               <Link to={`${props.match.url}/newCollection`}>
-                <i className="fa fa-file-medical"></i> <span>New Collection</span>
+                <i className="fas fa-layer-group"></i><span>New Collection</span>
               </Link>
             </li>
-            
+
 
             {/* <li className={props.activeTab.totalUserAccount}>
               <Link to={`${props.match.url}/totalUserAccount`}>

@@ -20,6 +20,8 @@ import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import ReactDOM from "react-dom";
 import Cube from "react-3d-cube";
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 
 const useStyles = makeStyles({
@@ -51,18 +53,18 @@ function NFTCube(props) {
                                     style={{
                                         width: 230,
                                         height: 230,
-                                        marginTop: '100px',
-                                        marginBottom: '120px'
+                                        marginTop: '150px',
+                                        // marginBottom: '10px'
 
                                     }}
                                 >
                                     <Cube size={230} index="front">
-                                        <img src={r1} alt="front" />
-                                        <img src={r2} alt="right" />
-                                        <img src={r3} alt="back" />
-                                        <img src={r4} alt="left" />
-                                        <img src={r5} alt="top" />
-                                        <img src={r6} alt="bottom" />
+                                        <LazyLoadImage src={r1} effect="blur" alt="front" />
+                                        <LazyLoadImage src={r2} effect="blur" alt="right" />
+                                        <LazyLoadImage src={r3} effect="blur" alt="back" />
+                                        <LazyLoadImage src={r4} effect="blur" alt="left" />
+                                        <LazyLoadImage src={r5} effect="blur" alt="top" />
+                                        <LazyLoadImage src={r6} effect="blur" alt="bottom" />
                                     </Cube>
                                 </div>
                             </div>

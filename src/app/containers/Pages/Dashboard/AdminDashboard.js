@@ -19,6 +19,7 @@ import NewCollection from "./Admin/NewCollection";
 import NewDrop from "./Admin/NewDrop";
 import NewNFT from "./Admin/NewNFT";
 import PendingUserAccountScreen from "./Admin/PendingUserAccountScreen";
+import RandomDrop from "./Admin/RandomDrop";
 import ReferralEarningList from "./Admin/ReferralEarning";
 import TotalUserAccountScreen from "./Admin/TotalUserAccountScreen";
 import TradeList from "./Admin/TradeList";
@@ -58,6 +59,7 @@ function AdminDashboard(props) {
     newNFT: "",
     newDrop: "",
     newCollection: "",
+    newRandomDrop: ""
   });
 
   return (
@@ -193,6 +195,10 @@ function AdminDashboard(props) {
             <Route exact path={`${path}/newDrop`}>
               <NewDrop setActiveTab={setActiveTab} />
             </Route>
+            <Route exact path={`${path}/newRandomDrop`}>
+              <RandomDrop setActiveTab={setActiveTab} />
+            </Route>
+
             <Route exact path={`${path}/newCollection`}>
               <NewCollection setActiveTab={setActiveTab} />
             </Route>

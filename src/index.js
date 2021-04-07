@@ -10,7 +10,7 @@ axios.defaults.withCredentials = true;
 if (process.env.REACT_APP_BACKEND_SERVER_ADDRESS)
   axios.defaults.baseURL = `${process.env.REACT_APP_BACKEND_SERVER_ADDRESS}`;
 // else axios.defaults.baseURL = `http://localhost:3000`;
-else axios.defaults.baseURL = `https://imex-backend.herokuapp.com/`;
+else axios.defaults.baseURL = `https://robot-drop-backend.herokuapp.com/`;
 
 ReactDOM.render(<App />, document.getElementById("root"));
 

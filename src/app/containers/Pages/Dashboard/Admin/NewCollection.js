@@ -74,6 +74,7 @@ function NewCollection(props) {
             resolvedDisputedOrders: "",
             settings: "",
             changePassword: "",
+            newRandomDrop: ""
         });// eslint-disable-next-line
     }, []);
     const handleChange = (event, nextView) => {

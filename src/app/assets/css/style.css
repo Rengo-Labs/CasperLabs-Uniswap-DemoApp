@@ -518,7 +518,7 @@ button.bg-danger:hover {
 .btn-success:active:not(:disabled):not(.disabled),
 .show > .btn-success.dropdown-toggle {
   background-color: #34495E;
-  border-color: #566573;
+  border-color: #ff0000;
   color: #fff;
 }
 .btn-success.active:focus:not(:disabled):not(.disabled),
@@ -529,7 +529,7 @@ button.bg-danger:hover {
 .btn-success.disabled,
 .btn-success:disabled {
   background-color: rgb(167,0,0);
-  border-color: #566573;
+  border-color: #ff0000;
   color: #fff;
 }
 .btn-info {
@@ -2221,13 +2221,13 @@ html.menu-opened body {
 
 .btn {
   background-color: rgb(167,0,0);
-  border: 1px solid #566573;
+  border: 1px solid #ff0000;
   color: #ffffff;
   /* border-radius: 0mm; */
 }
 .btn:hover {
-  background-color: #34495E  ;
-  border: 1px solid #566573 ;
+  background-color: #ff0000  ;
+  border: 1px solid #ff0000 ;
   color: #ffffff;
 }
 

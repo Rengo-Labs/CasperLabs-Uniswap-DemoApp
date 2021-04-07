@@ -12,6 +12,8 @@ import {
   DropdownItem
 } from "reactstrap";
 import Avatar from '@material-ui/core/Avatar';
+import Axios from "axios";
+import Web3 from "web3";
 
 function Header(props) {
   let [menuOpenedClass, setMenuOpenedClass] = useState();
@@ -47,6 +49,47 @@ function Header(props) {
 
   let onMouseLeave = () => {
     setDropdownOpen1(false);
+  }
+  let Login = async () => {
+    // console.log(order._id);
+    // setIsFinalizeOrder(true);
+    if (window.ethereum) {
+      window.web3 = new Web3(window.ethereum)
+      await window.ethereum.enable()
+    }
+    else if (window.web3) {
+      window.web3 = new Web3(window.web3.currentProvider)
+    }
+    else {
+      window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+    }
+
+    const web3 = window.web3
+    const accounts = await web3.eth.getAccounts();
+    console.log("Account test: ", accounts[0]);
+    let loginData = {
+      // orderId: order._id,
+      address: accounts[0],
+      network: "ropsten",
+      roles: 'admin'
+    }
+    Axios.post("user/auth/login", loginData).then(
+      (response) => {
+        console.log("response", response);
+        // setIsFinalizeOrder(false);
+        // getAllOrders();
+        // let variant = "success";
+        // enqueueSnackbar('Order Finalized Successfully.', { variant });
+      },
+      (error) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log(error);
+          console.log(error.response);
+        }
+        // setIsFinalizeOrder(false);
+        // let variant = "error";
+        // enqueueSnackbar('Unable to Finalize Order.', { variant });
+      })
   }
   return (
     <header className={`header ${menuOpenedClass}`}>
@@ -181,17 +224,21 @@ function Header(props) {
                 </span>
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
                 <span style={selectedNavStyle.Community}>
                   Login
                   </span>
               </Link>
-            </li>
+            </li> */}
           </ul>
         </div>
         <ul className="nav header-navbar-rht">
-
+          <li >
+            <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
+              login
+            </span>
+          </li>
           <li >
             <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
 
@@ -205,7 +252,7 @@ function Header(props) {
           </li>
         </ul>
       </nav>
-    </header>
+    </header >
   );
 }
 

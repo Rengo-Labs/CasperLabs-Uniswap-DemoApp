@@ -118,20 +118,35 @@ function NewNFT(props) {
     const classes = useStyles();
     // const [inputList, setInputList] = useState([]);
     let [isSaving, setIsSaving] = useState(false);
-    let [title, setTitle] = useState();
+    let [name, setName] = useState();
+    let [website, setWebsite] = useState();
+    let [aboutTheArt, setAboutTheArt] = useState();
+
     let [description, setDescription] = useState();
-    let [types, setTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+    let [aboutTheTrack, setAboutTheTrack] = useState();
+    let [inspirationForThePiece, setInspirationForThePiece] = useState();
+    let [rarities, setRarities] = useState(["Mastercraft", "Legendary", "Epic", "Rare", "Uncommon", "Common"]);
     let [supplies, setSupplies] = useState(["Fixed Supply", "Variable Supply", "Mintable"]);
     let [supply, setSupply] = useState("");
 
 
     let [collectionTypes, setCollectionTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+    let [artistTypes, setArtistTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+    let [imageArtistTypes, setImageArtistTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+
+    let [producerTypes, setProducerTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
     let [collectionType, setCollectionType] = useState("New Collection");
     let [collection, setCollection] = useState('');
+    let [artistType, setArtistType] = useState("New Artist");
+    let [artist, setArtist] = useState('');
+    let [imageArtistType, setImageArtistType] = useState("New Image Artist");
+    let [imageArtist, setImageArtist] = useState('');
+    let [producerType, setProducerType] = useState("New Producer");
+    let [producer, setProducer] = useState('');
     let [fileData, setFileData] = useState('');
     let [tokenSupply, setTokenSupply] = useState();
     let [importerName, setImporterName] = useState('');
-    let [type, setType] = useState();
+    let [rarity, setRarity] = useState();
     let [isDisabledImporter, setIsDisabledImporter] = useState(true);
     let [image1Blob, setImage1Blob] = useState(r1);
     let [image2Blob, setImage2Blob] = useState(r1);
@@ -171,8 +186,9 @@ function NewNFT(props) {
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",
-            newDrop:"",
-            newCollection:"",
+            newDrop: "",
+            newCollection: "",
+            newRandomDrop: "",
         });
     }, []);
 
@@ -374,27 +390,27 @@ function NewNFT(props) {
                                         </div>
                                     </div>
                                 </div>
-                                <label>Select Type</label>
+                                <label>Select Rarity</label>
                                 <div className="filter-widget">
                                     <Autocomplete
                                         id="combo-dox-demo"
                                         required
-                                        options={types}
+                                        options={rarities}
                                         // disabled={isDisabledImporter}
                                         getOptionLabel={(option) =>
                                             option
                                         }
                                         onChange={(event, value) => {
-                                            if (value == null) setType("");
+                                            if (value == null) setRarity("");
                                             else {
                                                 console.log(value);
-                                                setType(value)
+                                                setRarity(value)
                                             }
                                         }}
                                         renderInput={(params) => (
                                             <TextField
                                                 {...params}
-                                                label="Type"
+                                                label="Rarity"
                                                 variant="outlined"
                                             />
                                         )}
@@ -428,7 +444,7 @@ function NewNFT(props) {
                                             option
                                         }
                                         onChange={(event, value) => {
-                                            if (value == null) setType("");
+                                            if (value == null) setSupply("");
                                             else {
                                                 console.log(value);
                                                 setSupply(value)
@@ -445,33 +461,129 @@ function NewNFT(props) {
                                 </div>
 
                                 <div className="form-group">
-                                    <label>Title</label>
+                                    <label>Artwork</label>
                                     <div className="form-group">
                                         <input
                                             type="text"
                                             required
-                                            value={title}
-                                            placeholder="Enter Art Work Title"
+                                            value={name}
+                                            placeholder="Enter Name of Super NFT"
                                             className="form-control"
                                             onChange={(e) => {
-                                                setTitle(e.target.value)
+                                                setName(e.target.value)
                                             }}
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label>Description</label>
+                                        {/* <label>About the Art</label> */}
                                         <textarea
                                             type="text"
                                             required
                                             rows="4"
                                             value={description}
-                                            placeholder="Enter Art work Description"
+                                            placeholder="Enter Description of Super NFT"
                                             className="form-control"
                                             onChange={(e) => {
                                                 setDescription(e.target.value)
                                             }}
                                         />
                                     </div>
+                                    {/* <label>Website</label> */}
+
+
+                                    <FormControl component="fieldset">
+                                        <lable component="legend">Select to add Image Artist </lable>
+                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
+                                            <FormControlLabel style={{ color: 'black' }} value="New Image Artist" onChange={() => setImageArtistType("New Image Artist")} checked={imageArtistType === 'New Image Artist'} control={<Radio color="secondary" />} label="New Image Artist" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Image Artist" onChange={() => setImageArtistType("Existing Image Artist")} checked={imageArtistType === 'Existing Image Artist'} control={<Radio color="secondary" />} label="Existing Image Artist" />
+                                        </RadioGroup>
+                                    </FormControl>
+                                    {imageArtistType === 'New Image Artist' ? (
+                                        <>
+                                            <div className="form-group">
+                                                {/* <label>Artist Name</label> */}
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={imageArtist}
+                                                    placeholder="Enter Image Artist Name"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setImageArtist(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                {/* <label>About the Track</label> */}
+                                                <textarea
+                                                    type="text"
+                                                    required
+                                                    rows="4"
+                                                    value={aboutTheArt}
+                                                    placeholder="About the Art"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setAboutTheArt(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={name}
+                                                    placeholder="Enter Image Artist Profile"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setName(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={website}
+                                                    placeholder="Enter Website URL"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setWebsite(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="form-group">
+
+                                            <label>Select Artist</label>
+                                            <div className="filter-widget">
+                                                <Autocomplete
+                                                    id="combo-dox-demo"
+                                                    required
+                                                    options={imageArtistTypes}
+                                                    // disabled={isDisabledImporter}
+                                                    getOptionLabel={(option) =>
+                                                        option
+                                                    }
+                                                    onChange={(event, value) => {
+                                                        if (value == null) setImageArtist("");
+                                                        else {
+                                                            console.log(value);
+                                                            setImageArtist(value)
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Image Artists"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                    )}
                                     <div className="form-group">
                                         <label>Upload Music</label>{" "}
                                     </div>
@@ -486,6 +598,170 @@ function NewNFT(props) {
 
                                         />
                                     </div>
+                                    <FormControl component="fieldset">
+                                        <lable component="legend">Select to add Music Artist </lable>
+                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
+                                            <FormControlLabel style={{ color: 'black' }} value="New Artist" onChange={() => setArtistType("New Artist")} checked={artistType === 'New Artist'} control={<Radio color="secondary" />} label="New Artist" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Artist" onChange={() => setArtistType("Existing Artist")} checked={artistType === 'Existing Artist'} control={<Radio color="secondary" />} label="Existing Artist" />
+                                        </RadioGroup>
+                                    </FormControl>
+                                    {artistType === 'New Artist' ? (
+                                        <>
+                                            <div className="form-group">
+                                                {/* <label>Artist Name</label> */}
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={collection}
+                                                    placeholder="Enter Music Artist Name"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setArtist(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={name}
+                                                    placeholder="Enter Music Artist Profile"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setName(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                {/* <label>About the Track</label> */}
+                                                <textarea
+                                                    type="text"
+                                                    required
+                                                    rows="4"
+                                                    value={aboutTheTrack}
+                                                    placeholder="About the Track"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setAboutTheTrack(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="form-group">
+
+                                            <label>Select Artist</label>
+                                            <div className="filter-widget">
+                                                <Autocomplete
+                                                    id="combo-dox-demo"
+                                                    required
+                                                    options={artistTypes}
+                                                    // disabled={isDisabledImporter}
+                                                    getOptionLabel={(option) =>
+                                                        option
+                                                    }
+                                                    onChange={(event, value) => {
+                                                        if (value == null) setArtist("");
+                                                        else {
+                                                            console.log(value);
+                                                            setArtist(value)
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Artists"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                    )}
+                                    <FormControl component="fieldset">
+                                        <lable component="legend">Select to add Producer </lable>
+                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
+                                            <FormControlLabel style={{ color: 'black' }} value="New Producer" onChange={() => setProducerType("New Producer")} checked={producerType === 'New Producer'} control={<Radio color="secondary" />} label="New Producer" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Producer" onChange={() => setProducerType("Existing Producer")} checked={producerType === 'Existing Producer'} control={<Radio color="secondary" />} label="Existing Producer" />
+                                        </RadioGroup>
+                                    </FormControl>
+                                    {producerType === 'New Producer' ? (
+                                        <>
+                                            <div className="form-group">
+                                                {/* <label>Producer</label> */}
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={collection}
+                                                    placeholder="Enter Producer Name"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setProducer(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={name}
+                                                    placeholder="Enter Producer Profile"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setName(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                {/* <label>Inspiration For the Piece</label> */}
+                                                <textarea
+                                                    type="text"
+                                                    required
+                                                    rows="4"
+                                                    value={inspirationForThePiece}
+                                                    placeholder="Inspiration For the Piece"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setInspirationForThePiece(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="form-group">
+
+                                            <label>Select Producer</label>
+                                            <div className="filter-widget">
+                                                <Autocomplete
+                                                    id="combo-dox-demo"
+                                                    required
+                                                    options={producerTypes}
+                                                    // disabled={isDisabledImporter}
+                                                    getOptionLabel={(option) =>
+                                                        option
+                                                    }
+                                                    onChange={(event, value) => {
+                                                        if (value == null) setProducer("");
+                                                        else {
+                                                            console.log(value);
+                                                            setProducer(value)
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Producers"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                    )}
+
+
                                     <FormControl component="fieldset">
                                         <lable component="legend">Select to add in Collection </lable>
                                         <RadioGroup row aria-label="position" name="position" defaultValue="top">
@@ -540,7 +816,7 @@ function NewNFT(props) {
 
                                     )}
 
-                                    {/* {title === '' || description === '' || tokenSupply === '' || fileData === '' || setType === "" || typeof setType === "undefined" ? (
+                                    {/* {title === '' || description === '' || tokenSupply === '' || fileData === '' ? (
                                         <button
                                             className="btn"
                                             type="submit"
@@ -567,12 +843,13 @@ function NewNFT(props) {
                         <div className="App">
                             <div class="wrapper">
                                 <div class="cube-box1">
-                                    <img src={image1Blob} alt="" />
-                                    <img src={image2Blob} alt="" />
-                                    <img src={image3Blob} alt="" />
-                                    <img src={image4Blob} alt="" />
-                                    <img src={image5Blob} alt="" />
-                                    <img src={image6Blob} alt="" />
+
+                                    <img src={image1Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
+                                    <img src={image2Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
+                                    <img src={image3Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
+                                    <img src={image4Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
+                                    <img src={image5Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
+                                    <img src={image6Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
                                 </div>
                             </div>
                         </div>
