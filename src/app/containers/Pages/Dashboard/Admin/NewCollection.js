@@ -67,6 +67,7 @@ function NewCollection(props) {
             dashboard: "",
             totalUserAccount: "",
             pendingUserAccount: "",
+            newCube:"",
             newCollection: "active",
             tradeListOrders: "",
             referralEarnings: "",

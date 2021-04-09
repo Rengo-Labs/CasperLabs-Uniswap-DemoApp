@@ -11,13 +11,24 @@ import {
   DropdownMenu,
   DropdownItem
 } from "reactstrap";
+import { Modal, Button } from "react-bootstrap";
 import Avatar from '@material-ui/core/Avatar';
 import Axios from "axios";
 import Web3 from "web3";
+import jwtDecode from "jwt-decode";
+import Cookies from "js-cookie";
 
-function Header(props) {
+
+function HeaderHome(props) {
   let [menuOpenedClass, setMenuOpenedClass] = useState();
   let [dropdownOpen1, setDropdownOpen1] = useState(false);
+
+  let [network, setNetwork] = useState(false);
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
 
   const selectedStyling = {
     border: "2px solid #ff5252",
@@ -51,8 +62,7 @@ function Header(props) {
     setDropdownOpen1(false);
   }
   let Login = async () => {
-    // console.log(order._id);
-    // setIsFinalizeOrder(true);
+
     if (window.ethereum) {
       window.web3 = new Web3(window.ethereum)
       await window.ethereum.enable()
@@ -66,30 +76,34 @@ function Header(props) {
 
     const web3 = window.web3
     const accounts = await web3.eth.getAccounts();
-    console.log("Account test: ", accounts[0]);
-    let loginData = {
-      // orderId: order._id,
-      address: accounts[0],
-      network: "ropsten",
-      roles: 'admin'
+    const network = await web3.eth.net.getNetworkType()
+    console.log("Account test: ", accounts[0], network);
+    if (network !== 'ropsten') {
+      setNetwork(network);
+      handleShow();
     }
-    Axios.post("user/auth/login", loginData).then(
-      (response) => {
-        console.log("response", response);
-        // setIsFinalizeOrder(false);
-        // getAllOrders();
-        // let variant = "success";
-        // enqueueSnackbar('Order Finalized Successfully.', { variant });
-      },
-      (error) => {
-        if (process.env.NODE_ENV === "development") {
-          console.log(error);
-          console.log(error.response);
-        }
-        // setIsFinalizeOrder(false);
-        // let variant = "error";
-        // enqueueSnackbar('Unable to Finalize Order.', { variant });
-      })
+    else {
+      let loginData = {
+        address: accounts[0],
+        network: network,
+        // roles: 'admin'
+      }
+      Axios.post("user/auth/login", loginData).then(
+        (response) => {
+          console.log("response", response);
+          Cookies.set("Authorization", response.data.token, {
+          });
+          window.location.reload();
+
+        },
+        (error) => {
+          if (process.env.NODE_ENV === "development") {
+            console.log(error);
+            console.log(error.response);
+          }
+        })
+    }
+
   }
   return (
     <header className={`header ${menuOpenedClass}`}>
@@ -236,10 +250,14 @@ function Header(props) {
         <ul className="nav header-navbar-rht">
           <li >
             <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
-              login
+              Login
             </span>
           </li>
           <li >
+            {/* <Button variant="primary" onClick={handleShow}>
+              Launch demo modal
+      </Button> */}
+
             <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
 
             {/* <Link
@@ -251,9 +269,23 @@ function Header(props) {
             </Link> */}
           </li>
         </ul>
+        <Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title> Network Error</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-center"> <i className="fas fa-times-circle fa-10x"></i></Modal.Body>
+          <Modal.Body>Your wallet is connected to the <strong>{network} test Network</strong>. To use Robot Drop User must be Connected to <strong>Ropsten test Network</strong>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={handleClose}>
+              Close
+          </Button>
+          </Modal.Footer>
+        </Modal>
+
       </nav>
     </header >
   );
 }
 
-export default Header;
+export default HeaderHome;

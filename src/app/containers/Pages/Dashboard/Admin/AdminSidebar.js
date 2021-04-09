@@ -30,10 +30,14 @@ function AdminSidebar(props) {
                 <i className="fa fa-file-medical"></i> <span>New NFT</span>
               </Link>
             </li>
+            <li className={props.activeTab.newCube}>
+              <Link to={`${props.match.url}/newCube`}>
+              <i className="fas fa-cube"></i> <span>New Cube</span>
+              </Link>
+            </li>
             <li className={props.activeTab.newDrop}>
               <Link to={`${props.match.url}/newDrop`}>
-                <i className="fas fa-plus"></i>
-                <span>New Drop</span>
+                <i className="fas fa-plus"></i> <span>New Drop</span>
               </Link>
             </li>
             <li className={props.activeTab.newRandomDrop}>

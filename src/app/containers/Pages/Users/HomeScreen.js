@@ -6,7 +6,7 @@ import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";
-import Header from "../../../components/Headers/Header";
+import HeaderHome from "../../../components/Headers/Header";
 import Collectible from "./Home/Collectibles";
 import DigitalArt from "./Home/DigitalArt";
 import HomeBanner from "./Home/HomeBanner";
@@ -19,7 +19,7 @@ function HomeScreen() {
     <>
       <div className="main-wrapper">
         <div className="home-section home-full-height">
-          <Header selectedNav={"home"} />
+          <HeaderHome selectedNav={"home"} />
 
           <HomeBanner />
 

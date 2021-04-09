@@ -16,6 +16,7 @@ import DisputedOrders from "./Admin/DisputedOrders";
 import DisputedResolved from "./Admin/DisputedResolved";
 import EarningsList from "./Admin/EarningsList";
 import NewCollection from "./Admin/NewCollection";
+import NewCube from "./Admin/NewCube";
 import NewDrop from "./Admin/NewDrop";
 import NewNFT from "./Admin/NewNFT";
 import PendingUserAccountScreen from "./Admin/PendingUserAccountScreen";
@@ -57,6 +58,7 @@ function AdminDashboard(props) {
     settings: "",
     changePassword: "",
     newNFT: "",
+    newCube:"",
     newDrop: "",
     newCollection: "",
     newRandomDrop: ""
@@ -195,6 +197,10 @@ function AdminDashboard(props) {
             <Route exact path={`${path}/newDrop`}>
               <NewDrop setActiveTab={setActiveTab} />
             </Route>
+            <Route exact path={`${path}/newCube`}>
+              <NewCube setActiveTab={setActiveTab} />
+            </Route>
+
             <Route exact path={`${path}/newRandomDrop`}>
               <RandomDrop setActiveTab={setActiveTab} />
             </Route>

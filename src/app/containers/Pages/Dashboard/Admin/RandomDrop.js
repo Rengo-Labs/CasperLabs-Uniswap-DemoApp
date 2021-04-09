@@ -68,6 +68,7 @@ function RandomDrop(props) {
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",
+            newCube:"",
         });
     }, []);
     const handleRemoveClick = (index) => {
