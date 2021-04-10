@@ -58,7 +58,7 @@ function AdminDashboard(props) {
     settings: "",
     changePassword: "",
     newNFT: "",
-    newCube:"",
+    newSupefNFT:"",
     newDrop: "",
     newCollection: "",
     newRandomDrop: ""
@@ -197,7 +197,7 @@ function AdminDashboard(props) {
             <Route exact path={`${path}/newDrop`}>
               <NewDrop setActiveTab={setActiveTab} />
             </Route>
-            <Route exact path={`${path}/newCube`}>
+            <Route exact path={`${path}/newSupefNFT`}>
               <NewCube setActiveTab={setActiveTab} />
             </Route>
 

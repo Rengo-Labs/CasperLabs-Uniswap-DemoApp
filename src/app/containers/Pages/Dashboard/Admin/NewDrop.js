@@ -61,7 +61,7 @@ function NewDrop(props) {
             dashboard: "",
             newNFT: "",
             newDrop: "active",
-            newCube:"",
+            newSupefNFT:"",
             newCollection:"",
             orders: "",
             settings: "",

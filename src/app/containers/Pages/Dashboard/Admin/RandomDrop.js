@@ -68,7 +68,7 @@ function RandomDrop(props) {
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",
-            newCube:"",
+            newSupefNFT:"",
         });
     }, []);
     const handleRemoveClick = (index) => {

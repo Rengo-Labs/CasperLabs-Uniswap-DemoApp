@@ -2,36 +2,35 @@ import {
     Card,
     CardContent, Grid
 } from '@material-ui/core/';
+import Avatar from '@material-ui/core/Avatar';
 // import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
 import CardActions from '@material-ui/core/CardActions';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardMedia from '@material-ui/core/CardMedia';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
-
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import axios from "axios";
 import Cookies from "js-cookie";
 import jwtDecode from "jwt-decode";
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import { makeStyles } from '@material-ui/core/styles';
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import r2 from '../../../../assets/img/r2.jpg';
-import r3 from '../../../../assets/img/r3.jpg';
-import r4 from '../../../../assets/img/r4.jpg';
-import r5 from '../../../../assets/img/r5.jpg';
-import r6 from '../../../../assets/img/r6.jpg';
-import audio from '../../../../assets/mp3/music.mp3';
 import logo from "../../../../assets/img/img-04.jpg";
-
-import ReactDOM from "react-dom";
-import Cube from "react-3d-cube";
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
+import r1 from '../../../../assets/img/patients/patient.jpg';
+import audio from '../../../../assets/mp3/music.mp3';
+import robot1 from '../../../../assets/img/r1.jpg';
+import robot2 from '../../../../assets/img/r2.jpg';
+import robot3 from '../../../../assets/img/r3.jpg';
+import robot4 from '../../../../assets/img/r4.jpg';
+import robot5 from '../../../../assets/img/r5.jpg';
+import robot6 from '../../../../assets/img/r6.jpg';
+import SixNFTsErrorModal from '../../../../components/Modals/SixNFTsErrorModal';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -64,77 +63,31 @@ const useStyles = makeStyles((theme) => ({
 
 
 function NewCube(props) {
-    // const  = ;
-
-    // variable to play audio in loop
-    const [audioTune, setAudioTune] = useState(new Audio(audio));
-    const [playInLoop, setPlayInLoop] = useState(false);
-
-    // load audio file on component load
-    useEffect(() => {
-        audioTune.load();
-    }, [])
-
-    // set the loop of audio tune
-    useEffect(() => {
-        audioTune.loop = playInLoop;
-    }, [playInLoop])
-
-    // play audio sound
-    const playSound = () => {
-        var playPromise = audioTune.play();
-        console.log("audioTune", audioTune);
-
-        // if (playPromise !== undefined) {
-        //     playPromise
-        //         .then(_ => {
-        //             // Automatic playback started!
-        //             // Show playing UI.
-        //             console.log(audio);
-        //             console.log("audio played auto");
-        //         })
-        //         .catch(error => {
-        //             // Auto-play was prevented
-        //             // Show paused UI.
-        //             console.log("playback prevented", error);
-        //         });
-        // }
-        audioTune.play();
-    }
-
-    // pause audio sound
-    const pauseSound = () => {
-        console.log("audioTune", audioTune);
-        audioTune.pause();
-    }
-
-    // stop audio sound
-    const stopSound = () => {
-        console.log("audioTune", audioTune);
-        audioTune.pause();
-        audioTune.currentTime = 0;
-    }
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
-    // const [inputList, setInputList] = useState([]);
+    const [tokenList, setTokenList] = useState([
+        { id: 0, image: robot1, imageBlob: robot1, name: "name", description: "description", tokenPrice: "20", tokenSupply: "30", imageArtist: "imageArtist", aboutTheArt: "aboutTheArt", website: "website", artistImage: robot6, artistImageBlob: robot6 },
+        { id: 1, image: robot2, imageBlob: robot2, name: "name1", description: "description1", tokenPrice: "20", tokenSupply: "11", imageArtist: "imageArtist1", aboutTheArt: "aboutTheArt1", website: "website1", artistImage: robot5, artistImageBlob: robot5 },
+        { id: 2, image: robot3, imageBlob: robot3, name: "name2", description: "description2", tokenPrice: "55", tokenSupply: "33", imageArtist: "imageArtist2", aboutTheArt: "aboutTheArt2", website: "website2", artistImage: robot4, artistImageBlob: robot4 },
+        { id: 3, image: robot4, imageBlob: robot4, name: "name3", description: "description3", tokenPrice: "23", tokenSupply: "31", imageArtist: "imageArtist3", aboutTheArt: "aboutTheArt3", website: "website3", artistImage: robot3, artistImageBlob: robot3 },
+        { id: 4, image: robot5, imageBlob: robot5, name: "name4", description: "description4", tokenPrice: "40", tokenSupply: "60", imageArtist: "imageArtist4", aboutTheArt: "aboutTheArt4", website: "website4", artistImage: robot2, artistImageBlob: robot2 },
+        { id: 5, image: robot6, imageBlob: robot6, name: "name5", description: "description5", tokenPrice: "33", tokenSupply: "3", imageArtist: "imageArtist5", aboutTheArt: "aboutTheArt5", website: "website5", artistImage: robot1, artistImageBlob: robot1 },
+    ]);
+    const [selectedNFTList, setSelectedNFTList] = useState([])
     let [isSaving, setIsSaving] = useState(false);
     let [name, setName] = useState();
-    let [website, setWebsite] = useState();
-    let [aboutTheArt, setAboutTheArt] = useState();
-
     let [description, setDescription] = useState();
     let [aboutTheTrack, setAboutTheTrack] = useState();
     let [inspirationForThePiece, setInspirationForThePiece] = useState();
     let [rarities, setRarities] = useState(["Mastercraft", "Legendary", "Epic", "Rare", "Uncommon", "Common"]);
     let [supplies, setSupplies] = useState(["Fixed Supply", "Variable Supply", "Mintable"]);
     let [supply, setSupply] = useState("");
-
-
     let [collectionTypes, setCollectionTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
     let [artistTypes, setArtistTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
-    let [imageArtistTypes, setImageArtistTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
-
     let [producerTypes, setProducerTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+    let [executiveProducerTypes, setExecutiveProducerTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+    let [fans, setFanTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+
     let [collectionType, setCollectionType] = useState("New Collection");
     let [collection, setCollection] = useState('');
     let [artistType, setArtistType] = useState("New Artist");
@@ -142,38 +95,28 @@ function NewCube(props) {
     let [imageArtistType, setImageArtistType] = useState("New Image Artist");
     let [imageArtist, setImageArtist] = useState('');
     let [producerType, setProducerType] = useState("New Producer");
-    let [producer, setProducer] = useState('');
-    let [fileData, setFileData] = useState('');
-    let [tokenSupply, setTokenSupply] = useState();
-    let [importerName, setImporterName] = useState('');
-    let [rarity, setRarity] = useState();
-    let [isDisabledImporter, setIsDisabledImporter] = useState(true);
-    let [image1Blob, setImage1Blob] = useState(r1);
-    let [image2Blob, setImage2Blob] = useState(r1);
-    let [image3Blob, setImage3Blob] = useState(r1);
-    let [image4Blob, setImage4Blob] = useState(r1);
-    let [image5Blob, setImage5Blob] = useState(r1);
-    let [image6Blob, setImage6Blob] = useState(r1);
+    let [executiveProducerType, setExecutiveProducerType] = useState("New Executive Producer");
+    let [fanType, setFanType] = useState("New Fan");
 
-    let [image1, setImage1] = useState(r1);
-    let [image2, setImage2] = useState(r1);
-    let [image3, setImage3] = useState(r1);
-    let [image4, setImage4] = useState(r1);
-    let [image5, setImage5] = useState(r1);
-    let [image6, setImage6] = useState(r1);
+    let [producer, setProducer] = useState('');
+    let [executiveProducer, setExecutiveProducer] = useState('');
+    let [fan, setFan] = useState('');
+
+    let [other, setOther] = useState('');
+    let [rarity, setRarity] = useState();
+    let [nftName, setNFTName] = useState();
     let [music, setMusic] = useState();
 
-    let fileSelectHandler = (event, index) => {
-        if (event.target.files[0] !== undefined) {
-            setFileData(event.target.files[0]);
-        }
-    };
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+    
     let uploadMusicHandler = (event, index) => {
         console.log("event.target.files", event.target.files);
         console.log("event.target.value", event.target.value);
         if (event.target.files[0] !== undefined) {
             setMusic(event.target.files[0]);
-            setAudioTune(event.target.value);
+            // setAudioTune(event.target.value);
         }
     };
 
@@ -181,7 +124,7 @@ function NewCube(props) {
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
-            newCube: "active",
+            newSupefNFT: "active",
             orders: "",
             settings: "",
             privacyPolicy: "",
@@ -203,19 +146,19 @@ function NewCube(props) {
         let fileData = new FormData();
         // fileData.append("importerId", importer);
         fileData.append("exporterId", exporter);
-        // console.log("JSON.stringify(inputList)", inputList);
+        // console.log("JSON.stringify(tokenList)", tokenList);
         let catagoryArray = [];
         let descriptionArray = [];
-        // for (let i = 0; i < inputList.length; i++) {
-        //     catagoryArray.push(inputList[i].title);
-        //     descriptionArray.push(inputList[i].description);
-        //     fileData.append(`file`, inputList[i].fileData);
+        // for (let i = 0; i < tokenList.length; i++) {
+        //     catagoryArray.push(tokenList[i].title);
+        //     descriptionArray.push(tokenList[i].description);
+        //     fileData.append(`file`, tokenList[i].fileData);
         // }
         console.log(descriptionArray);
 
         fileData.append(`description`, JSON.stringify(descriptionArray));
         fileData.append(`documentNames`, JSON.stringify(catagoryArray));
-        fileData.append(`numberOfTokens`, tokenSupply * 10 ** 18);
+        // fileData.append(`numberOfTokens`, tokenSupply * 10 ** 18);
 
         for (var pair of fileData.entries()) {
             console.log(pair[0] + ', ' + pair[1]);
@@ -239,105 +182,29 @@ function NewCube(props) {
         //     }
         // );
     };
-    // const handleRemoveClick = (index) => {
-    //     const list = [...inputList];
-    //     list.splice(index, 1);
-    //     setInputList(list);
-    // };
-
-    // handle click event of the Add button
-    const handleAddClick = () => {
-
-        // setInputList([...inputList, { title: title, description: description, fileData: fileData }]);
-        // setTitle('');
-        // setDescription('');
-        // setFileData('');
+    const handleRemoveClick = (index, newNFT) => {
+        console.log("index", index);
+        const list = [...selectedNFTList];
+        list.splice(index, 1);
+        setSelectedNFTList(list);
+        setTokenList(tokenList => [...tokenList, newNFT])
     };
 
-    let onChangeFile = (e) => {
-        if (e.target.files.length > 6) {
-            alert("you cant upload more than 6 images")
-        } else
-            if (e.target.files.length === 0) {
-                setImage1(r1);
-                setImage2(r1);
-                setImage3(r1);
-                setImage4(r1);
-                setImage5(r1);
-                setImage6(r1);
-                setImage1Blob(r1);
-                setImage2Blob(r1);
-                setImage3Blob(r1);
-                setImage4Blob(r1);
-                setImage5Blob(r1);
-                setImage6Blob(r1);
-            }
-            else {
-                for (let i = 0; i < e.target.files.length; i++) {
+    // handle click event of the Add button
+    const handleAddClick = (nft) => {
+        console.log("selectedNFTList.length", selectedNFTList.length);
+        if (selectedNFTList.length + 1 <= 6) {
+            const list = [...tokenList];
+            var index = list.findIndex(i => i.id === nft.id);
+            list.splice(index, 1);
+            setTokenList(list);
+            setSelectedNFTList([...selectedNFTList, { id: nft.id, image: nft.image, imageBlob: nft.imageBlob, name: nft.name, description: nft.description, tokenPrice: nft.tokenPrice, tokenSupply: nft.tokenSupply, imageArtist: nft.imageArtist, aboutTheArt: nft.aboutTheArt, website: nft.website, artistImage: nft.artistImage, artistImageBlob: nft.artistImageBlob }]);
+        }
+        else {
+            handleShow();
+        }
 
-                    if (i === 0) {
-                        setImage1(e.target.files[0])
-                        setImage1Blob(URL.createObjectURL(e.target.files[0]))
-                        setImage2(r1);
-                        setImage3(r1);
-                        setImage4(r1);
-                        setImage5(r1);
-                        setImage6(r1);
-                        setImage2Blob(r1);
-                        setImage3Blob(r1);
-                        setImage4Blob(r1);
-                        setImage5Blob(r1);
-                        setImage6Blob(r1);
-
-                    }
-                    if (i === 1) {
-                        setImage2(e.target.files[1])
-                        setImage2Blob(URL.createObjectURL(e.target.files[1]))
-                        setImage3(r1);
-                        setImage4(r1);
-                        setImage5(r1);
-                        setImage6(r1);
-                        setImage3Blob(r1);
-                        setImage4Blob(r1);
-                        setImage5Blob(r1);
-                        setImage6Blob(r1);
-                    }
-                    if (i === 2) {
-                        setImage3(e.target.files[2])
-                        setImage3Blob(URL.createObjectURL(e.target.files[2]))
-                        setImage4(r1);
-                        setImage5(r1);
-                        setImage6(r1);
-                        setImage4Blob(r1);
-                        setImage5Blob(r1);
-                        setImage6Blob(r1);
-                    }
-                    if (i === 3) {
-                        setImage4(e.target.files[3])
-                        setImage4Blob(URL.createObjectURL(e.target.files[3]))
-                        setImage5(r1);
-                        setImage6(r1);
-                        setImage5Blob(r1);
-                        setImage6Blob(r1);
-                    }
-                    if (i === 4) {
-                        setImage5(e.target.files[4])
-                        setImage5Blob(URL.createObjectURL(e.target.files[4]))
-                        setImage6(r1);
-                        setImage6Blob(r1);
-
-                    }
-                    if (i === 5) {
-                        setImage6(e.target.files[5])
-                        setImage6Blob(URL.createObjectURL(e.target.files[5]))
-                    }
-                }
-            }
-        let fileCollection = [];
-
-        Array.from(e.target.files).map(f => fileCollection.push(f));
-
-    }
+    };
 
     return (
         <div className="card">
@@ -345,35 +212,41 @@ function NewCube(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
-                <li className="breadcrumb-item active">New NFT</li>
+                <li className="breadcrumb-item active">New Super NFT</li>
             </ul>
             <div className="card-body">
                 <div className="row">
                     <div className="col-md-12 col-lg-6">
                         <form onSubmit={handleSubmitEvent}>
                             <div className="form-group">
-                                <label>Select Artwork</label>
+                                <label>Select Artworks </label>
                                 <div className="filter-widget">
-                                    <div className="form-group">
-                                        <div className="change-avatar">
-
-                                            <div className="upload-img">
-                                                <div className="change-photo-btn">
-                                                    <span><i className="fa fa-upload"></i>Upload Artworks</span>
-                                                    <input
-                                                        name="sampleFile"
-                                                        type="file"
-                                                        multiple
-                                                        className="upload"
-                                                        accept=".png,.jpg,.jpeg,gif"
-                                                        onChange={onChangeFile}
-                                                    // onChange={onChangePictureHandler}
-                                                    />
-                                                </div>
-                                                <small className="form-text text-muted">Allowed JPG, JPEG, PNG, GIF. Max size of 5MB</small>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <Autocomplete
+                                        id="combo-dox-demo"
+                                        required
+                                        options={tokenList}
+                                        // value={nftName}
+                                        // disabled={isDisabledImporter}
+                                        getOptionLabel={(option) =>
+                                            option.name
+                                        }
+                                        onChange={(event, value) => {
+                                            if (value == null)
+                                                setNFTName("");
+                                            else {
+                                                console.log(value);
+                                                setNFTName(value.name)
+                                                handleAddClick(value);
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="NFTs"
+                                                variant="outlined"
+                                            />
+                                        )}
+                                    />
                                 </div>
                                 <label>Select Rarity</label>
                                 <div className="filter-widget">
@@ -402,48 +275,6 @@ function NewCube(props) {
                                     />
                                 </div>
 
-                                <div className="form-group">
-                                    <label>Token Supply</label>
-                                    <div className="filter-widget">
-                                        <input
-                                            type="number"
-                                            placeholder="Enter Total Supply"
-                                            required
-                                            value={tokenSupply}
-                                            placeholder=""
-                                            className="form-control"
-                                            onChange={(e) => {
-                                                setTokenSupply(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                                <label>Select Supply Type</label>
-                                <div className="filter-widget">
-                                    <Autocomplete
-                                        id="combo-dox-demo"
-                                        required
-                                        options={supplies}
-                                        // disabled={isDisabledImporter}
-                                        getOptionLabel={(option) =>
-                                            option
-                                        }
-                                        onChange={(event, value) => {
-                                            if (value == null) setSupply("");
-                                            else {
-                                                console.log(value);
-                                                setSupply(value)
-                                            }
-                                        }}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                label="Supply Type"
-                                                variant="outlined"
-                                            />
-                                        )}
-                                    />
-                                </div>
 
                                 <div className="form-group">
                                     <label>Artwork</label>
@@ -473,127 +304,6 @@ function NewCube(props) {
                                             }}
                                         />
                                     </div>
-                                    {/* <label>Website</label> */}
-
-
-                                    <FormControl component="fieldset">
-                                        <lable component="legend">Select to add Image Artist </lable>
-                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
-                                            <FormControlLabel style={{ color: 'black' }} value="New Image Artist" onChange={() => setImageArtistType("New Image Artist")} checked={imageArtistType === 'New Image Artist'} control={<Radio color="secondary" />} label="New Image Artist" />
-                                            <FormControlLabel style={{ color: 'black' }} value="Existing Image Artist" onChange={() => setImageArtistType("Existing Image Artist")} checked={imageArtistType === 'Existing Image Artist'} control={<Radio color="secondary" />} label="Existing Image Artist" />
-                                        </RadioGroup>
-                                    </FormControl>
-                                    {imageArtistType === 'New Image Artist' ? (
-                                        <>
-                                            <div className="form-group">
-                                                {/* <label>Artist Name</label> */}
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={imageArtist}
-                                                    placeholder="Enter Image Artist Name"
-                                                    className="form-control"
-                                                    onChange={(e) => {
-                                                        setImageArtist(e.target.value)
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                {/* <label>About the Track</label> */}
-                                                <textarea
-                                                    type="text"
-                                                    required
-                                                    rows="4"
-                                                    value={aboutTheArt}
-                                                    placeholder="About the Art"
-                                                    className="form-control"
-                                                    onChange={(e) => {
-                                                        setAboutTheArt(e.target.value)
-                                                    }}
-                                                />
-                                            </div>
-                                            <label className="focus-label">Image Artist Photo</label>
-                                            <div className="form-group">
-                                                <div className="change-avatar">
-                                                    <div className="profile-img">
-                                                        <div
-                                                            style={{
-                                                                background: "#E9ECEF",
-                                                                width: "100px",
-                                                                height: "100px",
-                                                            }}
-                                                        >
-                                                            <img src={logo} alt="Selfie" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="upload-img">
-                                                        <div
-                                                            className="change-photo-btn"
-                                                            style={{ backgroundColor: "rgb(167,0,0)" }}
-                                                        >
-                                                            <span>
-                                                                <i className="fa fa-upload"></i>
-                          Upload photo
-                        </span>
-                                                            <input
-                                                                name="sampleFile"
-                                                                type="file"
-                                                                className="upload"
-                                                                accept=".png,.jpg,.jpeg"
-                                                            // onChange={this.onChangeSelfieHandler}
-                                                            />
-                                                        </div>
-                                                        <small className="form-text text-muted">
-                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
-                      </small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="form-group">
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={website}
-                                                    placeholder="Enter Website URL"
-                                                    className="form-control"
-                                                    onChange={(e) => {
-                                                        setWebsite(e.target.value)
-                                                    }}
-                                                />
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="form-group">
-
-                                            <label>Select Artist</label>
-                                            <div className="filter-widget">
-                                                <Autocomplete
-                                                    id="combo-dox-demo"
-                                                    required
-                                                    options={imageArtistTypes}
-                                                    // disabled={isDisabledImporter}
-                                                    getOptionLabel={(option) =>
-                                                        option
-                                                    }
-                                                    onChange={(event, value) => {
-                                                        if (value == null) setImageArtist("");
-                                                        else {
-                                                            console.log(value);
-                                                            setImageArtist(value)
-                                                        }
-                                                    }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            {...params}
-                                                            label="Image Artists"
-                                                            variant="outlined"
-                                                        />
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
-
-                                    )}
                                     <div className="form-group">
                                         <label>Upload Music</label>{" "}
                                     </div>
@@ -728,7 +438,7 @@ function NewCube(props) {
                                                 <input
                                                     type="text"
                                                     required
-                                                    value={collection}
+                                                    value={producer}
                                                     placeholder="Enter Producer Name"
                                                     className="form-control"
                                                     onChange={(e) => {
@@ -821,7 +531,232 @@ function NewCube(props) {
 
                                     )}
 
+                                    <FormControl component="fieldset">
+                                        <lable component="legend">Select to add Executive Producer </lable>
+                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
+                                            <FormControlLabel style={{ color: 'black' }} value="New Executive Producer" onChange={() => setExecutiveProducerType("New Executive Producer")} checked={executiveProducerType === 'New Executive Producer'} control={<Radio color="secondary" />} label="New Executive Producer" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Executive Producer" onChange={() => setExecutiveProducerType("Existing Executive Producer")} checked={executiveProducerType === 'Existing Executive Producer'} control={<Radio color="secondary" />} label="Existing Executive Producer" />
+                                        </RadioGroup>
+                                    </FormControl>
+                                    {executiveProducerType === 'New Executive Producer' ? (
+                                        <>
+                                            <div className="form-group">
+                                                {/* <label>Producer</label> */}
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={executiveProducer}
+                                                    placeholder="Enter Executive Producer Name"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setExecutiveProducer(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                            <label className="focus-label">Executive Producer Profile Photo</label>
+                                            <div className="form-group">
+                                                <div className="change-avatar">
+                                                    <div className="profile-img">
+                                                        <div
+                                                            style={{
+                                                                background: "#E9ECEF",
+                                                                width: "100px",
+                                                                height: "100px",
+                                                            }}
+                                                        >
+                                                            <img src={logo} alt="Selfie" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="upload-img">
+                                                        <div
+                                                            className="change-photo-btn"
+                                                            style={{ backgroundColor: "rgb(167,0,0)" }}
+                                                        >
+                                                            <span>
+                                                                <i className="fa fa-upload"></i>
+                          Upload photo
+                        </span>
+                                                            <input
+                                                                name="sampleFile"
+                                                                type="file"
+                                                                className="upload"
+                                                                accept=".png,.jpg,.jpeg"
+                                                            // onChange={this.onChangeSelfieHandler}
+                                                            />
+                                                        </div>
+                                                        <small className="form-text text-muted">
+                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                      </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="form-group">
+                                                {/* <label>Inspiration For the Piece</label> */}
+                                                <textarea
+                                                    type="text"
+                                                    required
+                                                    rows="4"
+                                                    value={inspirationForThePiece}
+                                                    placeholder="Inspiration For the Piece"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setInspirationForThePiece(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="form-group">
 
+                                            <label>Select Executive Producer</label>
+                                            <div className="filter-widget">
+                                                <Autocomplete
+                                                    id="combo-dox-demo"
+                                                    required
+                                                    options={executiveProducerTypes}
+                                                    // disabled={isDisabledImporter}
+                                                    getOptionLabel={(option) =>
+                                                        option
+                                                    }
+                                                    onChange={(event, value) => {
+                                                        if (value == null) setExecutiveProducer("");
+                                                        else {
+                                                            console.log(value);
+                                                            setExecutiveProducer(value)
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Executive Producers"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                    )}
+                                    <FormControl component="fieldset">
+                                        <lable component="legend">Select to add Fan </lable>
+                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
+                                            <FormControlLabel style={{ color: 'black' }} value="New Fan" onChange={() => setFanType("New Fan")} checked={fanType === 'New Fan'} control={<Radio color="secondary" />} label="New Fan" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Fan" onChange={() => setFanType("Existing Fan")} checked={fanType === 'Existing Fan'} control={<Radio color="secondary" />} label="Existing Fan" />
+                                        </RadioGroup>
+                                    </FormControl>
+
+                                    {fanType === 'New Fan' ? (
+                                        <>
+                                            <div className="form-group">
+                                                {/* <label>Producer</label> */}
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={executiveProducer}
+                                                    placeholder="Enter Fan Name"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setExecutiveProducer(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                            <label className="focus-label">Fan Profile Photo</label>
+                                            <div className="form-group">
+                                                <div className="change-avatar">
+                                                    <div className="profile-img">
+                                                        <div
+                                                            style={{
+                                                                background: "#E9ECEF",
+                                                                width: "100px",
+                                                                height: "100px",
+                                                            }}
+                                                        >
+                                                            <img src={logo} alt="Selfie" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="upload-img">
+                                                        <div
+                                                            className="change-photo-btn"
+                                                            style={{ backgroundColor: "rgb(167,0,0)" }}
+                                                        >
+                                                            <span>
+                                                                <i className="fa fa-upload"></i>
+                          Upload photo
+                        </span>
+                                                            <input
+                                                                name="sampleFile"
+                                                                type="file"
+                                                                className="upload"
+                                                                accept=".png,.jpg,.jpeg"
+                                                            // onChange={this.onChangeSelfieHandler}
+                                                            />
+                                                        </div>
+                                                        <small className="form-text text-muted">
+                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                      </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="form-group">
+                                                {/* <label>Inspiration For the Piece</label> */}
+                                                <textarea
+                                                    type="text"
+                                                    required
+                                                    rows="4"
+                                                    value={inspirationForThePiece}
+                                                    placeholder="Inspiration For the Piece"
+                                                    className="form-control"
+                                                    onChange={(e) => {
+                                                        setInspirationForThePiece(e.target.value)
+                                                    }}
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="form-group">
+
+                                            <label>Select Fan</label>
+                                            <div className="filter-widget">
+                                                <Autocomplete
+                                                    id="combo-dox-demo"
+                                                    required
+                                                    options={fans}
+                                                    // disabled={isDisabledImporter}
+                                                    getOptionLabel={(option) =>
+                                                        option
+                                                    }
+                                                    onChange={(event, value) => {
+                                                        if (value == null) setFan("");
+                                                        else {
+                                                            console.log(value);
+                                                            setFan(value)
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Fans"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                    )}
+                                    <div className="form-group">
+                                        <label>Other</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={executiveProducer}
+                                            placeholder="Enter other"
+                                            className="form-control"
+                                            onChange={(e) => {
+                                                setOther(e.target.value)
+                                            }}
+                                        />
+                                    </div>
                                     <FormControl component="fieldset">
                                         <lable component="legend">Select to add in Collection </lable>
                                         <RadioGroup row aria-label="position" name="position" defaultValue="top">
@@ -876,6 +811,7 @@ function NewCube(props) {
 
                                     )}
 
+
                                     {/* {title === '' || description === '' || tokenSupply === '' || fileData === '' ? (
                                         <button
                                             className="btn"
@@ -903,16 +839,81 @@ function NewCube(props) {
                         <div className="App">
                             <div class="wrapper">
                                 <div class="cube-box1">
-
-                                    <img src={image1Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
-                                    <img src={image2Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
-                                    <img src={image3Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
-                                    <img src={image4Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
-                                    <img src={image5Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
-                                    <img src={image6Blob} style={{ border: rarity === "Mastercraft" ? '3px solid #ff0000' : rarity === "Legendary" ? '3px solid #FFD700' : rarity === "Mastercraft" ? '3px solid ##ff0000' : rarity === "Epic" ? '3px solid #9400D3' : rarity === "Rare" ? '3px solid #0000FF' : rarity === "Uncommon" ? '3px solid #008000' : rarity === "Common" ? '3px solid #FFFFFF' : 'none' }} alt="" />
+                                    {selectedNFTList.map((i, index) => (
+                                        <img src={i.image} style={{ border: rarity === "Mastercraft" ? '4px solid #ff0000' : rarity === "Legendary" ? '4px solid #FFD700' : rarity === "Mastercraft" ? '4px solid ##ff0000' : rarity === "Epic" ? '4px solid #9400D3' : rarity === "Rare" ? '4px solid #0000FF' : rarity === "Uncommon" ? '4px solid #008000' : rarity === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                                    ))}
+                                    {new Array(6 - selectedNFTList.length).fill(0).map((_, index) => (
+                                        < img src={r1} style={{ border: rarity === "Mastercraft" ? '4px solid #ff0000' : rarity === "Legendary" ? '4px solid #FFD700' : rarity === "Mastercraft" ? '4px solid ##ff0000' : rarity === "Epic" ? '4px solid #9400D3' : rarity === "Rare" ? '4px solid #0000FF' : rarity === "Uncommon" ? '4px solid #008000' : rarity === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                                    ))}
+                                  
                                 </div>
                             </div>
                         </div>
+                        <form >
+                            <div className="form-group">
+                                <div >
+                                    <Grid
+                                        container
+                                        spacing={2}
+                                        direction="row"
+                                        justify="flex-start"
+                                    // alignItems="flex-start"
+                                    >
+                                        {selectedNFTList.map((i, index) => (
+                                            <>
+                                                <Grid item xs={12} sm={6} md={6} key={index}>
+                                                    <Card style={{ height: "100%" }} variant="outlined">
+                                                        <CardHeader className="text-center"
+                                                            title={i.name}
+                                                        />
+                                                        <CardMedia
+                                                            className={classes.media}
+                                                            image={i.image}
+                                                            title="NFT Image"
+                                                        />
+                                                        <CardContent>
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>ArtWork Description: </strong>{i.description}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Token Price: </strong>{i.tokenPrice}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Token Supply: </strong>{i.tokenSupply}
+                                                            </Typography>
+                                                            <CardHeader className="text-center"
+                                                                title="Image Artist"
+                                                            />
+                                                            <CardHeader
+                                                                avatar={<Avatar src={i.artistImageBlob} aria-label="Artist" className={classes.avatar} />}
+                                                                title={i.imageArtist}
+                                                                subheader={i.aboutTheArt}
+                                                            />
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Website URL: </strong>{i.website}
+                                                            </Typography>
+                                                        </CardContent>
+                                                        <CardActions>
+
+                                                            <Button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    handleRemoveClick(index, i);
+                                                                }}
+                                                                className="btn btn-sm bg-danger-light btn-block"
+
+                                                            >
+                                                                Remove NFT
+    </Button>
+                                                        </CardActions>
+                                                    </Card>
+                                                </Grid>
+                                            </>
+                                        ))}
+                                    </Grid>
+                                </div>
+                            </div>
+                        </form>
                     </div>
 
                 </div>
@@ -927,23 +928,23 @@ function NewCube(props) {
                         </Spinner>
                     </div>
                 ) : (
-                    // inputList.length === 0 ? (
-                    //     <div className="submit-section">
-                    //         <button type="button" disabled className="btn submit-btn">
-                    //             Create NFT
-                    // </button>
-                    //     </div>
-                    // ) : (
+                    selectedNFTList.length === 0 ? (
+                        <div className="submit-section">
+                            <button type="button" disabled className="btn submit-btn">
+                                Create NFT
+                    </button>
+                        </div>
+                    ) : (
                     <div className="submit-section">
-                        <button type="submit"  className="btn submit-btn">
-                            Create NFT
+                        <button type="submit" className="btn submit-btn">
+                            Create Cube
                   </button>
                     </div>
-                    // )
+                    )
 
                 )}
             </div>
-
+            <SixNFTsErrorModal show={show} handleClose={handleClose} />
         </div >
 
     );

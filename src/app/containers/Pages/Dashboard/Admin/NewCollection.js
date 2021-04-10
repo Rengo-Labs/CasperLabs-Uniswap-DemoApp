@@ -67,7 +67,7 @@ function NewCollection(props) {
             dashboard: "",
             totalUserAccount: "",
             pendingUserAccount: "",
-            newCube:"",
+            newSupefNFT:"",
             newCollection: "active",
             tradeListOrders: "",
             referralEarnings: "",

@@ -24,9 +24,7 @@ import audio from '../../../../assets/mp3/music.mp3';
 // import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
-
-
-
+import ipfs from '../../../../components/IPFS/ipfs';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -120,7 +118,7 @@ function NewNFT(props) {
     let [name, setName] = useState("");
     let [website, setWebsite] = useState("");
     let [aboutTheArt, setAboutTheArt] = useState("");
-
+    let [ipfsHash, setIpfsHash] = useState(null);
     let [description, setDescription] = useState("");
     let [aboutTheTrack, setAboutTheTrack] = useState();
     let [inspirationForThePiece, setInspirationForThePiece] = useState();
@@ -146,7 +144,7 @@ function NewNFT(props) {
     let [tokenPrice, setTokenPrice] = useState("");
     let [tokenSupply, setTokenSupply] = useState("");
 
-    let [importerName, setImporterName] = useState('');
+    let [isUploadingIPFS, setIsUploadingIPFS] = useState(false);
     let [rarity, setRarity] = useState();
     let [isDisabledImporter, setIsDisabledImporter] = useState(true);
     let [imageBlob, setImageBlob] = useState(r1);
@@ -191,7 +189,7 @@ function NewNFT(props) {
             termsandconditions: "",
             changePassword: "",
             newDrop: "",
-            newCube: "",
+            newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
         });
@@ -256,15 +254,35 @@ function NewNFT(props) {
     };
 
     let onChangeFile = (e) => {
-        setImage(e.target.files[0]);
-        setImageBlob(URL.createObjectURL(e.target.files[0]))
+        setIsUploadingIPFS(true);
+        const reader = new window.FileReader();
+        let imageNFT = e.target.files[0]
+        reader.readAsArrayBuffer(e.target.files[0]);
+        reader.onloadend = () => {
+            // setBuffer(Buffer(reader.result));
+            ipfs.add(Buffer(reader.result), async (err, result) => {
+                if (err) {
+                    console.log(err);
+                    setIsUploadingIPFS(false);
+                    return
+                }
+                console.log("HASH", result[0].hash);
+
+                setIpfsHash(result[0].hash);
+
+                setImage(imageNFT);
+                setImageBlob(URL.createObjectURL(imageNFT))
+                let variant = "success";
+                enqueueSnackbar('Image Uploaded', { variant });
+                setIsUploadingIPFS(false);
+                // setIsUploadingImage(false);
+            })
+        }
     }
     let onChangeSelfieHandler = (e) => {
         setArtistImage(e.target.files[0]);
         setArtistImageBlob(URL.createObjectURL(e.target.files[0]))
     }
-
-
     return (
         <div className="card">
             <ul className="breadcrumb" style={{ backgroundColor: "rgb(167,0,0)" }}>
@@ -298,10 +316,19 @@ function NewNFT(props) {
                                                     className="change-photo-btn"
                                                     style={{ backgroundColor: "rgb(167,0,0)" }}
                                                 >
-                                                    <span>
-                                                        <i className="fa fa-upload"></i>
-                          Upload photo
-                        </span>
+                                                    {isUploadingIPFS ? (
+                                                        <div className="text-center">
+                                                            <Spinner
+                                                                animation="border"
+                                                                role="status"
+                                                                style={{ color: "#fff" }}
+                                                            >
+                                                            </Spinner>
+                                                        </div>
+                                                    ) : (
+                                                        <span><i className="fa fa-upload"></i>Upload photo</span>
+                                                    )}
+
                                                     <input
                                                         name="sampleFile"
                                                         type="file"
@@ -540,7 +567,7 @@ function NewNFT(props) {
                                             <>
                                                 <Grid item xs={12} sm={6} md={6} key={index}>
                                                     <Card style={{ height: "100%" }} variant="outlined">
-                                                        <CardHeader
+                                                        <CardHeader className="text-center"
                                                             title={i.name}
                                                         />
                                                         <CardMedia
@@ -557,23 +584,17 @@ function NewNFT(props) {
                                                             </Typography>
                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                                 <strong>Token Supply: </strong>{i.tokenSupply}
-
                                                             </Typography>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <Avatar src={i.artistImageBlob} aria-label="Artist" className={classes.avatar}>
-
-                                                                </Avatar>
-                                                            </Typography>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Image Artist Name: </strong>{i.imageArtist}
-                                                            </Typography>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>About the Art: </strong>{i.aboutTheArt}
-
-                                                            </Typography>
+                                                            <CardHeader className="text-center"
+                                                            title="Image Artist"
+                                                       /> 
+                                                            <CardHeader
+                                                                avatar={<Avatar src={i.artistImageBlob} aria-label="Artist" className={classes.avatar} />}
+                                                                title={i.imageArtist}
+                                                                subheader={i.aboutTheArt}
+                                                            />
                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                                 <strong>Website URL: </strong>{i.website}
-
                                                             </Typography>
                                                         </CardContent>
                                                         <CardActions>
