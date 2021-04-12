@@ -40,52 +40,54 @@ function App() {
   }, []);
 
   const PrivateRoute = ({ path, ...rest }) => {
-    checkLoginStatus();
-    if (jwtDecoded && isLoggedIn) {
-      if (jwtDecoded.roles === "admin") {
+    // checkLoginStatus();
+    // if (jwtDecoded && isLoggedIn) {
+      // if (jwtDecoded.roles === "admin") {
         return (
           <Route
             {...rest}
             render={(props) =>
-              isLoggedIn ? (
+              // isLoggedIn ? (
                 <AdminDashboard {...props} jwtDecoded={jwtDecoded} />
-              ) : (
-                  <Redirect to="/login" />
-                )
+              // ) : (
+              //     <Redirect to="/login" />
+              //   )
             }
           />
         );
-      } else if (jwtDecoded.roles === "importer") {
-        return (
-          <Route
-            {...rest}
-            render={(props) =>
-              isLoggedIn ? (
-                <ImporterDashboard {...props} jwtDecoded={jwtDecoded} />
-              ) : (
-                  <Redirect to="/login" />
-                )
-            }
-          />
-        );
-      }
-      else if (jwtDecoded.roles === "exporter") {
-        return (
-          <Route
-            {...rest}
-            render={(props) =>
-              isLoggedIn ? (
-                <ExporterDashboard {...props} jwtDecoded={jwtDecoded} />
-              ) : (
-                  <Redirect to="/login" />
-                )
-            }
-          />
-        );
-      }
-    } else {
-      return <Redirect to="/" />;
-    }
+      // }
+      //  else if (jwtDecoded.roles === "importer") {
+      //   return (
+      //     <Route
+      //       {...rest}
+      //       render={(props) =>
+      //         isLoggedIn ? (
+      //           <ImporterDashboard {...props} jwtDecoded={jwtDecoded} />
+      //         ) : (
+      //             <Redirect to="/login" />
+      //           )
+      //       }
+      //     />
+      //   );
+      // }
+      // else if (jwtDecoded.roles === "exporter") {
+      //   return (
+      //     <Route
+      //       {...rest}
+      //       render={(props) =>
+      //         isLoggedIn ? (
+      //           <ExporterDashboard {...props} jwtDecoded={jwtDecoded} />
+      //         ) : (
+      //             <Redirect to="/login" />
+      //           )
+      //       }
+      //     />
+      //   );
+      // }
+    // } 
+    // else {
+    //   return <Redirect to="/" />;
+    // }
   };
 
   const LoginRegisterRedirectCheck = ({ path, ...rest }) => {

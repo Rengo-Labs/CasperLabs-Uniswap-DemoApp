@@ -123,8 +123,8 @@ function NewNFT(props) {
     let [aboutTheTrack, setAboutTheTrack] = useState();
     let [inspirationForThePiece, setInspirationForThePiece] = useState();
     let [rarities, setRarities] = useState(["Mastercraft", "Legendary", "Epic", "Rare", "Uncommon", "Common"]);
-    let [supplies, setSupplies] = useState(["Fixed Supply", "Variable Supply", "Mintable"]);
-    let [supply, setSupply] = useState("");
+    let [supplyTypes, setSupplyTypes] = useState(["Fixed Supply", "Variable Supply", "Mintable"]);
+    let [supplyType, setSupplyType] = useState("");
 
 
     let [collectionTypes, setCollectionTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
@@ -376,7 +376,7 @@ function NewNFT(props) {
                                             }}
                                         />
                                     </div>
-                                    <div className="form-group">
+                                    {/* <div className="form-group">
                                         <label>Token price(USD)</label>
                                         <div className="filter-widget">
                                             <input
@@ -391,7 +391,7 @@ function NewNFT(props) {
                                                 }}
                                             />
                                         </div>
-                                    </div>
+                                    </div> */}
 
                                     <div className="form-group">
                                         <label>Token Supply</label>
@@ -409,7 +409,32 @@ function NewNFT(props) {
                                             />
                                         </div>
                                     </div>
-
+                                    <label>Select Supply Type</label>
+                                    <div className="filter-widget">
+                                        <Autocomplete
+                                            id="combo-dox-demo"
+                                            required
+                                            options={supplyTypes}
+                                            // disabled={isDisabledImporter}
+                                            getOptionLabel={(option) =>
+                                                option
+                                            }
+                                            onChange={(event, value) => {
+                                                if (value == null) setSupplyType("");
+                                                else {
+                                                    console.log(value);
+                                                    setSupplyType(value)
+                                                }
+                                            }}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label="Supply Type"
+                                                    variant="outlined"
+                                                />
+                                            )}
+                                        />
+                                    </div>
                                     {/* <label>Website</label> */}
 
                                     <FormControl component="fieldset">
@@ -530,7 +555,7 @@ function NewNFT(props) {
 
                                     )}
                                 </div>
-                                {image === "" || imageBlob === "" || name === "" || description === "" || tokenPrice === "" || tokenSupply === "" || imageArtist === "" || aboutTheArt === "" || website === "" || artistImage === "" || artistImageBlob === "" ? (
+                                {image === "" || imageBlob === "" || name === "" || description === "" || tokenSupply === "" || imageArtist === "" || aboutTheArt === "" || website === "" || artistImage === "" || artistImageBlob === "" ? (
                                     <button
                                         className="btn"
                                         type="submit"
@@ -579,15 +604,15 @@ function NewNFT(props) {
                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                                 <strong>ArtWork Description: </strong>{i.description}
                                                             </Typography>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                            {/* <Typography variant="body2" color="textSecondary" component="p">
                                                                 <strong>Token Price: </strong>{i.tokenPrice}
-                                                            </Typography>
+                                                            </Typography> */}
                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                                 <strong>Token Supply: </strong>{i.tokenSupply}
                                                             </Typography>
                                                             <CardHeader className="text-center"
-                                                            title="Image Artist"
-                                                       /> 
+                                                                title="Image Artist"
+                                                            />
                                                             <CardHeader
                                                                 avatar={<Avatar src={i.artistImageBlob} aria-label="Artist" className={classes.avatar} />}
                                                                 title={i.imageArtist}

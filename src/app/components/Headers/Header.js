@@ -248,11 +248,18 @@ function HeaderHome(props) {
           </ul>
         </div>
         <ul className="nav header-navbar-rht">
-          <li >
+          <li>
+            <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
+              <span style={selectedNavStyle.Community}>
+                Login
+                  </span>
+            </Link>
+          </li>
+          {/* <li >
             <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
               Login
             </span>
-          </li>
+          </li> */}
           <li >
             {/* <Button variant="primary" onClick={handleShow}>
               Launch demo modal
@@ -271,7 +278,7 @@ function HeaderHome(props) {
         </ul>
         <Modal show={show} onHide={handleClose}>
           <Modal.Header closeButton>
-            <Modal.Title> Network Error</Modal.Title>
+            <Modal.Title> Wrong Network</Modal.Title>
           </Modal.Header>
           <Modal.Body className="text-center"> <i className="fas fa-times-circle fa-10x"></i></Modal.Body>
           <Modal.Body>Your wallet is connected to the <strong>{network} test Network</strong>. To use Robot Drop User must be Connected to <strong>Ropsten test Network</strong>

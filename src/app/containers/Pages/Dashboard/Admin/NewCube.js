@@ -110,7 +110,7 @@ function NewCube(props) {
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-    
+
     let uploadMusicHandler = (event, index) => {
         console.log("event.target.files", event.target.files);
         console.log("event.target.value", event.target.value);
