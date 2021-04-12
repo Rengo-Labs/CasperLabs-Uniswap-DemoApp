@@ -7525,8 +7525,8 @@ html.menu-opened body {
     padding: 1.25rem;
   }
   .change-avatar .profile-img img {
-    height: 80px;
-    width: 80px;
+    height: 100px;
+    width: 100px;
   }
   .submit-btn-bottom {
     margin-bottom: 0.9375rem;

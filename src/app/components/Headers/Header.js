@@ -174,13 +174,20 @@ function HeaderHome(props) {
                 <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
               </a>
             </li>
+            <li className="login-link ">
+            <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
+              <span style={selectedNavStyle.Community}>
+                Login
+                  </span>
+            </Link>
+          </li>
             <li>
-              <span style={selectedNavStyle.search}>
+              <span style={selectedNavStyle.search} >
                 <input type="text" className="form-control" placeholder="search"></input>
               </span>
             </li>
-            <li>
-              <Link to="/" >
+            {/* <li>
+              <Link to="/" style={{ color: 'rgb(167,0,0)' }} >
                 <span style={selectedNavStyle.Browse}>
                   Browse
                   </span>
@@ -237,7 +244,7 @@ function HeaderHome(props) {
         </Dropdown>
                 </span>
               </Link>
-            </li>
+            </li> */}
             {/* <li>
               <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
                 <span style={selectedNavStyle.Community}>
