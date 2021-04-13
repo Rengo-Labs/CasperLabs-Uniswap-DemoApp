@@ -88,7 +88,7 @@ function NewCollection(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
-                <li className="breadcrumb-item active">Earning List</li>
+                <li className="breadcrumb-item active">Collections</li>
             </ul>
             <div className="container">
                 {/* <p></p> */}

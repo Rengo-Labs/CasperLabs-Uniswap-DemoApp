@@ -32,7 +32,7 @@ function AdminSidebar(props) {
             </li>
             <li className={props.activeTab.newSupefNFT}>
               <Link to={`${props.match.url}/newSupefNFT`}>
-              <i className="fas fa-cube"></i> <span>New Super NFT</span>
+              <i className="fas fa-cube"></i> <span>New Cube</span>
               </Link>
             </li>
             <li className={props.activeTab.newDrop}>
@@ -43,6 +43,11 @@ function AdminSidebar(props) {
             <li className={props.activeTab.newRandomDrop}>
               <Link to={`${props.match.url}/newRandomDrop`}>
                 <i className="fas fa-random"></i> <span>New Random Drop</span>
+              </Link>
+            </li>
+            <li className={props.activeTab.newSeason}>
+              <Link to={`${props.match.url}/newSeason`}>
+              <i className="fas fa-boxes"></i> <span>New Season</span>
               </Link>
             </li>
             <li className={props.activeTab.newCollection}>

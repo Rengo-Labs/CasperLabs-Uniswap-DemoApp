@@ -13,7 +13,7 @@ function SixNFTsErrorModal(props) {
             </Modal.Header>
             <Modal.Body className="text-center"> <i className="fas fa-times-circle fa-10x"></i></Modal.Body>
             <Modal.Body>
-                You Cannot Select More than 6 Nfts to make a Super NFT
+                You Cannot Select More than 6 Nfts to make a Cube
     </Modal.Body>
             <Modal.Footer>
                 <Button variant="primary" onClick={props.handleClose}>

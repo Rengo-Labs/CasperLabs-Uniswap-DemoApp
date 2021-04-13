@@ -6,24 +6,17 @@ import { Link, Route, Switch, useRouteMatch } from "react-router-dom";
 import "../../../assets/css/adminStyle.css";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
-import Logo from '../../../assets/img/logo.png';
 import patient from "../../../assets/img/patients/patient.jpg";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import AdminDashboardDefaultScreen from "./Admin/AdminDashboardDefaultScreen";
 import AdminSidebar from "./Admin/AdminSidebar";
-import DisputedOrders from "./Admin/DisputedOrders";
-import DisputedResolved from "./Admin/DisputedResolved";
-import EarningsList from "./Admin/EarningsList";
 import NewCollection from "./Admin/NewCollection";
 import NewCube from "./Admin/NewCube";
 import NewDrop from "./Admin/NewDrop";
 import NewNFT from "./Admin/NewNFT";
-import PendingUserAccountScreen from "./Admin/PendingUserAccountScreen";
+import NewSeason from "./Admin/NewSeason";
 import RandomDrop from "./Admin/RandomDrop";
-import ReferralEarningList from "./Admin/ReferralEarning";
-import TotalUserAccountScreen from "./Admin/TotalUserAccountScreen";
-import TradeList from "./Admin/TradeList";
 import ChangePassword from "./ChangePassword";
 import ProfileSetting from "./ProfileSetting";
 
@@ -58,8 +51,9 @@ function AdminDashboard(props) {
     settings: "",
     changePassword: "",
     newNFT: "",
-    newSupefNFT:"",
+    newSupefNFT: "",
     newDrop: "",
+    newSeason: "",
     newCollection: "",
     newRandomDrop: ""
   });
@@ -170,27 +164,6 @@ function AdminDashboard(props) {
               />
             </Route>
 
-            <Route exact path={`${path}/totalUserAccount`}>
-              <TotalUserAccountScreen setActiveTab={setActiveTab} />
-            </Route>
-            <Route exact path={`${path}/pendingUserAccount`}>
-              <PendingUserAccountScreen setActiveTab={setActiveTab} />
-            </Route>
-            <Route exact path={`${path}/disputedOrders`}>
-              <DisputedOrders setActiveTab={setActiveTab} />
-            </Route>
-            <Route exact path={`${path}/resolvedDisputedOrders`}>
-              <DisputedResolved setActiveTab={setActiveTab} />
-            </Route>
-            <Route exact path={`${path}/tradeListOrders`}>
-              <TradeList setActiveTab={setActiveTab} />
-            </Route>
-            <Route exact path={`${path}/earningsList`}>
-              <EarningsList setActiveTab={setActiveTab} />
-            </Route>
-            <Route exact path={`${path}/referralEarnings`}>
-              <ReferralEarningList setActiveTab={setActiveTab} />
-            </Route>
             <Route exact path={`${path}/newNFT`}>
               <NewNFT setActiveTab={setActiveTab} />
             </Route>
@@ -205,6 +178,9 @@ function AdminDashboard(props) {
               <RandomDrop setActiveTab={setActiveTab} />
             </Route>
 
+            <Route exact path={`${path}/newSeason`}>
+              <NewSeason setActiveTab={setActiveTab} />
+            </Route>
             <Route exact path={`${path}/newCollection`}>
               <NewCollection setActiveTab={setActiveTab} />
             </Route>
