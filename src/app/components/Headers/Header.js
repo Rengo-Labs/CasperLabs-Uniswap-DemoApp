@@ -17,6 +17,7 @@ import Axios from "axios";
 import Web3 from "web3";
 import jwtDecode from "jwt-decode";
 import Cookies from "js-cookie";
+import NetworkErrorModal from "../Modals/NetworkErrorModal";
 
 
 function HeaderHome(props) {
@@ -175,12 +176,12 @@ function HeaderHome(props) {
               </a>
             </li>
             <li className="login-link ">
-            <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
-              <span style={selectedNavStyle.Community}>
-                Login
+              <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
+                <span style={selectedNavStyle.Community}>
+                  Login
                   </span>
-            </Link>
-          </li>
+              </Link>
+            </li>
             <li>
               <span style={selectedNavStyle.search} >
                 <input type="text" className="form-control" placeholder="search"></input>
@@ -255,18 +256,18 @@ function HeaderHome(props) {
           </ul>
         </div>
         <ul className="nav header-navbar-rht">
-          <li>
+          {/* <li>
             <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
               <span style={selectedNavStyle.Community}>
                 Login
                   </span>
             </Link>
-          </li>
-          {/* <li >
+          </li> */}
+          <li >
             <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
               Login
             </span>
-          </li> */}
+          </li>
           <li >
             {/* <Button variant="primary" onClick={handleShow}>
               Launch demo modal
@@ -283,20 +284,12 @@ function HeaderHome(props) {
             </Link> */}
           </li>
         </ul>
-        <Modal show={show} onHide={handleClose}>
-          <Modal.Header closeButton>
-            <Modal.Title> Wrong Network</Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="text-center"> <i className="fas fa-times-circle fa-10x"></i></Modal.Body>
-          <Modal.Body>Your wallet is connected to the <strong>{network} test Network</strong>. To use Robot Drop User must be Connected to <strong>Ropsten test Network</strong>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="primary" onClick={handleClose}>
-              Close
-          </Button>
-          </Modal.Footer>
-        </Modal>
-
+        <NetworkErrorModal
+          show={show}
+          handleClose={handleClose}
+          network={network}
+        >
+        </NetworkErrorModal>
       </nav>
     </header >
   );

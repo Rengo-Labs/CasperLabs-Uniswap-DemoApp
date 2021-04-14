@@ -78,29 +78,11 @@ function NewCube(props) {
     let [name, setName] = useState();
     let [description, setDescription] = useState();
     let [aboutTheTrack, setAboutTheTrack] = useState();
-    let [inspirationForThePiece, setInspirationForThePiece] = useState();
-    let [rarities, setRarities] = useState(["Mastercraft", "Legendary", "Epic", "Rare", "Uncommon", "Common"]);
-    let [supplies, setSupplies] = useState(["Fixed Supply", "Variable Supply", "Mintable"]);
-    let [supply, setSupply] = useState("");
-    let [collectionTypes, setCollectionTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
-    let [artistTypes, setArtistTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
-    let [producerTypes, setProducerTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
-    let [executiveProducerTypes, setExecutiveProducerTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
-    let [fans, setFanTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
-
-    let [collectionType, setCollectionType] = useState("New Collection");
-    let [collection, setCollection] = useState('');
+    
+    let [artistTypes, setArtistTypes] = useState(["Artist1", "Artist2", "Artist3", "Artist4", "Artist5"]);
+    
     let [artistType, setArtistType] = useState("New Artist");
     let [artist, setArtist] = useState('');
-    let [imageArtistType, setImageArtistType] = useState("New Image Artist");
-    let [imageArtist, setImageArtist] = useState('');
-    let [producerType, setProducerType] = useState("New Producer");
-    let [executiveProducerType, setExecutiveProducerType] = useState("New Executive Producer");
-
-    let [producer, setProducer] = useState('');
-    let [executiveProducer, setExecutiveProducer] = useState('');
-    
-    let [rarity, setRarity] = useState();
     let [nftName, setNFTName] = useState();
     let [musicOwner, setMusicOwner] = useState();
     let [musicNonOwner, setMusicNonOwner] = useState();
@@ -326,7 +308,7 @@ function NewCube(props) {
                                                 <input
                                                     type="text"
                                                     required
-                                                    value={collection}
+                                                    value={artist}
                                                     placeholder="Enter Music Artist Name"
                                                     className="form-control"
                                                     onChange={(e) => {
@@ -421,61 +403,7 @@ function NewCube(props) {
 
 
                                     
-                                    <FormControl component="fieldset">
-                                        <lable component="legend">Select to add in Collection </lable>
-                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
-                                            <FormControlLabel style={{ color: 'black' }} value="New Collection" onChange={() => setCollectionType("New Collection")} checked={collectionType === 'New Collection'} control={<Radio color="secondary" />} label="New Collection" />
-                                            <FormControlLabel style={{ color: 'black' }} value="Existing Collection" onChange={() => setCollectionType("Existing Collection")} checked={collectionType === 'Existing Collection'} control={<Radio color="secondary" />} label="Existing Collection" />
-                                        </RadioGroup>
-                                    </FormControl>
-                                    {collectionType === 'New Collection' ? (
-                                        <div className="form-group">
-                                            <label>New Collection</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={collection}
-                                                placeholder="Enter Collection Name"
-                                                className="form-control"
-                                                onChange={(e) => {
-                                                    setCollection(e.target.value)
-                                                }}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="form-group">
-
-                                            <label>Select Collection</label>
-                                            <div className="filter-widget">
-                                                <Autocomplete
-                                                    id="combo-dox-demo"
-                                                    required
-                                                    options={collectionTypes}
-                                                    // disabled={isDisabledImporter}
-                                                    getOptionLabel={(option) =>
-                                                        option
-                                                    }
-                                                    onChange={(event, value) => {
-                                                        if (value == null) setCollection("");
-                                                        else {
-                                                            console.log(value);
-                                                            setCollection(value)
-                                                        }
-                                                    }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            {...params}
-                                                            label="Collections"
-                                                            variant="outlined"
-                                                        />
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
-
-                                    )}
-
-
+                                   
                                     {/* {title === '' || description === '' || tokenSupply === '' || fileData === '' ? (
                                         <button
                                             className="btn"

@@ -145,7 +145,7 @@ function NewDrop(props) {
                         <form onSubmit={handleSubmitEvent}>
                             <div className="form-group">
 
-                                <label>Select NFTs</label>
+                                <label>Select Cubes</label>
                                 <div className="filter-widget">
                                     <Autocomplete
                                         id="combo-dox-demo"
@@ -168,7 +168,7 @@ function NewDrop(props) {
                                         renderInput={(params) => (
                                             <TextField
                                                 {...params}
-                                                label="NFTs"
+                                                label="Cubes"
                                                 variant="outlined"
                                             />
                                         )}
@@ -191,32 +191,6 @@ function NewDrop(props) {
                                         />
                                     </div>
                                 </div>
-                                {/* <label>Select Supply Type</label>
-                                <div className="filter-widget">
-                                    <Autocomplete
-                                        id="combo-dox-demo"
-                                        required
-                                        // options={supplies}
-                                        // disabled={isDisabledImporter}
-                                        getOptionLabel={(option) =>
-                                            option
-                                        }
-                                        onChange={(event, value) => {
-                                            if (value == null) setType("");
-                                            else {
-                                                console.log(value);
-                                                // setSupply(value)
-                                            }
-                                        }}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                label="Supply Type"
-                                                variant="outlined"
-                                            />
-                                        )}
-                                    />
-                                </div> */}
 
                                 <div className="form-group">
                                     <label>Auction Starts At</label>

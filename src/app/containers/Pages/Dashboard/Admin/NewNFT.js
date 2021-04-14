@@ -9,6 +9,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import IconButton from '@material-ui/core/IconButton';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
+import Web3 from 'web3';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
@@ -25,6 +26,12 @@ import audio from '../../../../assets/mp3/music.mp3';
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
 import ipfs from '../../../../components/IPFS/ipfs';
+import CreateNFTContract from '../../../../components/blockchain/Abis/CreateNFTContract.json';
+import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import axios from 'axios';
+import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -36,6 +43,10 @@ const useStyles = makeStyles((theme) => ({
         '& > *': {
             margin: theme.spacing(1),
         },
+    },
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
     },
 
     card: {
@@ -61,58 +72,22 @@ const useStyles = makeStyles((theme) => ({
 
 
 function NewNFT(props) {
-    // const  = ;
-
-    // variable to play audio in loop
-    const [audioTune, setAudioTune] = useState(new Audio(audio));
-    const [playInLoop, setPlayInLoop] = useState(false);
-
-    // load audio file on component load
-    useEffect(() => {
-        audioTune.load();
-    }, [])
-
-    // set the loop of audio tune
-    useEffect(() => {
-        audioTune.loop = playInLoop;
-    }, [playInLoop])
-
-    // play audio sound
-    const playSound = () => {
-        var playPromise = audioTune.play();
-        console.log("audioTune", audioTune);
-
-        // if (playPromise !== undefined) {
-        //     playPromise
-        //         .then(_ => {
-        //             // Automatic playback started!
-        //             // Show playing UI.
-        //             console.log(audio);
-        //             console.log("audio played auto");
-        //         })
-        //         .catch(error => {
-        //             // Auto-play was prevented
-        //             // Show paused UI.
-        //             console.log("playback prevented", error);
-        //         });
-        // }
-        audioTune.play();
-    }
-
-    // pause audio sound
-    const pauseSound = () => {
-        console.log("audioTune", audioTune);
-        audioTune.pause();
-    }
-
-    // stop audio sound
-    const stopSound = () => {
-        console.log("audioTune", audioTune);
-        audioTune.pause();
-        audioTune.currentTime = 0;
-    }
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
+    let [network, setNetwork] = useState(false);
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
+    const [open, setOpen] = React.useState(false);
+    const handleCloseBackdrop = () => {
+        setOpen(false);
+    };
+    const handleShowBackdrop = () => {
+        setOpen(true);
+    };
+
     const [tokenList, setTokenList] = useState([]);
     let [isSaving, setIsSaving] = useState(false);
     let [name, setName] = useState("");
@@ -134,55 +109,30 @@ function NewNFT(props) {
     let [producerTypes, setProducerTypes] = useState(["Producer1", "Producer2", "Producer3", "Producer4", "Producer5"]);
 
     let [imageArtist, setImageArtist] = useState('');
+    let [collectionTypes, setCollectionTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+    let [collectionType, setCollectionType] = useState("New");
+    let [collection, setCollection] = useState('');
 
     let [producer, setProducer] = useState('');
-    let [fileData, setFileData] = useState('');
-    let [tokenPrice, setTokenPrice] = useState("");
-    let [tokenSupply, setTokenSupply] = useState(1);
-
+    let [tokenSupply, setTokenSupply] = useState("1");
     let [isUploadingIPFS, setIsUploadingIPFS] = useState(false);
+    let [isUploadingExecutiveProducer, setIsUploadingExecutiveProducer] = useState(false);
+    let [isUploadingProducer, setIsUploadingProducer] = useState(false);
+    let [isUploadingFan, setIsUploadingFan] = useState(false);
+    let [isUploadingImageArtist, setIsUploadingImageArtist] = useState(false);
     let [rarity, setRarity] = useState('');
-    let [imageBlob, setImageBlob] = useState(r1);
-    let [artistImageBlob, setArtistImageBlob] = useState(r1);
-    let [producerImageBlob, setProducerImageBlob] = useState(r1);
-    let [executiveProducerImageBlob, setExecutiveProducerImageBlob] = useState(r1);
-    let [fanImageBlob, setFanImageBlob] = useState(r1);
-
-
     let [fan, setFan] = useState('');
-
     let [other, setOther] = useState('');
     let [image, setImage] = useState(r1);
     let [artistImage, setArtistImage] = useState(r1);
     let [producerImage, setProducerImage] = useState(r1);
     let [executiveProducerImage, setExecutiveProducerImage] = useState(r1);
     let [fanImage, setFanImage] = useState(r1);
-    let [imageArtistType, setImageArtistType] = useState("New Image Artist");
-    let [producerType, setProducerType] = useState("New Producer");
-    let [executiveProducerType, setExecutiveProducerType] = useState("New Executive Producer");
-    let [fanType, setFanType] = useState("New Fan");
-
+    let [imageArtistType, setImageArtistType] = useState("New");
+    let [producerType, setProducerType] = useState("New");
+    let [executiveProducerType, setExecutiveProducerType] = useState("New");
+    let [fanType, setFanType] = useState("New");
     let [executiveProducer, setExecutiveProducer] = useState('');
-    // let [image2, setImage2] = useState(r1);
-    // let [image3, setImage3] = useState(r1);
-    // let [image4, setImage4] = useState(r1);
-    // let [image5, setImage5] = useState(r1);
-    // let [image6, setImage6] = useState(r1);
-    let [music, setMusic] = useState();
-
-    let fileSelectHandler = (event, index) => {
-        if (event.target.files[0] !== undefined) {
-            setFileData(event.target.files[0]);
-        }
-    };
-    let uploadMusicHandler = (event, index) => {
-        console.log("event.target.files", event.target.files);
-        console.log("event.target.value", event.target.value);
-        if (event.target.files[0] !== undefined) {
-            setMusic(event.target.files[0]);
-            setAudioTune(event.target.value);
-        }
-    };
 
     useEffect(() => {
         props.setActiveTab({
@@ -199,8 +149,19 @@ function NewNFT(props) {
             newRandomDrop: "",
         });
     }, []);
-
-    const handleSubmitEvent = (event) => {
+    let loadWeb3 = async () => {
+        if (window.ethereum) {
+            window.web3 = new Web3(window.ethereum)
+            await window.ethereum.enable()
+        }
+        else if (window.web3) {
+            window.web3 = new Web3(window.web3.currentProvider)
+        }
+        else {
+            window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+        }
+    }
+    const handleSubmitEvent = async (event) => {
         event.preventDefault();
         setIsSaving(true);
 
@@ -208,25 +169,81 @@ function NewNFT(props) {
         let jwtDecoded = jwtDecode(jwt);
         let exporter = jwtDecoded.id;
         let fileData = new FormData();
-        // fileData.append("importerId", importer);
-        fileData.append("exporterId", exporter);
-        // console.log("JSON.stringify(tokenList)", tokenList);
-        let catagoryArray = [];
-        let descriptionArray = [];
-        // for (let i = 0; i < tokenList.length; i++) {
-        //     catagoryArray.push(tokenList[i].title);
-        //     descriptionArray.push(tokenList[i].description);
-        //     fileData.append(`file`, tokenList[i].fileData);
-        // }
-        console.log(descriptionArray);
 
-        fileData.append(`description`, JSON.stringify(descriptionArray));
-        fileData.append(`documentNames`, JSON.stringify(catagoryArray));
-        fileData.append(`numberOfTokens`, tokenPrice * 10 ** 18);
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        const network = await web3.eth.net.getNetworkType()
+        if (network !== 'ropsten') {
+            setNetwork(network);
+            setIsSaving(false);
 
-        for (var pair of fileData.entries()) {
-            console.log(pair[0] + ', ' + pair[1]);
+            handleShow();
+
         }
+        else {
+            handleShowBackdrop();
+            const address = Addresses.CreateNftAddress;
+            const abi = CreateNFTContract;
+            let totalImages = tokenList.length;
+            let AmountofNFTs = [];
+            let IPFsHashes = [];
+            for (let i = 0; i < tokenList.length; i++) {
+                AmountofNFTs.push(tokenList[i].tokensupply);
+                IPFsHashes.push(tokenList[i].ipfsHash);
+            }
+            console.log("AmountofNFTs", AmountofNFTs);
+            console.log("IPFsHashes", IPFsHashes);
+
+            var myContractInstance = await new web3.eth.Contract(abi, address);
+            console.log("myContractInstance", myContractInstance);
+            await myContractInstance.methods.new_batch(totalImages, AmountofNFTs, IPFsHashes).send({ from: accounts[0] }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsSaving(false);
+                }
+            })
+                .on('receipt', (receipt) => {
+                    console.log("receipt", receipt);
+                    console.log("receipt", receipt.events.TransferBatch.returnValues.ids);
+                    let ids = receipt.events.TransferBatch.returnValues.ids;
+                    for (let i = 0; i < tokenList.length; i++) {
+                        tokenList[i].nftId = ids[i];
+                    }
+
+                    let Data = {
+                        nftdata: tokenList
+                    }
+                    console.log("Data", Data);
+                    axios.post("/nft/createnft", Data).then(
+                        (response) => {
+                            console.log("response", response);
+                            let variant = "success";
+                            enqueueSnackbar('Nfts Created Successfully.', { variant });
+
+                            handleCloseBackdrop();
+                            setIsSaving(false);
+                        },
+                        (error) => {
+                            if (process.env.NODE_ENV === "development") {
+                                console.log(error);
+                                console.log(error.response);
+                            }
+
+                            let variant = "error";
+                            enqueueSnackbar('Unable to Create Nfts.', { variant });
+
+                            handleCloseBackdrop();
+                            setIsSaving(false);
+                        })
+                })
+        }
+
+        // fileData.append("importerId", importer);
 
         // axios.post("api/v1/exporter/addOrder", fileData).then(
         //     (response) => {
@@ -255,28 +272,34 @@ function NewNFT(props) {
     // handle click event of the Add button
     const handleAddClick = () => {
         setTokenList([...tokenList, {
-            image: image,
-            imageBlob: imageBlob,
-            name: name,
+            ipfsHash: ipfsHash,
+            artwork: image,
+            title: name,
             description: description,
-            rarity: rarity,
-            tokenPrice: tokenPrice,
-            tokenSupply: tokenSupply,
-            imageArtist: imageArtist,
-            aboutTheArt: aboutTheArt,
-            website: website,
-            artistImage: artistImage,
-            artistImageBlob: artistImageBlob,
-            producer: producer,
-            inspirationForThePiece: inspirationForThePiece,
-            producerImage: producerImage,
-            producerImageBlob, producerImageBlob,
-            executiveProducer, executiveProducer,
-            executiveInspirationForThePiece: executiveInspirationForThePiece,
-            executiveProducerImage: executiveProducerImage,
-            executiveProducerImageBlob: executiveProducerImageBlob
+            type: rarity,
+            tokensupply: tokenSupply,
+            ImageArtistName: imageArtist,
+            ImageArtistAbout: aboutTheArt,
+            ImageArtistWebsite: website,
+            ImageArtistProfile: artistImage,
+            ProducerName: producer,
+            ProducerInspiration: inspirationForThePiece,
+            ProducerProfile: producerImage,
+            ExecutiveProducerName: executiveProducer,
+            ExecutiveProducerInspiration: executiveInspirationForThePiece,
+            ExecutiveProducerProfile: executiveProducerImage,
+            FanName: fan,
+            FanInspiration: fanInspirationForThePiece,
+            FanProfile: fanImage,
+            other: other,
+            collectiontitle: collection,
+            collectiontype: collectionType,
+            imageartisttype: imageArtistType,
+            producertype: producerType,
+            executiveproducertype: executiveProducerType,
+            fantype: fanType,
+            supplytype:supplyType
         }]);
-        setFileData('');
     };
 
     let onChangeFile = (e) => {
@@ -290,35 +313,137 @@ function NewNFT(props) {
                 if (err) {
                     console.log(err);
                     setIsUploadingIPFS(false);
+                    let variant = "error";
+                    enqueueSnackbar('Unable to Upload Image to IPFS ', { variant });
                     return
                 }
                 console.log("HASH", result[0].hash);
 
                 setIpfsHash(result[0].hash);
-
-                setImage(imageNFT);
-                setImageBlob(URL.createObjectURL(imageNFT))
                 let variant = "success";
-                enqueueSnackbar('Image Uploaded', { variant });
-                setIsUploadingIPFS(false);
+                enqueueSnackbar('Image Uploaded to IPFS Successfully', { variant });
+                // 
             })
         }
+        // setIsUploadingIPFS(true);
+        let fileData = new FormData();
+        fileData.append("image", imageNFT);
+        axios.post("upload/uploadtos3", fileData).then(
+            (response) => {
+                console.log("response", response);
+                setImage(response.data.url);
+                setIsUploadingIPFS(false);
+                let variant = "success";
+                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsUploadingIPFS(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+            }
+        );
+
     }
     let onChangeSelfieHandler = (e) => {
-        setArtistImage(e.target.files[0]);
-        setArtistImageBlob(URL.createObjectURL(e.target.files[0]))
+        setIsUploadingImageArtist(true);
+        let fileData = new FormData();
+        fileData.append("image", e.target.files[0]);
+        axios.post("upload/uploadtos3", fileData).then(
+            (response) => {
+                console.log("response", response);
+                setArtistImage(response.data.url);
+                setIsUploadingImageArtist(false);
+                let variant = "success";
+                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsUploadingImageArtist(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+            }
+        );
     }
     let onChangeProducerHandler = (e) => {
-        setProducerImage(e.target.files[0]);
-        setProducerImageBlob(URL.createObjectURL(e.target.files[0]))
+        setIsUploadingProducer(true);
+        let fileData = new FormData();
+        fileData.append("image", e.target.files[0]);
+        axios.post("upload/uploadtos3", fileData).then(
+            (response) => {
+                console.log("response", response);
+                setProducerImage(response.data.url);
+                setIsUploadingProducer(false);
+                let variant = "success";
+                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsUploadingProducer(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+            }
+        );
     }
     let onChangeExecutiveProducerHandler = (e) => {
-        setExecutiveProducerImage(e.target.files[0]);
-        setExecutiveProducerImageBlob(URL.createObjectURL(e.target.files[0]))
+        setIsUploadingExecutiveProducer(true);
+        let fileData = new FormData();
+        fileData.append("image", e.target.files[0]);
+        axios.post("upload/uploadtos3", fileData).then(
+            (response) => {
+                console.log("response", response);
+                setExecutiveProducerImage(response.data.url);
+                setIsUploadingExecutiveProducer(false);
+                let variant = "success";
+                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsUploadingExecutiveProducer(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+            }
+        );
     }
     let onChangeFanHandler = (e) => {
-        setFanImage(e.target.files[0]);
-        setFanImageBlob(URL.createObjectURL(e.target.files[0]))
+        setIsUploadingFan(true);
+        let fileData = new FormData();
+        fileData.append("image", e.target.files[0]);
+        axios.post("upload/uploadtos3", fileData).then(
+            (response) => {
+                console.log("response", response);
+                setFanImage(response.data.url);
+                setIsUploadingFan(false);
+                let variant = "success";
+                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsUploadingFan(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+            }
+        );
     }
     return (
         <div className="card">
@@ -331,7 +456,7 @@ function NewNFT(props) {
             <div className="card-body">
                 <div className="row">
                     <div className="col-md-12 col-lg-6">
-                        <form onSubmit={handleSubmitEvent}>
+                        <form>
                             <div className="form-group">
                                 <label>Select Artwork</label>
                                 <div className="filter-widget">
@@ -345,7 +470,7 @@ function NewNFT(props) {
                                                         height: "100px",
                                                     }}
                                                 >
-                                                    <img src={imageBlob} alt="Selfie" />
+                                                    <img src={image} alt="Selfie" />
                                                 </div>
                                             </div>
                                             <div className="upload-img">
@@ -494,11 +619,11 @@ function NewNFT(props) {
                                     <FormControl component="fieldset">
                                         <lable component="legend">Select to add Image Artist </lable>
                                         <RadioGroup row aria-label="position" name="position" defaultValue="top">
-                                            <FormControlLabel style={{ color: 'black' }} value="New Image Artist" onChange={() => setImageArtistType("New Image Artist")} checked={imageArtistType === 'New Image Artist'} control={<Radio color="secondary" />} label="New Image Artist" />
-                                            <FormControlLabel style={{ color: 'black' }} value="Existing Image Artist" onChange={() => setImageArtistType("Existing Image Artist")} checked={imageArtistType === 'Existing Image Artist'} control={<Radio color="secondary" />} label="Existing Image Artist" />
+                                            <FormControlLabel style={{ color: 'black' }} value="New Image Artist" onChange={() => setImageArtistType("New")} checked={imageArtistType === 'New'} control={<Radio color="secondary" />} label="New Image Artist" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Image Artist" onChange={() => setImageArtistType("Existing")} checked={imageArtistType === 'Existing'} control={<Radio color="secondary" />} label="Existing Image Artist" />
                                         </RadioGroup>
                                     </FormControl>
-                                    {imageArtistType === 'New Image Artist' ? (
+                                    {imageArtistType === 'New' ? (
                                         <>
                                             <div className="form-group">
                                                 <input
@@ -537,7 +662,7 @@ function NewNFT(props) {
                                                                 height: "100px",
                                                             }}
                                                         >
-                                                            <img src={artistImageBlob} alt="Selfie" />
+                                                            <img src={artistImage} alt="Selfie" />
                                                         </div>
                                                     </div>
                                                     <div className="upload-img">
@@ -545,10 +670,18 @@ function NewNFT(props) {
                                                             className="change-photo-btn"
                                                             style={{ backgroundColor: "rgb(167,0,0)" }}
                                                         >
-                                                            <span>
-                                                                <i className="fa fa-upload"></i>
-                          Upload photo
-                        </span>
+                                                            {isUploadingImageArtist ? (
+                                                                <div className="text-center">
+                                                                    <Spinner
+                                                                        animation="border"
+                                                                        role="status"
+                                                                        style={{ color: "#fff" }}
+                                                                    >
+                                                                    </Spinner>
+                                                                </div>
+                                                            ) : (
+                                                                <span><i className="fa fa-upload"></i>Upload photo</span>
+                                                            )}
                                                             <input
                                                                 name="sampleFile"
                                                                 type="file"
@@ -611,11 +744,11 @@ function NewNFT(props) {
                                     <FormControl component="fieldset">
                                         <lable component="legend">Select to add Producer </lable>
                                         <RadioGroup row aria-label="position" name="position" defaultValue="top">
-                                            <FormControlLabel style={{ color: 'black' }} value="New Producer" onChange={() => setProducerType("New Producer")} checked={producerType === 'New Producer'} control={<Radio color="secondary" />} label="New Producer" />
-                                            <FormControlLabel style={{ color: 'black' }} value="Existing Producer" onChange={() => setProducerType("Existing Producer")} checked={producerType === 'Existing Producer'} control={<Radio color="secondary" />} label="Existing Producer" />
+                                            <FormControlLabel style={{ color: 'black' }} value="New Producer" onChange={() => setProducerType("New")} checked={producerType === 'New'} control={<Radio color="secondary" />} label="New Producer" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Producer" onChange={() => setProducerType("Existing")} checked={producerType === 'Existing'} control={<Radio color="secondary" />} label="Existing Producer" />
                                         </RadioGroup>
                                     </FormControl>
-                                    {producerType === 'New Producer' ? (
+                                    {producerType === 'New' ? (
                                         <>
                                             <div className="form-group">
                                                 {/* <label>Producer</label> */}
@@ -641,7 +774,7 @@ function NewNFT(props) {
                                                                 height: "100px",
                                                             }}
                                                         >
-                                                            <img src={producerImageBlob} alt="Selfie" />
+                                                            <img src={producerImage} alt="Selfie" />
                                                         </div>
                                                     </div>
                                                     <div className="upload-img">
@@ -649,10 +782,18 @@ function NewNFT(props) {
                                                             className="change-photo-btn"
                                                             style={{ backgroundColor: "rgb(167,0,0)" }}
                                                         >
-                                                            <span>
-                                                                <i className="fa fa-upload"></i>
-                          Upload photo
-                        </span>
+                                                            {isUploadingProducer ? (
+                                                                <div className="text-center">
+                                                                    <Spinner
+                                                                        animation="border"
+                                                                        role="status"
+                                                                        style={{ color: "#fff" }}
+                                                                    >
+                                                                    </Spinner>
+                                                                </div>
+                                                            ) : (
+                                                                <span><i className="fa fa-upload"></i>Upload photo</span>
+                                                            )}
                                                             <input
                                                                 name="sampleFile"
                                                                 type="file"
@@ -718,11 +859,11 @@ function NewNFT(props) {
                                     <FormControl component="fieldset">
                                         <lable component="legend">Select to add Executive Producer </lable>
                                         <RadioGroup row aria-label="position" name="position" defaultValue="top">
-                                            <FormControlLabel style={{ color: 'black' }} value="New Executive Producer" onChange={() => setExecutiveProducerType("New Executive Producer")} checked={executiveProducerType === 'New Executive Producer'} control={<Radio color="secondary" />} label="New Executive Producer" />
-                                            <FormControlLabel style={{ color: 'black' }} value="Existing Executive Producer" onChange={() => setExecutiveProducerType("Existing Executive Producer")} checked={executiveProducerType === 'Existing Executive Producer'} control={<Radio color="secondary" />} label="Existing Executive Producer" />
+                                            <FormControlLabel style={{ color: 'black' }} value="New Executive Producer" onChange={() => setExecutiveProducerType("New")} checked={executiveProducerType === 'New'} control={<Radio color="secondary" />} label="New Executive Producer" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Executive Producer" onChange={() => setExecutiveProducerType("Existing")} checked={executiveProducerType === 'Existing'} control={<Radio color="secondary" />} label="Existing Executive Producer" />
                                         </RadioGroup>
                                     </FormControl>
-                                    {executiveProducerType === 'New Executive Producer' ? (
+                                    {executiveProducerType === 'New' ? (
                                         <>
                                             <div className="form-group">
                                                 {/* <label>Producer</label> */}
@@ -748,7 +889,7 @@ function NewNFT(props) {
                                                                 height: "100px",
                                                             }}
                                                         >
-                                                            <img src={executiveProducerImageBlob} alt="Selfie" />
+                                                            <img src={executiveProducerImage} alt="Selfie" />
                                                         </div>
                                                     </div>
                                                     <div className="upload-img">
@@ -756,10 +897,18 @@ function NewNFT(props) {
                                                             className="change-photo-btn"
                                                             style={{ backgroundColor: "rgb(167,0,0)" }}
                                                         >
-                                                            <span>
-                                                                <i className="fa fa-upload"></i>
-                          Upload photo
-                        </span>
+                                                            {isUploadingExecutiveProducer ? (
+                                                                <div className="text-center">
+                                                                    <Spinner
+                                                                        animation="border"
+                                                                        role="status"
+                                                                        style={{ color: "#fff" }}
+                                                                    >
+                                                                    </Spinner>
+                                                                </div>
+                                                            ) : (
+                                                                <span><i className="fa fa-upload"></i>Upload photo</span>
+                                                            )}
                                                             <input
                                                                 name="sampleFile"
                                                                 type="file"
@@ -824,12 +973,12 @@ function NewNFT(props) {
                                     <FormControl component="fieldset">
                                         <lable component="legend">Select to add Fan </lable>
                                         <RadioGroup row aria-label="position" name="position" defaultValue="top">
-                                            <FormControlLabel style={{ color: 'black' }} value="New Fan" onChange={() => setFanType("New Fan")} checked={fanType === 'New Fan'} control={<Radio color="secondary" />} label="New Fan" />
-                                            <FormControlLabel style={{ color: 'black' }} value="Existing Fan" onChange={() => setFanType("Existing Fan")} checked={fanType === 'Existing Fan'} control={<Radio color="secondary" />} label="Existing Fan" />
+                                            <FormControlLabel style={{ color: 'black' }} value="New Fan" onChange={() => setFanType("New")} checked={fanType === 'New'} control={<Radio color="secondary" />} label="New Fan" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Fan" onChange={() => setFanType("Existing")} checked={fanType === 'Existing'} control={<Radio color="secondary" />} label="Existing Fan" />
                                         </RadioGroup>
                                     </FormControl>
 
-                                    {fanType === 'New Fan' ? (
+                                    {fanType === 'New' ? (
                                         <>
                                             <div className="form-group">
                                                 {/* <label>Producer</label> */}
@@ -855,18 +1004,25 @@ function NewNFT(props) {
                                                                 height: "100px",
                                                             }}
                                                         >
-                                                            <img src={fanImageBlob} alt="Selfie" />
+                                                            <img src={fanImage} alt="Selfie" />
                                                         </div>
                                                     </div>
                                                     <div className="upload-img">
                                                         <div
                                                             className="change-photo-btn"
                                                             style={{ backgroundColor: "rgb(167,0,0)" }}
-                                                        >
-                                                            <span>
-                                                                <i className="fa fa-upload"></i>
-                          Upload photo
-                        </span>
+                                                        >{isUploadingFan ? (
+                                                            <div className="text-center">
+                                                                <Spinner
+                                                                    animation="border"
+                                                                    role="status"
+                                                                    style={{ color: "#fff" }}
+                                                                >
+                                                                </Spinner>
+                                                            </div>
+                                                        ) : (
+                                                            <span><i className="fa fa-upload"></i>Upload photo</span>
+                                                        )}
                                                             <input
                                                                 name="sampleFile"
                                                                 type="file"
@@ -941,10 +1097,65 @@ function NewNFT(props) {
                                             }}
                                         />
                                     </div>
+                                    <FormControl component="fieldset">
+                                        <lable component="legend">Select to add in Collection </lable>
+                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
+                                            <FormControlLabel style={{ color: 'black' }} value="New Collection" onChange={() => setCollectionType("New")} checked={collectionType === 'New'} control={<Radio color="secondary" />} label="New Collection" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Collection" onChange={() => setCollectionType("Existing")} checked={collectionType === 'Existing'} control={<Radio color="secondary" />} label="Existing Collection" />
+                                        </RadioGroup>
+                                    </FormControl>
+                                    {collectionType === 'New' ? (
+                                        <div className="form-group">
+                                            <label>New Collection</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={collection}
+                                                placeholder="Enter Collection Name"
+                                                className="form-control"
+                                                onChange={(e) => {
+                                                    setCollection(e.target.value)
+                                                }}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="form-group">
+
+                                            <label>Select Collection</label>
+                                            <div className="filter-widget">
+                                                <Autocomplete
+                                                    id="combo-dox-demo"
+                                                    required
+                                                    options={collectionTypes}
+                                                    // disabled={isDisabledImporter}
+                                                    getOptionLabel={(option) =>
+                                                        option
+                                                    }
+                                                    onChange={(event, value) => {
+                                                        if (value == null) setCollection("");
+                                                        else {
+                                                            console.log(value);
+                                                            setCollection(value)
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label="Collections"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                    )}
+
+
 
                                 </div>
 
-                                {image === "" || imageBlob === "" || name === "" || description === "" || tokenSupply === "" || imageArtist === "" || aboutTheArt === "" || website === "" || artistImage === "" || artistImageBlob === "" || producer === "" || inspirationForThePiece === "" || producerImage === "" || producerImageBlob === "" || executiveProducer === "" || executiveInspirationForThePiece === "" || executiveProducerImage === "" || executiveProducerImageBlob === "" ? (
+                                {image === "" || name === "" || description === "" || tokenSupply === "" || imageArtist === "" || aboutTheArt === "" || website === "" || artistImage === "" || producer === "" || inspirationForThePiece === "" || producerImage === "" || executiveProducer === "" || executiveInspirationForThePiece === "" || executiveProducerImage === "" || fan === "" || fanInspirationForThePiece === "" || fanImage === "" || other === "" || collection === "" ? (
                                     <button
                                         className="btn"
                                         type="submit"
@@ -978,68 +1189,80 @@ function NewNFT(props) {
                                     // alignItems="flex-start"
                                     >
                                         {tokenList.map((i, index) => (
-                                            <>
-                                                <Grid item xs={12} sm={6} md={6} key={index}>
-                                                    <Card >
-                                                        <CardHeader className="text-center"
-                                                            title={i.name}
+
+                                            <Grid item xs={12} sm={6} md={6} key={index}>
+                                                <Card >
+                                                    <CardHeader className="text-center"
+                                                        title={i.title}
+                                                    />
+                                                    <CardMedia
+                                                        style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                        className={classes.media}
+                                                        image={i.artwork}
+
+                                                        title="NFT Image"
+                                                    />
+                                                    <CardContent>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Artwork Description: </strong>{i.description}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Token Rarity: </strong>{i.type}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Token Supply: </strong>{i.tokensupply}
+                                                        </Typography>
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i.ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                            title={i.ImageArtistName}
+                                                            subheader={i.ImageArtistAbout}
                                                         />
-                                                        <CardMedia
-                                                            style={{ height: "100%" }} variant="outlined" style={{ border: i.rarity === "Mastercraft" ? '4px solid #ff0000' : i.rarity === "Legendary" ? '4px solid #FFD700' : i.rarity === "Mastercraft" ? '4px solid ##ff0000' : i.rarity === "Epic" ? '4px solid #9400D3' : i.rarity === "Rare" ? '4px solid #0000FF' : i.rarity === "Uncommon" ? '4px solid #008000' : i.rarity === "Common" ? '4px solid #FFFFFF' : 'none' }}
-                                                            className={classes.media}
-                                                            image={i.imageBlob}
-
-                                                            title="NFT Image"
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Website URL: </strong>{i.ImageArtistWebsite}
+                                                        </Typography>
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i.ProducerProfile} aria-label="Producer" className={classes.avatar} />}
+                                                            title={i.ProducerName}
+                                                            subheader={i.ProducerInspiration}
                                                         />
-                                                        <CardContent>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Artwork Description: </strong>{i.description}
-                                                            </Typography>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Token Rarity: </strong>{i.rarity}
-                                                            </Typography>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Token Supply: </strong>{i.tokenSupply}
-                                                            </Typography>
-                                                            <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
-                                                            <CardHeader
-                                                                avatar={<Avatar src={i.artistImageBlob} aria-label="Artist" className={classes.avatar} />}
-                                                                title={i.imageArtist}
-                                                                subheader={i.aboutTheArt}
-                                                            />
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Website URL: </strong>{i.website}
-                                                            </Typography>
-                                                            <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
-                                                            <CardHeader
-                                                                avatar={<Avatar src={i.producerImageBlob} aria-label="Producer" className={classes.avatar} />}
-                                                                title={i.producer}
-                                                                subheader={i.inspirationForThePiece}
-                                                            />
-                                                            <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
-                                                            <CardHeader
-                                                                avatar={<Avatar src={i.executiveProducerImageBlob} aria-label="Executive Producer" className={classes.avatar} />}
-                                                                title={i.executiveProducer}
-                                                                subheader={i.executiveInspirationForThePiece}
-                                                            />
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i.ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
+                                                            title={i.ExecutiveProducerName}
+                                                            subheader={i.ExecutiveProducerInspiration}
+                                                        />
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i.FanProfile} aria-label="Fan" className={classes.avatar} />}
+                                                            title={i.FanName}
+                                                            subheader={i.FanInspiration}
+                                                        />
 
-                                                        </CardContent>
-                                                        <CardActions>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Other: </strong>{i.other}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Collection: </strong>{i.collection}
+                                                        </Typography>
+                                                    </CardContent>
+                                                    <CardActions>
 
-                                                            <Button
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    handleRemoveClick(index);
-                                                                }}
-                                                                className="btn btn-sm bg-danger-light btn-block"
+                                                        <Button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                handleRemoveClick(index);
+                                                            }}
+                                                            className="btn btn-sm bg-danger-light btn-block"
 
-                                                            >
-                                                                Remove NFT
+                                                        >
+                                                            Remove NFT
     </Button>
-                                                        </CardActions>
-                                                    </Card>
-                                                </Grid>
-                                            </>
+                                                    </CardActions>
+                                                </Card>
+                                            </Grid>
+
                                         ))}
                                     </Grid>
                                 </div>
@@ -1061,13 +1284,13 @@ function NewNFT(props) {
                     ) : (
                         tokenList.length === 0 ? (
                             <div className="submit-section">
-                                <button type="button" disabled className="btn submit-btn">
+                                <button type="button" onClick={(e) => handleSubmitEvent(e)} className="btn submit-btn">
                                     Batch create NFTs
                         </button>
                             </div>
                         ) : (
                             <div className="submit-section">
-                                <button type="submit" className="btn submit-btn">
+                                <button type="button" onClick={(e) => handleSubmitEvent(e)} className="btn submit-btn">
                                     Batch create NFTs
                   </button>
                             </div>
@@ -1076,7 +1299,15 @@ function NewNFT(props) {
                     )
                 }
             </div >
-
+            <NetworkErrorModal
+                show={show}
+                handleClose={handleClose}
+                network={network}
+            >
+            </NetworkErrorModal>
+            <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </div >
 
     );

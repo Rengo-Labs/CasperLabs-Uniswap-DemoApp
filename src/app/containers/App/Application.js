@@ -41,21 +41,21 @@ function App() {
 
   const PrivateRoute = ({ path, ...rest }) => {
     // checkLoginStatus();
-    // if (jwtDecoded && isLoggedIn) {
-      // if (jwtDecoded.roles === "admin") {
+    if (jwtDecoded && isLoggedIn) {
+      if (jwtDecoded.roles === "admin") {
         return (
           <Route
             {...rest}
             render={(props) =>
-              // isLoggedIn ? (
+              isLoggedIn ? (
                 <AdminDashboard {...props} jwtDecoded={jwtDecoded} />
-              // ) : (
-              //     <Redirect to="/login" />
-              //   )
+              ) : (
+                  <Redirect to="/login" />
+                )
             }
           />
         );
-      // }
+      }
       //  else if (jwtDecoded.roles === "importer") {
       //   return (
       //     <Route
@@ -84,10 +84,10 @@ function App() {
       //     />
       //   );
       // }
-    // } 
-    // else {
-    //   return <Redirect to="/" />;
-    // }
+    } 
+    else {
+      return <Redirect to="/" />;
+    }
   };
 
   const LoginRegisterRedirectCheck = ({ path, ...rest }) => {
