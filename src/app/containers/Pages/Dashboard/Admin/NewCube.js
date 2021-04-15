@@ -31,6 +31,7 @@ import robot4 from '../../../../assets/img/r4.jpg';
 import robot5 from '../../../../assets/img/r5.jpg';
 import robot6 from '../../../../assets/img/r6.jpg';
 import SixNFTsErrorModal from '../../../../components/Modals/SixNFTsErrorModal';
+import axios from 'axios';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -66,53 +67,97 @@ function NewCube(props) {
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
     const [tokenList, setTokenList] = useState([
-        { id: 0, image: robot1, imageBlob: robot1, name: "name", description: "description", tokenPrice: "20", tokenSupply: "30", imageArtist: "imageArtist", rarity: "Mastercraft", aboutTheArt: "aboutTheArt", website: "website", artistImage: robot6, artistImageBlob: robot6 },
-        { id: 1, image: robot2, imageBlob: robot2, name: "name1", description: "description1", tokenPrice: "20", tokenSupply: "11", imageArtist: "imageArtist1", rarity: "Legendary", aboutTheArt: "aboutTheArt1", website: "website1", artistImage: robot5, artistImageBlob: robot5 },
-        { id: 2, image: robot3, imageBlob: robot3, name: "name2", description: "description2", tokenPrice: "55", tokenSupply: "33", imageArtist: "imageArtist2", rarity: "Epic", aboutTheArt: "aboutTheArt2", website: "website2", artistImage: robot4, artistImageBlob: robot4 },
-        { id: 3, image: robot4, imageBlob: robot4, name: "name3", description: "description3", tokenPrice: "23", tokenSupply: "31", imageArtist: "imageArtist3", rarity: "Rare", aboutTheArt: "aboutTheArt3", website: "website3", artistImage: robot3, artistImageBlob: robot3 },
-        { id: 4, image: robot5, imageBlob: robot5, name: "name4", description: "description4", tokenPrice: "40", tokenSupply: "60", imageArtist: "imageArtist4", rarity: "Uncommon", aboutTheArt: "aboutTheArt4", website: "website4", artistImage: robot2, artistImageBlob: robot2 },
-        { id: 5, image: robot6, imageBlob: robot6, name: "name5", description: "description5", tokenPrice: "33", tokenSupply: "3", imageArtist: "imageArtist5", rarity: "Common", aboutTheArt: "aboutTheArt5", website: "website5", artistImage: robot1, artistImageBlob: robot1 },
+        // { id: 0, image: robot1, imageBlob: robot1, name: "name", description: "description", tokenPrice: "20", tokenSupply: "30", imageArtist: "imageArtist", rarity: "Mastercraft", aboutTheArt: "aboutTheArt", website: "website", artistImage: robot6, artistImageBlob: robot6 },
+        // { id: 1, image: robot2, imageBlob: robot2, name: "name1", description: "description1", tokenPrice: "20", tokenSupply: "11", imageArtist: "imageArtist1", rarity: "Legendary", aboutTheArt: "aboutTheArt1", website: "website1", artistImage: robot5, artistImageBlob: robot5 },
+        // { id: 2, image: robot3, imageBlob: robot3, name: "name2", description: "description2", tokenPrice: "55", tokenSupply: "33", imageArtist: "imageArtist2", rarity: "Epic", aboutTheArt: "aboutTheArt2", website: "website2", artistImage: robot4, artistImageBlob: robot4 },
+        // { id: 3, image: robot4, imageBlob: robot4, name: "name3", description: "description3", tokenPrice: "23", tokenSupply: "31", imageArtist: "imageArtist3", rarity: "Rare", aboutTheArt: "aboutTheArt3", website: "website3", artistImage: robot3, artistImageBlob: robot3 },
+        // { id: 4, image: robot5, imageBlob: robot5, name: "name4", description: "description4", tokenPrice: "40", tokenSupply: "60", imageArtist: "imageArtist4", rarity: "Uncommon", aboutTheArt: "aboutTheArt4", website: "website4", artistImage: robot2, artistImageBlob: robot2 },
+        // { id: 5, image: robot6, imageBlob: robot6, name: "name5", description: "description5", tokenPrice: "33", tokenSupply: "3", imageArtist: "imageArtist5", rarity: "Common", aboutTheArt: "aboutTheArt5", website: "website5", artistImage: robot1, artistImageBlob: robot1 },
     ]);
     const [selectedNFTList, setSelectedNFTList] = useState([])
     let [isSaving, setIsSaving] = useState(false);
     let [name, setName] = useState();
     let [description, setDescription] = useState();
     let [aboutTheTrack, setAboutTheTrack] = useState();
-    
-    let [artistTypes, setArtistTypes] = useState(["Artist1", "Artist2", "Artist3", "Artist4", "Artist5"]);
-    
-    let [artistType, setArtistType] = useState("New Artist");
+    let [salePrice, setSalePrice] = useState();
+    let [artistTypes, setArtistTypes] = useState([]);
+
+    let [artistType, setArtistType] = useState("New");
     let [artist, setArtist] = useState('');
     let [nftName, setNFTName] = useState();
-    let [musicOwner, setMusicOwner] = useState();
-    let [musicNonOwner, setMusicNonOwner] = useState();
+    let [musicOwner, setMusicOwner] = useState("");
+    let [musicNonOwner, setMusicNonOwner] = useState("");
+    let [artistImage, setArtistImage] = useState(logo);
+
+    let [isUploadingArtist, setIsUploadingArtist] = useState(false);
 
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+    let getProfileData = () => {
+        axios.get("/profile/createprofile").then(
+            (response) => {
+                console.log("response", response);
+                setArtistTypes(response.data.Musicartist);
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+            })
+    }
+    let uploadMusicOwnerHandler = (e, index) => {
 
-    let uploadMusicOwnerHandler = (event, index) => {
-        console.log("event.target.files", event.target.files);
-        console.log("event.target.value", event.target.value);
-        if (event.target.files[0] !== undefined) {
-            setMusicOwner(event.target.files[0]);
-            // setAudioTune(event.target.value);
-        }
+        let fileData = new FormData();
+        fileData.append("image", e.target.files[0]);
+        axios.post("upload/uploadtos3", fileData).then(
+            (response) => {
+                console.log("response", response);
+                setMusicOwner(response.data.url);
+                let variant = "success";
+                enqueueSnackbar('Audio Uploaded to S3 Successfully', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                let variant = "error";
+                enqueueSnackbar('Unable to Upload Audio to S3 .', { variant });
+
+            }
+        );
     };
-    let uploadMusicNonOwnerHandler = (event, index) => {
-        console.log("event.target.files", event.target.files);
-        console.log("event.target.value", event.target.value);
-        if (event.target.files[0] !== undefined) {
-            setMusicNonOwner(event.target.files[0]);
-            // setAudioTune(event.target.value);
-        }
+    let uploadMusicNonOwnerHandler = (e, index) => {
+        console.log(e);
+        let fileData = new FormData();
+        fileData.append("image", e.target.files[0]);
+        axios.post("upload/uploadtos3", fileData).then(
+            (response) => {
+                console.log("response", response);
+                setMusicNonOwner(response.data.url);
+                let variant = "success";
+                enqueueSnackbar('Audio Uploaded to S3 Successfully', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                let variant = "error";
+                enqueueSnackbar('Unable to Upload Audio to S3 .', { variant });
+            }
+        );
     };
     useEffect(() => {
+        getMyNFTs();
+        getProfileData();
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
             newSupefNFT: "active",
-            myNFTs:"",
+            myNFTs: "",
             orders: "",
             settings: "",
             privacyPolicy: "",
@@ -123,52 +168,63 @@ function NewCube(props) {
             newRandomDrop: "",
         });
     }, []);
+    let getMyNFTs = () => {
+        axios.get("/nft/createnft").then(
+            (response) => {
+                console.log("response", response);
+                setTokenList(response.data.NFTdata);
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+            })
+    }
 
-    const handleSubmitEvent = (event) => {
-        event.preventDefault();
+    const handleSubmitEvent = (e) => {
+        e.preventDefault();
         setIsSaving(true);
 
         let jwt = Cookies.get("Authorization");
         let jwtDecoded = jwtDecode(jwt);
-        let exporter = jwtDecoded.id;
-        let fileData = new FormData();
-        // fileData.append("importerId", importer);
-        fileData.append("exporterId", exporter);
-        // console.log("JSON.stringify(tokenList)", tokenList);
-        let catagoryArray = [];
-        let descriptionArray = [];
-        // for (let i = 0; i < tokenList.length; i++) {
-        //     catagoryArray.push(tokenList[i].title);
-        //     descriptionArray.push(tokenList[i].description);
-        //     fileData.append(`file`, tokenList[i].fileData);
-        // }
-        console.log(descriptionArray);
 
-        fileData.append(`description`, JSON.stringify(descriptionArray));
-        fileData.append(`documentNames`, JSON.stringify(catagoryArray));
-        // fileData.append(`numberOfTokens`, tokenSupply * 10 ** 18);
-
-        for (var pair of fileData.entries()) {
-            console.log(pair[0] + ', ' + pair[1]);
+        let nftIds = [];
+        for (let i = 0; i < selectedNFTList.length; i++) {
+            nftIds.push(selectedNFTList[i]._id);
         }
+        let cubeData = {
+            tokenId: '1',
+            title: name,
+            description: description,
+            nftids: nftIds,
+            ownermusicfile: musicOwner,
+            nonownermusicfile: musicNonOwner,
+            MusicArtistName: artist,
+            MusicArtistAbout: aboutTheTrack,
+            MusicArtistProfile: artistImage,
+            musicartisttype: artistType,
+            SalePrice: salePrice
+        }
+        console.log("cubeData", cubeData);
+        axios.post("/token/TokenIds", cubeData).then(
+            (response) => {
+                console.log('response', response);
+                setIsSaving(false);
+                let variant = "success";
+                enqueueSnackbar('Cube Created Successfully.', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsSaving(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Create Cube.', { variant });
 
-        // axios.post("api/v1/exporter/addOrder", fileData).then(
-        //     (response) => {
-        //         setIsSaving(false);
-        //         let variant = "success";
-        //         enqueueSnackbar('Order Added Successfully.', { variant });
-        //     },
-        //     (error) => {
-        //         if (process.env.NODE_ENV === "development") {
-        //             console.log(error);
-        //             console.log(error.response);
-        //         }
-        //         setIsSaving(false);
-        //         let variant = "error";
-        //         enqueueSnackbar('Unable to Add Order.', { variant });
-
-        //     }
-        // );
+            }
+        );
     };
     const handleRemoveClick = (index, newNFT) => {
         console.log("index", index);
@@ -183,16 +239,41 @@ function NewCube(props) {
         console.log("selectedNFTList.length", selectedNFTList.length);
         if (selectedNFTList.length + 1 <= 6) {
             const list = [...tokenList];
-            var index = list.findIndex(i => i.id === nft.id);
+            var index = list.findIndex(i => i._id === nft._id);
             list.splice(index, 1);
             setTokenList(list);
-            setSelectedNFTList([...selectedNFTList, { id: nft.id, image: nft.image, imageBlob: nft.imageBlob, name: nft.name, rarity: nft.rarity, description: nft.description, tokenPrice: nft.tokenPrice, tokenSupply: nft.tokenSupply, imageArtist: nft.imageArtist, aboutTheArt: nft.aboutTheArt, website: nft.website, artistImage: nft.artistImage, artistImageBlob: nft.artistImageBlob }]);
+            // setTokenList([...tokenList, {}]);
+            setSelectedNFTList([...selectedNFTList, nft]);
         }
         else {
             handleShow();
         }
 
     };
+    let onChangeArtistHandler = (e) => {
+        setIsUploadingArtist(true);
+        let fileData = new FormData();
+        fileData.append("image", e.target.files[0]);
+        axios.post("upload/uploadtos3", fileData).then(
+            (response) => {
+                console.log("response", response);
+                setArtistImage(response.data.url);
+                setIsUploadingArtist(false);
+                let variant = "success";
+                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsUploadingArtist(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+            }
+        );
+    }
 
     return (
         <div className="card">
@@ -205,7 +286,7 @@ function NewCube(props) {
             <div className="card-body">
                 <div className="row">
                     <div className="col-md-12 col-lg-6">
-                        <form onSubmit={handleSubmitEvent}>
+                        <form>
                             <div className="form-group">
                                 <label>Select Artworks </label>
                                 <div className="filter-widget">
@@ -216,14 +297,14 @@ function NewCube(props) {
                                         // value={nftName}
                                         // disabled={isDisabledImporter}
                                         getOptionLabel={(option) =>
-                                            option.name + "," + option.rarity
+                                            option.title + "," + option.type + ',' + option.tokensupply
                                         }
                                         onChange={(event, value) => {
                                             if (value == null)
                                                 setNFTName("");
                                             else {
                                                 console.log(value);
-                                                setNFTName(value.name)
+                                                setNFTName(value.title)
                                                 handleAddClick(value);
                                             }
                                         }}
@@ -236,9 +317,6 @@ function NewCube(props) {
                                         )}
                                     />
                                 </div>
-
-
-
                                 <div className="form-group">
                                     <label>Name</label>
                                     <div className="form-group">
@@ -267,6 +345,23 @@ function NewCube(props) {
                                             }}
                                         />
                                     </div>
+                                    <div className="form-group">
+                                        <label>Sale Price</label>
+                                        <div className="filter-widget">
+                                            <input
+                                                type="number"
+                                                placeholder="Enter Total Supply"
+                                                required
+                                                value={salePrice}
+                                                placeholder=""
+                                                className="form-control"
+                                                onChange={(e) => {
+                                                    setSalePrice(e.target.value);
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
                                     <div className="form-group">
                                         <label>Upload Music for Owner</label>{" "}
                                     </div>
@@ -298,11 +393,11 @@ function NewCube(props) {
                                     <FormControl component="fieldset">
                                         <lable component="legend">Select to add Music Artist </lable>
                                         <RadioGroup row aria-label="position" name="position" defaultValue="top">
-                                            <FormControlLabel style={{ color: 'black' }} value="New Artist" onChange={() => setArtistType("New Artist")} checked={artistType === 'New Artist'} control={<Radio color="secondary" />} label="New Artist" />
-                                            <FormControlLabel style={{ color: 'black' }} value="Existing Artist" onChange={() => setArtistType("Existing Artist")} checked={artistType === 'Existing Artist'} control={<Radio color="secondary" />} label="Existing Artist" />
+                                            <FormControlLabel style={{ color: 'black' }} value="New Artist" onChange={() => setArtistType("New")} checked={artistType === 'New'} control={<Radio color="secondary" />} label="New Artist" />
+                                            <FormControlLabel style={{ color: 'black' }} value="Existing Artist" onChange={() => setArtistType("Existing")} checked={artistType === 'Existing'} control={<Radio color="secondary" />} label="Existing Artist" />
                                         </RadioGroup>
                                     </FormControl>
-                                    {artistType === 'New Artist' ? (
+                                    {artistType === 'New' ? (
                                         <>
                                             <div className="form-group">
                                                 {/* <label>Artist Name</label> */}
@@ -328,7 +423,7 @@ function NewCube(props) {
                                                                 height: "100px",
                                                             }}
                                                         >
-                                                            <img src={logo} alt="Selfie" />
+                                                            <img src={artistImage} alt="Selfie" />
                                                         </div>
                                                     </div>
                                                     <div className="upload-img">
@@ -336,16 +431,24 @@ function NewCube(props) {
                                                             className="change-photo-btn"
                                                             style={{ backgroundColor: "rgb(167,0,0)" }}
                                                         >
-                                                            <span>
-                                                                <i className="fa fa-upload"></i>
-                          Upload photo
-                        </span>
+                                                            {isUploadingArtist ? (
+                                                                <div className="text-center">
+                                                                    <Spinner
+                                                                        animation="border"
+                                                                        role="status"
+                                                                        style={{ color: "#fff" }}
+                                                                    >
+                                                                    </Spinner>
+                                                                </div>
+                                                            ) : (
+                                                                <span><i className="fa fa-upload"></i>Upload photo</span>
+                                                            )}
                                                             <input
                                                                 name="sampleFile"
                                                                 type="file"
                                                                 className="upload"
                                                                 accept=".png,.jpg,.jpeg"
-                                                            // onChange={this.onChangeSelfieHandler}
+                                                                onChange={onChangeArtistHandler}
                                                             />
                                                         </div>
                                                         <small className="form-text text-muted">
@@ -380,13 +483,17 @@ function NewCube(props) {
                                                     options={artistTypes}
                                                     // disabled={isDisabledImporter}
                                                     getOptionLabel={(option) =>
-                                                        option
+                                                        option.Name
                                                     }
                                                     onChange={(event, value) => {
                                                         if (value == null) setArtist("");
                                                         else {
                                                             console.log(value);
-                                                            setArtist(value)
+                                                            setArtist(value.Name);
+                                                            setAboutTheTrack(value.About);
+                                                            setArtistImage(value.Profile)
+                                                            // Profile
+
                                                         }
                                                     }}
                                                     renderInput={(params) => (
@@ -403,8 +510,8 @@ function NewCube(props) {
                                     )}
 
 
-                                    
-                                   
+
+
                                     {/* {title === '' || description === '' || tokenSupply === '' || fileData === '' ? (
                                         <button
                                             className="btn"
@@ -433,7 +540,7 @@ function NewCube(props) {
                             <div class="wrapper">
                                 <div class="cube-box1">
                                     {selectedNFTList.map((i, index) => (
-                                        <img src={i.image} style={{ border: i.rarity === "Mastercraft" ? '4px solid #ff0000' : i.rarity === "Legendary" ? '4px solid #FFD700' : i.rarity === "Epic" ? '4px solid #9400D3' : i.rarity === "Rare" ? '4px solid #0000FF' : i.rarity === "Uncommon" ? '4px solid #008000' : i.rarity === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                                        <img src={i.artwork} style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
                                     ))}
                                     {new Array(6 - selectedNFTList.length).fill(0).map((_, index) => (
                                         < img src={r1} alt="" />
@@ -453,61 +560,80 @@ function NewCube(props) {
                                     // alignItems="flex-start"
                                     >
                                         {selectedNFTList.map((i, index) => (
-                                            <>
-                                                <Grid item xs={12} sm={6} md={6} key={index}>
-                                                    <Card style={{ height: "100%" }} variant="outlined">
-                                                        <CardHeader className="text-center"
-                                                            title={i.name}
+                                            <Grid item xs={12} sm={6} md={6} key={index}>
+                                                <Card style={{ height: "100%" }} variant="outlined">
+                                                    <CardHeader className="text-center"
+                                                        title={i.title}
+                                                    />
+                                                    <CardMedia
+                                                        style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                        className={classes.media}
+                                                        image={i.artwork}
+
+                                                        title="NFT Image"
+                                                    />
+                                                    <CardContent>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Artwork Description: </strong>{i.description}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Token Rarity: </strong>{i.type}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Token Supply: </strong>{i.tokensupply}
+                                                        </Typography>
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i.ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                            title={i.ImageArtistName}
+                                                            subheader={i.ImageArtistAbout}
                                                         />
-                                                        <CardContent>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>ArtWork Description: </strong>{i.description}
-                                                            </Typography>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Token Rarity: </strong>{i.rarity}
-                                                            </Typography>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Token Supply: </strong>{i.tokenSupply}
-                                                            </Typography>
-                                                            <Typography variant="h6" gutterBottom color="textSecondary"  className="text-center">Image Artist</Typography>
-                                                            <CardHeader
-                                                                avatar={<Avatar src={i.artistImageBlob} aria-label="Artist" className={classes.avatar} />}
-                                                                title={i.imageArtist}
-                                                                subheader={i.aboutTheArt}
-                                                            />
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Website URL: </strong>{i.website}
-                                                            </Typography>
-                                                            <Typography variant="h6" gutterBottom color="textSecondary"  className="text-center">Producers</Typography>
-                                                            <CardHeader
-                                                                avatar={<Avatar src={i.artistImageBlob} aria-label="Artist" className={classes.avatar} />}
-                                                                title={i.imageArtist}
-                                                                subheader={i.aboutTheArt}
-                                                            />
-                                                            <Typography variant="h6" gutterBottom color="textSecondary"  className="text-center">Executive Producers</Typography>
-                                                            <CardHeader
-                                                                avatar={<Avatar src={i.artistImageBlob} aria-label="Artist" className={classes.avatar} />}
-                                                                title={i.imageArtist}
-                                                                subheader={i.aboutTheArt}
-                                                            />
-                                                           
-                                                        </CardContent>
-                                                        <CardActions>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Website URL: </strong>{i.ImageArtistWebsite}
+                                                        </Typography>
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i.ProducerProfile} aria-label="Producer" className={classes.avatar} />}
+                                                            title={i.ProducerName}
+                                                            subheader={i.ProducerInspiration}
+                                                        />
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i.ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
+                                                            title={i.ExecutiveProducerName}
+                                                            subheader={i.ExecutiveProducerInspiration}
+                                                        />
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i.FanProfile} aria-label="Fan" className={classes.avatar} />}
+                                                            title={i.FanName}
+                                                            subheader={i.FanInspiration}
+                                                        />
 
-                                                            <Button
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    handleRemoveClick(index, i);
-                                                                }}
-                                                                className="btn btn-sm bg-danger-light btn-block"
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Other: </strong>{i.other}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Collection: </strong>{i.collectiontitle}
+                                                        </Typography>
+                                                    </CardContent>
 
-                                                            >
-                                                                Remove NFT
+                                                    <CardActions>
+
+                                                        <Button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                handleRemoveClick(index, i);
+                                                            }}
+                                                            className="btn btn-sm bg-danger-light btn-block"
+
+                                                        >
+                                                            Remove NFT
     </Button>
-                                                        </CardActions>
-                                                    </Card>
-                                                </Grid>
-                                            </>
+                                                    </CardActions>
+                                                </Card>
+                                            </Grid>
+
                                         ))}
                                     </Grid>
                                 </div>
@@ -527,15 +653,15 @@ function NewCube(props) {
                         </Spinner>
                     </div>
                 ) : (
-                    selectedNFTList.length === 0 ? (
+                    selectedNFTList.length === 0 || salePrice === undefined || description === "" || name === "" || artist === "" || artistImage === logo || aboutTheTrack === "" || musicNonOwner === "" || musicOwner === "" ? (
                         <div className="submit-section">
                             <button type="button" disabled className="btn submit-btn">
-                                Create NFT
+                                Create Cube
                     </button>
                         </div>
                     ) : (
                         <div className="submit-section">
-                            <button type="submit" className="btn submit-btn">
+                            <button type="button" onClick={(e) => handleSubmitEvent(e)} className="btn submit-btn">
                                 Create Cube
                   </button>
                         </div>

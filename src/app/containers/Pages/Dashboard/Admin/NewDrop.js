@@ -49,7 +49,7 @@ function NewDrop(props) {
     const [inputList, setInputList] = useState([{ id: 0, name: "Robot", price: "20" }, { id: 1, name: "Robot Cube", price: "2" }, { id: 2, name: "Cube", price: "15" }]);
     let [isSaving, setIsSaving] = useState(false);
     let [supply, setSupply] = useState("");
-    let [salePrice, setSalePrice] = useState();
+    
     let [minimumBid, setMinimumBid] = useState();
 
     let [type, setType] = useState();
@@ -107,7 +107,6 @@ function NewDrop(props) {
 
         fileData.append(`description`, JSON.stringify(descriptionArray));
         fileData.append(`documentNames`, JSON.stringify(catagoryArray));
-        fileData.append(`numberOfTokens`, salePrice * 10 ** 18);
 
         for (var pair of fileData.entries()) {
             console.log(pair[0] + ', ' + pair[1]);
@@ -176,23 +175,7 @@ function NewDrop(props) {
                                     />
                                 </div>
 
-                                <div className="form-group">
-                                    <label>Sale Price</label>
-                                    <div className="filter-widget">
-                                        <input
-                                            type="number"
-                                            placeholder="Enter Total Supply"
-                                            required
-                                            value={salePrice}
-                                            placeholder=""
-                                            className="form-control"
-                                            onChange={(e) => {
-                                                setSalePrice(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-
+                             
                                 <div className="form-group">
                                     <label>Auction Starts At</label>
                                     <div className="form-group">
