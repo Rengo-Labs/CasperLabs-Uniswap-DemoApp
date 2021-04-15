@@ -62,6 +62,7 @@ function NewDrop(props) {
             newNFT: "",
             newDrop: "active",
             newSupefNFT:"",
+            myNFTs:"",
             newCollection:"",
             orders: "",
             settings: "",

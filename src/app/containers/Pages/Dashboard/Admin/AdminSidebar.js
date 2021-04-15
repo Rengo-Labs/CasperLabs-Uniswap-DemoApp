@@ -1,11 +1,11 @@
 import Cookies from "js-cookie";
 import React from "react";
 import { Link } from "react-router-dom";
-
+import ListAltIcon from '@material-ui/icons/ListAlt';
 function AdminSidebar(props) {
   let handleLogout = (e) => {
     Cookies.remove("Authorization");
-    setTimeout(() => { }, 1);
+    // setTimeout(() => { }, 1);
   };
 
   return (
@@ -30,9 +30,15 @@ function AdminSidebar(props) {
                 <i className="fa fa-file-medical"></i> <span>New NFT</span>
               </Link>
             </li>
+            <li className={props.activeTab.myNFTs}>
+              <Link to={`${props.match.url}/myNFTs`}>
+                <ListAltIcon /> <span>My NFTs</span>
+              </Link>
+            </li>
+
             <li className={props.activeTab.newSupefNFT}>
               <Link to={`${props.match.url}/newSupefNFT`}>
-              <i className="fas fa-cube"></i> <span>New Cube</span>
+                <i className="fas fa-cube"></i> <span>New Cube</span>
               </Link>
             </li>
             <li className={props.activeTab.newDrop}>
@@ -47,7 +53,7 @@ function AdminSidebar(props) {
             </li>
             <li className={props.activeTab.newSeason}>
               <Link to={`${props.match.url}/newSeason`}>
-              <i className="fas fa-boxes"></i> <span>New Season</span>
+                <i className="fas fa-boxes"></i> <span>New Season</span>
               </Link>
             </li>
             <li className={props.activeTab.newCollection}>

@@ -101,15 +101,13 @@ function NewNFT(props) {
 
     let [rarities, setRarities] = useState(["Mastercraft", "Legendary", "Epic", "Rare", "Uncommon", "Common"]);
     let [supplyType, setSupplyType] = useState("Single");
-    // let [supplyType, setSupplyType] = useState("");
-
-    let [imageArtistTypes, setImageArtistTypes] = useState(["Artist1", "Artist2", "Artist3", "Artist4", "Artist5"]);
-    let [executiveProducerTypes, setExecutiveProducerTypes] = useState(["Executive Producer 1", "Executive Producer 2", "Executive Producer 3", "Executive Producer 4", "Executive Producer 5"]);
-    let [fans, setFanTypes] = useState(["fan1", "fan2", "fan3", "fan4", "fan5"]);
-    let [producerTypes, setProducerTypes] = useState(["Producer1", "Producer2", "Producer3", "Producer4", "Producer5"]);
+    let [imageArtistTypes, setImageArtistTypes] = useState([]);
+    let [executiveProducerTypes, setExecutiveProducerTypes] = useState([]);
+    let [fans, setFanTypes] = useState([]);
+    let [producerTypes, setProducerTypes] = useState([]);
 
     let [imageArtist, setImageArtist] = useState('');
-    let [collectionTypes, setCollectionTypes] = useState(["Common", "Rare", "Epic", "Lgendary", "Uncommon"]);
+    let [collectionTypes, setCollectionTypes] = useState([]);
     let [collectionType, setCollectionType] = useState("New");
     let [collection, setCollection] = useState('');
 
@@ -132,14 +130,52 @@ function NewNFT(props) {
     let [producerType, setProducerType] = useState("New");
     let [executiveProducerType, setExecutiveProducerType] = useState("New");
     let [fanType, setFanType] = useState("New");
+    let [collectionId, setCollectionId] = useState('');
+
     let [executiveProducer, setExecutiveProducer] = useState('');
 
+
+
+    let getProfileData = () => {
+        axios.get("/profile/createprofile").then(
+            (response) => {
+                console.log("response", response);
+                setImageArtistTypes(response.data.Imageartist);
+                setProducerTypes(response.data.Producer);
+                setFanTypes(response.data.Fan);
+                setExecutiveProducerTypes(response.data.ExecutiveProducer);
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+            })
+    }
+    let getCollections = () => {
+        axios.get("/collection/collections").then(
+            (response) => {
+                console.log("response", response);
+                setCollectionTypes(response.data.Collectiondata)
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+            })
+    }
+
     useEffect(() => {
+        getProfileData();
+        getCollections();
+
         props.setActiveTab({
             dashboard: "",
             newNFT: "active",
             orders: "",
             settings: "",
+            myNFTs: "",
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",
@@ -177,9 +213,7 @@ function NewNFT(props) {
         if (network !== 'ropsten') {
             setNetwork(network);
             setIsSaving(false);
-
             handleShow();
-
         }
         else {
             handleShowBackdrop();
@@ -224,7 +258,35 @@ function NewNFT(props) {
                             console.log("response", response);
                             let variant = "success";
                             enqueueSnackbar('Nfts Created Successfully.', { variant });
-
+                            setTokenList([]);
+                            setIpfsHash("");
+                            setImage(r1);
+                            setName("");
+                            setDescription("");
+                            setRarity("");
+                            setTokenSupply(1);
+                            setImageArtist("");
+                            setAboutTheArt("");
+                            setWebsite("");
+                            setArtistImage(r1);
+                            setProducer("");
+                            setInspirationForThePiece("");
+                            setProducerImage(r1);
+                            setExecutiveProducer("");
+                            setExecutiveInspirationForThePiece("");
+                            setExecutiveProducerImage(r1);
+                            setFan("");
+                            setFanInspirationForThePiece("");
+                            setFanImage(r1);
+                            setOther("");
+                            setCollection("");
+                            setCollectionType("New");
+                            setImageArtistType("New");
+                            setProducerType("New");
+                            setExecutiveProducerType("New");
+                            setFanType("New");
+                            setSupplyType("Single");
+                            setCollectionId("");
                             handleCloseBackdrop();
                             setIsSaving(false);
                         },
@@ -242,26 +304,6 @@ function NewNFT(props) {
                         })
                 })
         }
-
-        // fileData.append("importerId", importer);
-
-        // axios.post("api/v1/exporter/addOrder", fileData).then(
-        //     (response) => {
-        //         setIsSaving(false);
-        //         let variant = "success";
-        //         enqueueSnackbar('Order Added Successfully.', { variant });
-        //     },
-        //     (error) => {
-        //         if (process.env.NODE_ENV === "development") {
-        //             console.log(error);
-        //             console.log(error.response);
-        //         }
-        //         setIsSaving(false);
-        //         let variant = "error";
-        //         enqueueSnackbar('Unable to Add Order.', { variant });
-
-        //     }
-        // );
     };
     const handleRemoveClick = (index) => {
         const list = [...tokenList];
@@ -298,8 +340,37 @@ function NewNFT(props) {
             producertype: producerType,
             executiveproducertype: executiveProducerType,
             fantype: fanType,
-            supplytype:supplyType
+            supplytype: supplyType,
+            collectionId: collectionId,
         }]);
+        setIpfsHash("");
+        setImage(r1);
+        setName("");
+        setDescription("");
+        setRarity("");
+        setTokenSupply(1);
+        setImageArtist("");
+        setAboutTheArt("");
+        setWebsite("");
+        setArtistImage(r1);
+        setProducer("");
+        setInspirationForThePiece("");
+        setProducerImage(r1);
+        setExecutiveProducer("");
+        setExecutiveInspirationForThePiece("");
+        setExecutiveProducerImage(r1);
+        setFan("");
+        setFanInspirationForThePiece("");
+        setFanImage(r1);
+        setOther("");
+        setCollection("");
+        setCollectionType("New");
+        setImageArtistType("New");
+        setProducerType("New");
+        setExecutiveProducerType("New");
+        setFanType("New");
+        setSupplyType("Single");
+        setCollectionId("");
     };
 
     let onChangeFile = (e) => {
@@ -564,8 +635,6 @@ function NewNFT(props) {
                                             )}
                                         />
                                     </div>
-
-
                                     <FormControl component="fieldset">
                                         <lable component="legend">Select Supply Type</lable>
                                         <RadioGroup row aria-label="position" name="position" defaultValue="top">
@@ -574,9 +643,9 @@ function NewNFT(props) {
                                                 setTokenSupply(1);
                                             }} checked={supplyType === 'Single'} control={<Radio color="secondary" />} label="Single" />
                                             <FormControlLabel style={{ color: 'black' }} value="Variable Supply" onChange={() => {
-                                                setSupplyType("Variable Supply")
+                                                setSupplyType("Variable")
                                                 setTokenSupply(0);
-                                            }} checked={supplyType === 'Variable Supply'} control={<Radio color="secondary" />} label="Variable Supply" />
+                                            }} checked={supplyType === 'Variable'} control={<Radio color="secondary" />} label="Variable Supply" />
 
                                         </RadioGroup>
                                     </FormControl>
@@ -720,13 +789,21 @@ function NewNFT(props) {
                                                     options={imageArtistTypes}
                                                     // disabled={isDisabledImporter}
                                                     getOptionLabel={(option) =>
-                                                        option
+                                                        option.Name
                                                     }
                                                     onChange={(event, value) => {
-                                                        if (value == null) setImageArtist("");
+                                                        if (value == null) {
+                                                            setImageArtist("");
+                                                            setWebsite("");
+                                                            setAboutTheArt("");
+                                                            setArtistImage("");
+                                                        }
                                                         else {
                                                             console.log(value);
-                                                            setImageArtist(value)
+                                                            setImageArtist(value.Name);
+                                                            setWebsite(value.Website);
+                                                            setAboutTheArt(value.About);
+                                                            setArtistImage(value.Profile);
                                                         }
                                                     }}
                                                     renderInput={(params) => (
@@ -834,13 +911,19 @@ function NewNFT(props) {
                                                     options={producerTypes}
                                                     // disabled={isDisabledImporter}
                                                     getOptionLabel={(option) =>
-                                                        option
+                                                        option.Name
                                                     }
                                                     onChange={(event, value) => {
-                                                        if (value == null) setProducer("");
+                                                        if (value == null) {
+                                                            setProducer("");
+                                                            setInspirationForThePiece("");
+                                                            setProducerImage("");
+                                                        }
                                                         else {
                                                             console.log(value);
-                                                            setProducer(value)
+                                                            setProducer(value.Name);
+                                                            setInspirationForThePiece(value.Inspiration);
+                                                            setProducerImage(value.Profile);
                                                         }
                                                     }}
                                                     renderInput={(params) => (
@@ -949,13 +1032,17 @@ function NewNFT(props) {
                                                     options={executiveProducerTypes}
                                                     // disabled={isDisabledImporter}
                                                     getOptionLabel={(option) =>
-                                                        option
+                                                        option.Name
                                                     }
                                                     onChange={(event, value) => {
                                                         if (value == null) setExecutiveProducer("");
                                                         else {
                                                             console.log(value);
-                                                            setExecutiveProducer(value)
+                                                            setExecutiveProducer(value.Name);
+                                                            setExecutiveInspirationForThePiece(value.Inspiration);
+                                                            setExecutiveProducerImage(value.Profile);
+
+
                                                         }
                                                     }}
                                                     renderInput={(params) => (
@@ -1063,13 +1150,15 @@ function NewNFT(props) {
                                                     options={fans}
                                                     // disabled={isDisabledImporter}
                                                     getOptionLabel={(option) =>
-                                                        option
+                                                        option.Name
                                                     }
                                                     onChange={(event, value) => {
                                                         if (value == null) setFan("");
                                                         else {
                                                             console.log(value);
-                                                            setFan(value)
+                                                            setFan(value.Name);
+                                                            setFanImage(value.Profile);
+                                                            setFanInspirationForThePiece(value.Inspiration);
                                                         }
                                                     }}
                                                     renderInput={(params) => (
@@ -1129,13 +1218,14 @@ function NewNFT(props) {
                                                     options={collectionTypes}
                                                     // disabled={isDisabledImporter}
                                                     getOptionLabel={(option) =>
-                                                        option
+                                                        option.collectiontitle
                                                     }
                                                     onChange={(event, value) => {
                                                         if (value == null) setCollection("");
                                                         else {
                                                             console.log(value);
-                                                            setCollection(value)
+                                                            setCollection(value.collectiontitle)
+                                                            setCollectionId(value._id)
                                                         }
                                                     }}
                                                     renderInput={(params) => (
@@ -1244,7 +1334,7 @@ function NewNFT(props) {
                                                             <strong>Other: </strong>{i.other}
                                                         </Typography>
                                                         <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Collection: </strong>{i.collection}
+                                                            <strong>Collection: </strong>{i.collectiontitle}
                                                         </Typography>
                                                     </CardContent>
                                                     <CardActions>

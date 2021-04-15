@@ -112,6 +112,7 @@ function NewCube(props) {
             dashboard: "",
             newNFT: "",
             newSupefNFT: "active",
+            myNFTs:"",
             orders: "",
             settings: "",
             privacyPolicy: "",
