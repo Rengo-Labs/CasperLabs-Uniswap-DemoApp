@@ -1374,7 +1374,7 @@ function NewNFT(props) {
                     ) : (
                         tokenList.length === 0 ? (
                             <div className="submit-section">
-                                <button type="button" onClick={(e) => handleSubmitEvent(e)} className="btn submit-btn">
+                                <button type="button" disabled className="btn submit-btn">
                                     Batch create NFTs
                         </button>
                             </div>

@@ -222,7 +222,6 @@ function NewCube(props) {
                 setIsSaving(false);
                 let variant = "error";
                 enqueueSnackbar('Unable to Create Cube.', { variant });
-
             }
         );
     };
