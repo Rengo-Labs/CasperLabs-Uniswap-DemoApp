@@ -71,6 +71,7 @@ function NewCollection(props) {
             myNFTs:"",
             newCollection: "active",
             tradeListOrders: "",
+            myCubes:"",
             referralEarnings: "",
             disputedOrders: "",
             resolvedDisputedOrders: "",

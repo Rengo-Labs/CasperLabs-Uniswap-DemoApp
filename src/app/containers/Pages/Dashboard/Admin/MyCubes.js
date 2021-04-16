@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-function MyNFTs(props) {
+function MyCubes(props) {
     const classes = useStyles();
 
     const [tokenList, setTokenList] = useState([]);
@@ -61,12 +61,12 @@ function MyNFTs(props) {
     const handleShowBackdrop = () => {
         setOpen(true);
     };
-    let getMyNFTs = () => {
+    let getMyCubes = () => {
         handleShowBackdrop();
-        axios.get("/nft/createnft").then(
+        axios.get("/token/TokenIds").then(
             (response) => {
                 console.log("response", response);
-                setTokenList(response.data.NFTdata);
+                setTokenList(response.data.tokensdata);
                 handleCloseBackdrop();
             },
             (error) => {
@@ -79,15 +79,15 @@ function MyNFTs(props) {
     }
 
     useEffect(() => {
-        getMyNFTs();
+        getMyCubes();
         // getCollections();?
 
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
             orders: "",
-            myNFTs: "active",
-            myCubes:"",
+            myNFTs: "",
+            myCubes: "active",
             settings: "",
             privacyPolicy: "",
             termsandconditions: "",
@@ -105,7 +105,7 @@ function MyNFTs(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
-                <li className="breadcrumb-item active">My NFTs</li>
+                <li className="breadcrumb-item active">My Cubes</li>
             </ul>
             <div className="card-body">
                 <form >
@@ -146,48 +146,19 @@ function MyNFTs(props) {
                                             />
                                             <CardContent>
                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Artwork Description: </strong>{i.description}
+                                                    <strong>Cube Description: </strong>{i.description}
                                                 </Typography>
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Token Rarity: </strong>{i.type}
-                                                </Typography>
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Token Supply: </strong>{i.tokensupply}
-                                                </Typography>
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i.ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                    title={i.ImageArtistName}
-                                                    subheader={i.ImageArtistAbout}
-                                                />
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Website URL: </strong>{i.ImageArtistWebsite}
-                                                </Typography>
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i.ProducerProfile} aria-label="Producer" className={classes.avatar} />}
-                                                    title={i.ProducerName}
-                                                    subheader={i.ProducerInspiration}
-                                                />
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i.ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
-                                                    title={i.ExecutiveProducerName}
-                                                    subheader={i.ExecutiveProducerInspiration}
-                                                />
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i.FanProfile} aria-label="Fan" className={classes.avatar} />}
-                                                    title={i.FanName}
-                                                    subheader={i.FanInspiration}
-                                                />
 
                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Other: </strong>{i.other}
+                                                    <strong>Sale Price: </strong>{i.SalePrice}
                                                 </Typography>
-                                                {/* <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Collection: </strong>{i.collectiontitle}
-                                                </Typography> */}
+                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
+                                                <CardHeader
+                                                    avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                    title={i.MusicArtistName}
+                                                    subheader={i.MusicArtistAbout}
+                                                />
+
                                             </CardContent>
                                         </Card>
                                     </Grid>
@@ -205,4 +176,4 @@ function MyNFTs(props) {
     );
 }
 
-export default MyNFTs;
+export default MyCubes;

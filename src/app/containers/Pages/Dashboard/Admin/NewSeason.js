@@ -63,6 +63,7 @@ function NewSeason(props) {
             newDrop: "",
             newSeason: "active",
             myNFTs:"",
+            myCubes:"",
             newSupefNFT: "",
             newCollection: "",
             orders: "",

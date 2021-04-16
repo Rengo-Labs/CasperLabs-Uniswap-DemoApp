@@ -41,6 +41,12 @@ function AdminSidebar(props) {
                 <i className="fas fa-cube"></i> <span>New Cube</span>
               </Link>
             </li>
+            <li className={props.activeTab.myCubes}>
+              <Link to={`${props.match.url}/myCubes`}>
+                <i className="fas fa-cube"></i> <span>My Cubes</span>
+              </Link>
+            </li>
+            
             <li className={props.activeTab.newDrop}>
               <Link to={`${props.match.url}/newDrop`}>
                 <i className="fas fa-plus"></i> <span>New Drop</span>

@@ -4,6 +4,8 @@ import {
 } from '@material-ui/core/';
 import Avatar from '@material-ui/core/Avatar';
 // import CardContent from '@material-ui/core/CardContent';
+import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
+import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
 import Button from '@material-ui/core/Button';
 import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -32,7 +34,11 @@ import robot5 from '../../../../assets/img/r5.jpg';
 import robot6 from '../../../../assets/img/r6.jpg';
 import SixNFTsErrorModal from '../../../../components/Modals/SixNFTsErrorModal';
 import axios from 'axios';
-
+import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Web3 from 'web3';
+import ipfs from '../../../../components/IPFS/ipfs';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -45,6 +51,11 @@ const useStyles = makeStyles((theme) => ({
             margin: theme.spacing(1),
         },
     },
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
+    },
+
     card: {
         minWidth: 250,
     },
@@ -66,14 +77,7 @@ const useStyles = makeStyles((theme) => ({
 function NewCube(props) {
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
-    const [tokenList, setTokenList] = useState([
-        // { id: 0, image: robot1, imageBlob: robot1, name: "name", description: "description", tokenPrice: "20", tokenSupply: "30", imageArtist: "imageArtist", rarity: "Mastercraft", aboutTheArt: "aboutTheArt", website: "website", artistImage: robot6, artistImageBlob: robot6 },
-        // { id: 1, image: robot2, imageBlob: robot2, name: "name1", description: "description1", tokenPrice: "20", tokenSupply: "11", imageArtist: "imageArtist1", rarity: "Legendary", aboutTheArt: "aboutTheArt1", website: "website1", artistImage: robot5, artistImageBlob: robot5 },
-        // { id: 2, image: robot3, imageBlob: robot3, name: "name2", description: "description2", tokenPrice: "55", tokenSupply: "33", imageArtist: "imageArtist2", rarity: "Epic", aboutTheArt: "aboutTheArt2", website: "website2", artistImage: robot4, artistImageBlob: robot4 },
-        // { id: 3, image: robot4, imageBlob: robot4, name: "name3", description: "description3", tokenPrice: "23", tokenSupply: "31", imageArtist: "imageArtist3", rarity: "Rare", aboutTheArt: "aboutTheArt3", website: "website3", artistImage: robot3, artistImageBlob: robot3 },
-        // { id: 4, image: robot5, imageBlob: robot5, name: "name4", description: "description4", tokenPrice: "40", tokenSupply: "60", imageArtist: "imageArtist4", rarity: "Uncommon", aboutTheArt: "aboutTheArt4", website: "website4", artistImage: robot2, artistImageBlob: robot2 },
-        // { id: 5, image: robot6, imageBlob: robot6, name: "name5", description: "description5", tokenPrice: "33", tokenSupply: "3", imageArtist: "imageArtist5", rarity: "Common", aboutTheArt: "aboutTheArt5", website: "website5", artistImage: robot1, artistImageBlob: robot1 },
-    ]);
+    const [tokenList, setTokenList] = useState([]);
     const [selectedNFTList, setSelectedNFTList] = useState([])
     let [isSaving, setIsSaving] = useState(false);
     let [name, setName] = useState();
@@ -85,15 +89,33 @@ function NewCube(props) {
     let [artistType, setArtistType] = useState("New");
     let [artist, setArtist] = useState('');
     let [nftName, setNFTName] = useState();
+    let [buffer, setBuffer] = useState('');
+
     let [musicOwner, setMusicOwner] = useState("");
     let [musicNonOwner, setMusicNonOwner] = useState("");
     let [artistImage, setArtistImage] = useState(logo);
 
+    // let jwt = Cookies.get("Authorization");
+    // let jwtDecoded = jwtDecode(jwt);
+    // let exporter = jwtDecoded;
+    // console.log("exporter", exporter);
     let [isUploadingArtist, setIsUploadingArtist] = useState(false);
-
+    let [network, setNetwork] = useState(false);
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+
+    const [showNetworkModal, setShowNetworkModal] = useState(false);
+    const handleCloseNetworkModal = () => setShowNetworkModal(false);
+    const handleShowNetworkModal = () => setShowNetworkModal(true);
+
+    const [open, setOpen] = React.useState(false);
+    const handleCloseBackdrop = () => {
+        setOpen(false);
+    };
+    const handleShowBackdrop = () => {
+        setOpen(true);
+    };
     let getProfileData = () => {
         axios.get("/profile/createprofile").then(
             (response) => {
@@ -157,6 +179,7 @@ function NewCube(props) {
             dashboard: "",
             newNFT: "",
             newSupefNFT: "active",
+            myCubes:"",
             myNFTs: "",
             orders: "",
             settings: "",
@@ -181,49 +204,141 @@ function NewCube(props) {
                 }
             })
     }
-
-    const handleSubmitEvent = (e) => {
+    let loadWeb3 = async () => {
+        if (window.ethereum) {
+            window.web3 = new Web3(window.ethereum)
+            await window.ethereum.enable()
+        }
+        else if (window.web3) {
+            window.web3 = new Web3(window.web3.currentProvider)
+        }
+        else {
+            window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+        }
+    }
+    const handleSubmitEvent = async (e) => {
         e.preventDefault();
+
         setIsSaving(true);
 
         let jwt = Cookies.get("Authorization");
         let jwtDecoded = jwtDecode(jwt);
+        let exporter = jwtDecoded.id;
+        console.log("exporter", exporter);
+        let fileData = new FormData();
 
-        let nftIds = [];
-        for (let i = 0; i < selectedNFTList.length; i++) {
-            nftIds.push(selectedNFTList[i]._id);
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        const network = await web3.eth.net.getNetworkType()
+        if (network !== 'ropsten') {
+            setNetwork(network);
+            setIsSaving(false);
+            handleShowNetworkModal();
         }
-        let cubeData = {
-            tokenId: '1',
-            title: name,
-            description: description,
-            nftids: nftIds,
-            ownermusicfile: musicOwner,
-            nonownermusicfile: musicNonOwner,
-            MusicArtistName: artist,
-            MusicArtistAbout: aboutTheTrack,
-            MusicArtistProfile: artistImage,
-            musicartisttype: artistType,
-            SalePrice: salePrice
-        }
-        console.log("cubeData", cubeData);
-        axios.post("/token/TokenIds", cubeData).then(
-            (response) => {
-                console.log('response', response);
-                setIsSaving(false);
-                let variant = "success";
-                enqueueSnackbar('Cube Created Successfully.', { variant });
-            },
-            (error) => {
-                if (process.env.NODE_ENV === "development") {
-                    console.log(error);
-                    console.log(error.response);
-                }
-                setIsSaving(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Create Cube.', { variant });
+        else {
+            handleShowBackdrop();
+            const address = Addresses.CreateCubeAddress;
+            const abi = CreateCubeContract;
+
+            let nftIds = [];
+            for (let i = 0; i < selectedNFTList.length; i++) {
+                nftIds.push(selectedNFTList[i].nftId);
             }
-        );
+            let uriData = {
+                title: name,
+                description: description,
+                nftids: nftIds,
+                ownermusicfile: musicOwner,
+                nonownermusicfile: musicNonOwner,
+                MusicArtistName: artist,
+                MusicArtistAbout: aboutTheTrack,
+                MusicArtistProfile: artistImage,
+                SalePrice: salePrice,
+            }
+            const reader = new window.FileReader();
+            const blob = new Blob([JSON.stringify(uriData, null, 2)], { type: 'application/json' });
+            console.log("blob", blob);
+            reader.readAsArrayBuffer(blob);
+            reader.onloadend = () => {
+                setBuffer(Buffer(reader.result));
+                ipfs.add(Buffer(reader.result), async (err, result) => {
+                    if (err) {
+                        console.log(err);
+                        handleCloseBackdrop();
+                            setIsSaving(false);
+                        return
+                    }
+                    console.log("HASH", result[0].hash);
+
+                    var myContractInstance = await new web3.eth.Contract(abi, address);
+                    console.log("myContractInstance", myContractInstance);
+                    await myContractInstance.methods.Create_cube(result[0].hash).send({ from: accounts[0] }, (err, response) => {
+                        console.log('get transaction', err, response);
+                        if (err !== null) {
+                            console.log("err", err);
+                            let variant = "error";
+                            enqueueSnackbar('User Canceled Transaction', { variant });
+                            handleCloseBackdrop();
+                            setIsSaving(false);
+                        }
+                    })
+                        .on('receipt', (receipt) => {
+                            console.log("receipt", receipt);
+                            console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
+                            let ids = receipt.events.Transfer.returnValues.tokenId;
+                            let nftId = [];
+                            handleCloseBackdrop();
+                            for (let i = 0; i < selectedNFTList.length; i++) {
+                                nftId.push(selectedNFTList[i]._id);
+                            }
+                            let cubeData = {
+                                tokenId: ids,
+                                title: name,
+                                description: description,
+                                nftids: nftId,
+                                ownermusicfile: musicOwner,
+                                nonownermusicfile: musicNonOwner,
+                                MusicArtistName: artist,
+                                MusicArtistAbout: aboutTheTrack,
+                                MusicArtistProfile: artistImage,
+                                musicartisttype: artistType,
+                                SalePrice: salePrice,
+                            }
+                            console.log("cubeData", cubeData);
+                            axios.post("/token/TokenIds", cubeData).then(
+                                (response) => {
+                                    console.log('response', response);
+                                    setIsSaving(false);
+                                    setSelectedNFTList([]);
+                                    setName('');
+                                    setDescription('');
+                                    setMusicOwner('');
+                                    setMusicNonOwner('');
+                                    setArtist('');
+                                    setAboutTheTrack('');
+                                    setArtistImage(logo)
+                                    setArtistType('New')
+                                    setSalePrice();
+                                    let variant = "success";
+                                    enqueueSnackbar('Cube Created Successfully.', { variant });
+                                },
+                                (error) => {
+                                    if (process.env.NODE_ENV === "development") {
+                                        console.log(error);
+                                        console.log(error.response);
+                                    }
+                                    setIsSaving(false);
+                                    let variant = "error";
+                                    enqueueSnackbar('Unable to Create Cube.', { variant });
+                                }
+                            );
+                        })
+                })
+
+            }
+        }
+
     };
     const handleRemoveClick = (index, newNFT) => {
         console.log("index", index);
@@ -567,7 +682,7 @@ function NewCube(props) {
                                                     <CardMedia
                                                         style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                         className={classes.media}
-                                                        image={i.artwork}
+                                                        // image={i.artwork}
 
                                                         title="NFT Image"
                                                     />
@@ -612,9 +727,9 @@ function NewCube(props) {
                                                         <Typography variant="body2" color="textSecondary" component="p">
                                                             <strong>Other: </strong>{i.other}
                                                         </Typography>
-                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                        {/* <Typography variant="body2" color="textSecondary" component="p">
                                                             <strong>Collection: </strong>{i.collectiontitle}
-                                                        </Typography>
+                                                        </Typography> */}
                                                     </CardContent>
 
                                                     <CardActions>
@@ -669,6 +784,15 @@ function NewCube(props) {
                 )}
             </div>
             <SixNFTsErrorModal show={show} handleClose={handleClose} />
+            <NetworkErrorModal
+                show={showNetworkModal}
+                handleClose={handleCloseNetworkModal}
+                network={network}
+            >
+            </NetworkErrorModal>
+            <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </div >
 
     );

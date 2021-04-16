@@ -64,6 +64,7 @@ function RandomDrop(props) {
             newRandomDrop: "active",
             newCollection:"",
             myNFTs:"",
+            myCubes:"",
             orders: "",
             settings: "",
             privacyPolicy: "",

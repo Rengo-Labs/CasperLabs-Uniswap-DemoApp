@@ -176,6 +176,7 @@ function NewNFT(props) {
             orders: "",
             settings: "",
             myNFTs: "",
+            myCubes:"",
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",

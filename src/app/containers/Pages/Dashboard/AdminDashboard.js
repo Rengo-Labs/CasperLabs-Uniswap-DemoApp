@@ -11,6 +11,7 @@ import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import AdminDashboardDefaultScreen from "./Admin/AdminDashboardDefaultScreen";
 import AdminSidebar from "./Admin/AdminSidebar";
+import MyCubes from "./Admin/MyCubes";
 import MyNFTs from "./Admin/MyNFTs";
 import NewCollection from "./Admin/NewCollection";
 import NewCube from "./Admin/NewCube";
@@ -57,6 +58,7 @@ function AdminDashboard(props) {
     newSeason: "",
     newCollection: "",
     myNFTs: "",
+    myCubes: "",
     newRandomDrop: ""
   });
 
@@ -175,6 +177,9 @@ function AdminDashboard(props) {
             {/* myNFTs:"", */}
             <Route exact path={`${path}/newDrop`}>
               <NewDrop setActiveTab={setActiveTab} />
+            </Route>
+            <Route exact path={`${path}/myCubes`}>
+              <MyCubes setActiveTab={setActiveTab} />
             </Route>
             <Route exact path={`${path}/newSupefNFT`}>
               <NewCube setActiveTab={setActiveTab} />
