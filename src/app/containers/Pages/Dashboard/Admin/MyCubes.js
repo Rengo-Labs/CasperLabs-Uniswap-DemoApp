@@ -1,22 +1,22 @@
-import { Grid } from '@material-ui/core/';
-import Avatar from '@material-ui/core/Avatar';
+import { Avatar, CardHeader, Grid } from '@material-ui/core/';
 import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
-import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import { Spinner } from "react-bootstrap";
+import r1 from '../../../../assets/img/patients/patient.jpg';
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        flexGrow: 1,
-        width: '100%',
-        backgroundColor: theme.palette.background.paper,
+        maxWidth: 345,
+    },
+    media: {
+        height: 300,
     },
     badge: {
         '& > *': {
@@ -26,14 +26,6 @@ const useStyles = makeStyles((theme) => ({
     backdrop: {
         zIndex: theme.zIndex.drawer + 1,
         color: '#fff',
-    },
-
-    card: {
-        minWidth: 250,
-    },
-    media: {
-        height: 0,
-        paddingTop: '100%', // 16:9
     },
     bullet: {
         display: 'inline-block',
@@ -52,8 +44,10 @@ const useStyles = makeStyles((theme) => ({
 
 function MyCubes(props) {
     const classes = useStyles();
-
+    const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
+    const [imageData, setImageData] = useState([]);
+
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
         setOpen(false);
@@ -67,6 +61,7 @@ function MyCubes(props) {
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.tokensdata);
+                setImageData(response.data.nftsdata);
                 handleCloseBackdrop();
             },
             (error) => {
@@ -132,36 +127,56 @@ function MyCubes(props) {
                             >
                                 {tokenList.map((i, index) => (
 
-                                    <Grid item xs={12} sm={6} md={3} key={index}>
-                                        <Card style={{ height: "100%" }} variant="outlined">
-                                            <CardHeader className="text-center"
-                                                title={i.title}
-                                            />
-                                            <CardMedia
-                                                style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
-                                                className={classes.media}
-                                                image={i.artwork}
+                                    <Grid item xs={12} sm={6} md={3}>
+                                        <Card className={classes.root}>
+                                            {/* style={{ height: "100%" }} variant="outlined" */}
+                                            <CardActionArea>
 
-                                                title="NFT Image"
-                                            />
-                                            <CardContent>
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Cube Description: </strong>{i.description}
-                                                </Typography>
+                                                <CardMedia
+                                                    className={classes.media}
+                                                    // image={img}
+                                                    title=""
+                                                >
 
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Sale Price: </strong>{i.SalePrice}
-                                                </Typography>
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                    title={i.MusicArtistName}
-                                                    subheader={i.MusicArtistAbout}
-                                                />
 
-                                            </CardContent>
+                                                    <div class="wrapper">
+                                                        <div class="cube-box">
+                                                            {imageData[index].map((j, jindex) => (
+                                                                <>
+                                                                    {console.log(j)}
+                                                                    <img src={j.artwork} style={{ border: j.type === "Mastercraft" ? '4px solid #ff0000' : j.type === "Legendary" ? '4px solid #FFD700' : j.type === "Epic" ? '4px solid #9400D3' : j.type === "Rare" ? '4px solid #0000FF' : j.type === "Uncommon" ? '4px solid #008000' : j.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                                                                </>
+                                                            ))}
+                                                            {new Array(6 - imageData[index].length).fill(0).map((_, index) => (
+                                                                < img src={r1} alt="" />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+
+
+                                                </CardMedia>
+                                                <CardContent>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Cube Description: </strong>{i.description}
+                                                    </Typography>
+
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Sale Price: </strong>{i.SalePrice}
+                                                    </Typography>
+                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
+                                                    <CardHeader
+                                                        avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                        title={i.MusicArtistName}
+                                                        subheader={i.MusicArtistAbout}
+                                                    />
+                                                </CardContent>
+                                            </CardActionArea>
+                                            <CardActions>
+
+                                            </CardActions>
                                         </Card>
-                                    </Grid>
+                                    </Grid >
                                 ))}
                             </Grid>
                         )}
@@ -177,3 +192,47 @@ function MyCubes(props) {
 }
 
 export default MyCubes;
+{/* <Grid item xs={12} sm={6} md={3} key={index}>
+<Card style={{ height: "100%" }} variant="outlined">
+    <CardHeader className="text-center"
+        title={i.title}
+    />
+
+    <CardMedia
+        className={classes.media}
+        // image={img}
+        title=""
+    >
+
+        <div class="wrapper">
+            <div class="cube-box">
+                {imageData.map((i, index) => (
+                    <img src={i[0].artwork} style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                ))}
+                {new Array(6 - imageData.length).fill(0).map((_, index) => (
+                    < img src={r1} alt="" />
+                ))}
+            </div>
+        </div>
+
+
+
+    </CardMedia>
+    <CardContent>
+        <Typography variant="body2" color="textSecondary" component="p">
+            <strong>Cube Description: </strong>{i.description}
+        </Typography>
+
+        <Typography variant="body2" color="textSecondary" component="p">
+            <strong>Sale Price: </strong>{i.SalePricegi}
+        </Typography>
+        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
+        <CardHeader
+            avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+            title={i.MusicArtistName}
+            subheader={i.MusicArtistAbout}
+        />
+
+    </CardContent>
+</Card>
+</Grid> */}
