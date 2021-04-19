@@ -46,7 +46,7 @@ function NFTCard(props) {
                     >
                         {hide ? (
                             <div class="wrapper">
-                                <div class="cube-box">
+                                <div class="cube-box" onMouseOut={() => setHide(false)}>
                                     <img src={r1} alt="" />
                                     <img src={r2} alt="" />
                                     <img src={r3} alt="" />
@@ -57,18 +57,21 @@ function NFTCard(props) {
                             </div>
                         ) : (
                             <div class="mainDiv">
-                                <div className="square" onClick={() => {
+                                <div className="square" onMouseEnter={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 10000);
-                                }}></div>
-                                <div className="square2" onClick={() => {
+                                    // setTimeout(() => , 1000);
+                                }}
+                                ></div>
+                                <div className="square2" onMouseEnter={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 10000);
-                                }}></div>
-                                <div className="square3" onClick={() => {
+                                    // setTimeout(() => setHide(false), 1000);
+                                }}
+                                ></div>
+                                <div className="square3" onMouseEnter={() => {
                                     setHide(true);
-                                    setTimeout(() => setHide(false), 10000);
-                                }}></div>
+                                    // setTimeout(() => setHide(false), 1000);
+                                }}
+                                ></div>
                             </div>
                         )}
 

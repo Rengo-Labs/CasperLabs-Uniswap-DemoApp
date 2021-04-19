@@ -7796,10 +7796,10 @@ object-fit: cover;
   animation: loops 10s linear infinite;
 }
 
-.cube-box:hover{
+/* .cube-box:hover{
   --deft:200px;
   animation-play-state: paused;
-}
+} */
 
 .cube-box1{
   width: 200px;
@@ -8146,7 +8146,8 @@ object:hover {
     -moz-transform: scale(0.6, 0.6);
     -ms-transform: scale(0.6, 0.6);
     -o-transform: scale(0.6, 0.6);
-    transform: scale(0.6, 0.6); } }
+    transform: scale(0.6, 0.6); } 
+  }
     .mainDiv{
       position: relative;
       width: 206px;

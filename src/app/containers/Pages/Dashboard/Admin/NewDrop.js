@@ -203,7 +203,7 @@ function NewDrop(props) {
 
             var myContractInstance = await new web3.eth.Contract(abi, address);
             console.log("myContractInstance", myContractInstance);
-            await myContractInstance.methods.Create_cube().send({ from: accounts[0] }, (err, response) => {
+            await myContractInstance.methods.Create_cube(startTime,endTime,minimumBid).send({ from: accounts[0] }, (err, response) => {
                 console.log('get transaction', err, response);
                 if (err !== null) {
                     console.log("err", err);
