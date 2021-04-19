@@ -11,7 +11,7 @@ import {
   DropdownMenu,
   DropdownItem
 } from "reactstrap";
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Spinner } from "react-bootstrap";
 import Avatar from '@material-ui/core/Avatar';
 import Axios from "axios";
 import Web3 from "web3";
@@ -23,6 +23,8 @@ import NetworkErrorModal from "../Modals/NetworkErrorModal";
 function HeaderHome(props) {
   let [menuOpenedClass, setMenuOpenedClass] = useState();
   let [dropdownOpen1, setDropdownOpen1] = useState(false);
+  let [isLoading, setIsLoading] = useState(false);
+
 
   let [network, setNetwork] = useState(false);
   const [show, setShow] = useState(false);
@@ -63,7 +65,7 @@ function HeaderHome(props) {
     setDropdownOpen1(false);
   }
   let Login = async () => {
-
+    setIsLoading(true);
     if (window.ethereum) {
       window.web3 = new Web3(window.ethereum)
       await window.ethereum.enable()
@@ -95,6 +97,7 @@ function HeaderHome(props) {
           console.log("response", response);
           Cookies.set("Authorization", response.data.token, {
           });
+          setIsLoading(false);
           window.location.reload();
 
         },
@@ -103,6 +106,7 @@ function HeaderHome(props) {
             console.log(error);
             console.log(error.response);
           }
+          setIsLoading(false);
         })
     }
 
@@ -178,9 +182,26 @@ function HeaderHome(props) {
             </li>
             <li className="login-link ">
               <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Community}>
+                {/* {isLoading ? (
+                  <div className="text-center">
+                    <Spinner
+                      animation="border"
+                      role="status"
+                      style={{ color: "ff0000" }}
+                    >
+                      <span className="sr-only">Loading...</span>
+                    </Spinner>
+                  </div>
+                ) : ( */}
+                <span style={selectedNavStyle.Community} onClick={() => Login()}>
                   Login
                   </span>
+                {/* ) */}
+
+                {/* } */}
+                {/* <span style={selectedNavStyle.Community}>
+                  Login
+                  </span> */}
               </Link>
             </li>
             <li>
@@ -264,10 +285,24 @@ function HeaderHome(props) {
                   </span>
             </Link>
           </li> */}
-          <li >
+          <li >{isLoading ? (
+            <div className="text-center">
+              <Spinner
+                animation="border"
+                role="status"
+                style={{ color: "ff0000" }}
+              >
+                <span className="sr-only">Loading...</span>
+              </Spinner>
+            </div>
+          ) : (
             <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
               Login
             </span>
+          )
+
+          }
+
           </li>
           <li >
             {/* <Button variant="primary" onClick={handleShow}>

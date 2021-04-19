@@ -5,7 +5,7 @@ import * as serviceWorker from "./serviceWorker";
 import App from "./app/containers/App/Application";
 import axios from "axios";
 
-// axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = true;
 
 if (process.env.REACT_APP_BACKEND_SERVER_ADDRESS)
   axios.defaults.baseURL = `${process.env.REACT_APP_BACKEND_SERVER_ADDRESS}`;
