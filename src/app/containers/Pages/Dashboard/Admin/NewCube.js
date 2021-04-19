@@ -182,6 +182,7 @@ function NewCube(props) {
             myCubes:"",
             myNFTs: "",
             orders: "",
+            myDrops: "",
             settings: "",
             privacyPolicy: "",
             termsandconditions: "",

@@ -88,6 +88,7 @@ function MyNFTs(props) {
             orders: "",
             myNFTs: "active",
             myCubes:"",
+            myDrops: "",
             settings: "",
             privacyPolicy: "",
             termsandconditions: "",

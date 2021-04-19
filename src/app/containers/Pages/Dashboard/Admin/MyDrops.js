@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-function MyCubes(props) {
+function MyDrops(props) {
     const classes = useStyles();
     const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
@@ -56,7 +56,7 @@ function MyCubes(props) {
     const handleShowBackdrop = () => {
         setOpen(true);
     };
-    let getMyCubes = () => {
+    let getMyDrops = () => {
         handleShowBackdrop();
         axios.get("/token/TokenIds").then(
             (response) => {
@@ -75,7 +75,7 @@ function MyCubes(props) {
     }
 
     useEffect(() => {
-        getMyCubes();
+        getMyDrops();
         // getCollections();?
 
         props.setActiveTab({
@@ -83,8 +83,8 @@ function MyCubes(props) {
             newNFT: "",
             orders: "",
             myNFTs: "",
-            myCubes: "active",
-            myDrops: "",
+            myCubes: "",
+            myDrops: "active",
             settings: "",
             privacyPolicy: "",
             termsandconditions: "",
@@ -102,7 +102,7 @@ function MyCubes(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
-                <li className="breadcrumb-item active">My Cubes</li>
+                <li className="breadcrumb-item active">My Drops</li>
             </ul>
             <div className="card-body">
                 <form >
@@ -160,7 +160,7 @@ function MyCubes(props) {
                                                 </CardMedia>
                                                 <CardContent>
                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Cube Description: </strong>{i.description}
+                                                        <strong>Drop Description: </strong>{i.description}
                                                     </Typography>
 
                                                     <Typography variant="body2" color="textSecondary" component="p">
@@ -193,7 +193,7 @@ function MyCubes(props) {
     );
 }
 
-export default MyCubes;
+export default MyDrops;
 {/* <Grid item xs={12} sm={6} md={3} key={index}>
 <Card style={{ height: "100%" }} variant="outlined">
     <CardHeader className="text-center"

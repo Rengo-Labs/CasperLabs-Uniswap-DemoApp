@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 import React from "react";
 import { Link } from "react-router-dom";
+import StorageIcon from '@material-ui/icons/Storage';
 import ListAltIcon from '@material-ui/icons/ListAlt';
 function AdminSidebar(props) {
   let handleLogout = (e) => {
@@ -50,6 +51,11 @@ function AdminSidebar(props) {
             <li className={props.activeTab.newDrop}>
               <Link to={`${props.match.url}/newDrop`}>
                 <i className="fas fa-plus"></i> <span>New Drop</span>
+              </Link>
+            </li>
+            <li className={props.activeTab.myDrops}>
+              <Link to={`${props.match.url}/myDrops`}>
+                <StorageIcon></StorageIcon> <span>My Drops</span>
               </Link>
             </li>
             <li className={props.activeTab.newRandomDrop}>

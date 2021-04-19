@@ -65,6 +65,7 @@ function RandomDrop(props) {
             newCollection:"",
             myNFTs:"",
             myCubes:"",
+            myDrops: "",
             orders: "",
             settings: "",
             privacyPolicy: "",

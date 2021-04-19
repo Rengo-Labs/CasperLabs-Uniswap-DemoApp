@@ -74,8 +74,6 @@ function NewDrop(props) {
 
     // { id: 0, name: "Robot", price: "20" }, { id: 1, name: "Robot Cube", price: "2" }, { id: 2, name: "Cube", price: "15" }
     let [isSaving, setIsSaving] = useState(false);
-    let [supply, setSupply] = useState("");
-
     let [minimumBid, setMinimumBid] = useState();
 
     let [type, setType] = useState();
@@ -117,6 +115,7 @@ function NewDrop(props) {
             newDrop: "active",
             newSupefNFT: "",
             myCubes: "",
+            myDrops: "",
             myNFTs: "",
             newCollection: "",
             orders: "",
@@ -141,13 +140,8 @@ function NewDrop(props) {
 
         setTypes([...types, value]);
         var index = inputList.findIndex(i => i._id === value._id);
-        // console.log("imageData", imageData[index]);
-        // console.log("(...typesImages",...typesImages,imageData[index]);
         setTypesImages([...typesImages, imageData[index]])
         setType("");
-        // setCategory('');
-        // setDescription('');
-        // setFileData('');
     };
     let loadWeb3 = async () => {
         if (window.ethereum) {
@@ -185,10 +179,10 @@ function NewDrop(props) {
             const address = Addresses.CreateCubeAddress;
             const abi = CreateCubeContract;
 
-            // let nftIds = [];
-            // for (let i = 0; i < selectedNFTList.length; i++) {
-            //     nftIds.push(selectedNFTList[i].nftId);
-            // }
+            let tokenId = [];
+            for (let i = 0; i < types.length; i++) {
+                tokenId.push(types[i].tokenId);
+            }
             // let uriData = {
             //     title: name,
             //     description: description,
@@ -203,7 +197,7 @@ function NewDrop(props) {
 
             var myContractInstance = await new web3.eth.Contract(abi, address);
             console.log("myContractInstance", myContractInstance);
-            await myContractInstance.methods.Create_cube(startTime,endTime,minimumBid).send({ from: accounts[0] }, (err, response) => {
+            await myContractInstance.methods.Create_cube(startTime, endTime, minimumBid, tokenId).send({ from: accounts[0] }, (err, response) => {
                 console.log('get transaction', err, response);
                 if (err !== null) {
                     console.log("err", err);
@@ -217,26 +211,19 @@ function NewDrop(props) {
                     console.log("receipt", receipt);
                     console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
                     let ids = receipt.events.Transfer.returnValues.tokenId;
-                    let nftId = [];
+                    let tokensId = [];
                     handleCloseBackdrop();
-                    // for (let i = 0; i < selectedNFTList.length; i++) {
-                    //     nftId.push(selectedNFTList[i]._id);
-                    // }
-                    // let cubeData = {
-                    //     tokenId: ids,
-                    //     title: name,
-                    //     description: description,
-                    //     nftids: nftId,
-                    //     ownermusicfile: musicOwner,
-                    //     nonownermusicfile: musicNonOwner,
-                    //     MusicArtistName: artist,
-                    //     MusicArtistAbout: aboutTheTrack,
-                    //     MusicArtistProfile: artistImage,
-                    //     musicartisttype: artistType,
-                    //     SalePrice: salePrice,
-                    // }
-                    // console.log("cubeData", cubeData);
-                    axios.post("/token/TokenIds",).then(
+                    for (let i = 0; i < types.length; i++) {
+                        tokensId.push(types[i]._id);
+                    }
+                    let DropData = {
+                        tokenId: tokensId,
+                        AuctionStartsAt: startTime,
+                        AuctionEndsAt: endTime,
+                        MinimumBid: minimumBid
+                    }
+                    console.log("cubeData", DropData);
+                    axios.post("/drop/createdrop",DropData).then(
                         (response) => {
                             console.log('response', response);
                             setIsSaving(false);
