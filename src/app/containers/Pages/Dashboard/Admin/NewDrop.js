@@ -183,17 +183,6 @@ function NewDrop(props) {
             for (let i = 0; i < types.length; i++) {
                 tokenId.push(types[i].tokenId);
             }
-            // let uriData = {
-            //     title: name,
-            //     description: description,
-            //     nftids: nftIds,
-            //     ownermusicfile: musicOwner,
-            //     nonownermusicfile: musicNonOwner,
-            //     MusicArtistName: artist,
-            //     MusicArtistAbout: aboutTheTrack,
-            //     MusicArtistProfile: artistImage,
-            //     SalePrice: salePrice,
-            // }
 
             var myContractInstance = await new web3.eth.Contract(abi, address);
             console.log("myContractInstance", myContractInstance);
@@ -223,7 +212,7 @@ function NewDrop(props) {
                         MinimumBid: minimumBid
                     }
                     console.log("cubeData", DropData);
-                    axios.post("/drop/createdrop",DropData).then(
+                    axios.post("/drop/createdrop", DropData).then(
                         (response) => {
                             console.log('response', response);
                             setIsSaving(false);
@@ -293,7 +282,10 @@ function NewDrop(props) {
                                     <div className="form-group">
                                         <DateTimePicker
                                             className="form-control"
-                                            onChange={setStartTime}
+                                            onChange={(e) => {
+                                                console.log(e);
+                                                setStartTime(e)
+                                            }}
                                             value={startTime}
                                         />
                                     </div>
@@ -301,7 +293,10 @@ function NewDrop(props) {
                                     <div className="form-group">
                                         <DateTimePicker
                                             className="form-control"
-                                            onChange={setEndTime}
+                                            onChange={(e) => {
+                                                console.log(e);
+                                                setEndTime(e)
+                                            }}
                                             value={endTime}
                                         />
                                     </div>

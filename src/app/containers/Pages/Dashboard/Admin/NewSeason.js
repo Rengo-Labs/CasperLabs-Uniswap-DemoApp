@@ -11,6 +11,8 @@ import { Spinner } from "react-bootstrap";
 import DateTimePicker from 'react-datetime-picker';
 import NewNFTCards from '../../../../components/Cards/NewNFTCards';
 import { Scrollbars } from 'react-custom-scrollbars';
+import r1 from '../../../../assets/img/patients/patient.jpg';
+
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -48,9 +50,11 @@ function NewSeason(props) {
     const [endTime, setEndTime] = useState(new Date());
     const [inputList, setInputList] = useState([{ id: 0, name: "Robot", price: "20" }, { id: 1, name: "Robot Cube", price: "2" }, { id: 2, name: "Cube", price: "15" }]);
     let [isSaving, setIsSaving] = useState(false);
-    let [supply, setSupply] = useState("");
-    let [salePrice, setSalePrice] = useState();
-    let [minimumBid, setMinimumBid] = useState();
+    let [image, setImage] = useState(r1);
+    let [drops, setDrops] = useState();
+    let [isUploading, setIsUploading] = useState();
+    let [name, setName] = useState("");
+    let [description, setDescription] = useState("");
 
     let [type, setType] = useState();
     let [types, setTypes] = useState([]);
@@ -62,8 +66,8 @@ function NewSeason(props) {
             newNFT: "",
             newDrop: "",
             newSeason: "active",
-            myNFTs:"",
-            myCubes:"",
+            myNFTs: "",
+            myCubes: "",
             myDrops: "",
             newSupefNFT: "",
             newCollection: "",
@@ -97,30 +101,27 @@ function NewSeason(props) {
 
     const handleSubmitEvent = (event) => {
         event.preventDefault();
+
         setIsSaving(true);
 
         let jwt = Cookies.get("Authorization");
         let jwtDecoded = jwtDecode(jwt);
         let exporter = jwtDecoded.id;
-        let fileData = new FormData();
-        fileData.append("exporterId", exporter);
-        let catagoryArray = [];
-        let descriptionArray = [];
-        console.log(descriptionArray);
 
-        fileData.append(`description`, JSON.stringify(descriptionArray));
-        fileData.append(`documentNames`, JSON.stringify(catagoryArray));
-        fileData.append(`numberOfTokens`, salePrice * 10 ** 18);
-
-        for (var pair of fileData.entries()) {
-            console.log(pair[0] + ', ' + pair[1]);
+        let DropData = {
+            name: name,
+            description: description,
+            image: image,
+            drops: drops
         }
-
-        axios.post("api/v1/exporter/addOrder", fileData).then(
+        console.log("cubeData", DropData);
+        axios.post("/drop/createdrop", DropData).then(
             (response) => {
+                console.log('response', response);
                 setIsSaving(false);
+
                 let variant = "success";
-                enqueueSnackbar('Order Added Successfully.', { variant });
+                enqueueSnackbar('New Season Created Successfully.', { variant });
             },
             (error) => {
                 if (process.env.NODE_ENV === "development") {
@@ -129,11 +130,38 @@ function NewSeason(props) {
                 }
                 setIsSaving(false);
                 let variant = "error";
-                enqueueSnackbar('Unable to Add Order.', { variant });
+                enqueueSnackbar('Unable to Create New Season.', { variant });
+            }
+        );
+
+    };
+
+    let onChangeFile = (e) => {
+        setIsUploading(true);
+        let imageNFT = e.target.files[0]
+        let fileData = new FormData();
+        fileData.append("image", imageNFT);
+        axios.post("upload/uploadtos3", fileData).then(
+            (response) => {
+                console.log("response", response);
+                setImage(response.data.url);
+                setIsUploading(false);
+                let variant = "success";
+                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsUploading(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
 
             }
         );
-    };
+
+    }
 
     return (
         <div className="card">
@@ -181,23 +209,86 @@ function NewSeason(props) {
 
 
                                 <div className="form-group">
-                                    <label>Season Starts At</label>
+                                    <label>Season Name</label>
                                     <div className="form-group">
-                                        <DateTimePicker
+                                        <input
+                                            type="text"
+                                            required
+                                            value={name}
+                                            placeholder="Enter Name of Season"
                                             className="form-control"
-                                            onChange={setStartTime}
-                                            value={startTime}
-                                        />
-                                    </div>
-                                    <label>Season Ends At</label>
-                                    <div className="form-group">
-                                        <DateTimePicker
-                                            className="form-control"
-                                            onChange={setEndTime}
-                                            value={endTime}
+                                            onChange={(e) => {
+                                                setName(e.target.value)
+                                            }}
                                         />
                                     </div>
 
+                                    <div className="form-group">
+                                        <label>Season Description</label>
+                                        <textarea
+                                            type="text"
+                                            required
+                                            rows="4"
+                                            value={description}
+                                            placeholder="Enter Description of Season"
+                                            className="form-control"
+                                            onChange={(e) => {
+                                                setDescription(e.target.value)
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Select Title Image</label>
+                                        <div className="filter-widget">
+                                            <div className="form-group">
+                                                <div className="change-avatar">
+                                                    <div className="profile-img">
+                                                        <div
+                                                            style={{
+                                                                background: "#E9ECEF",
+                                                                width: "100px",
+                                                                height: "100px",
+                                                            }}
+                                                        >
+                                                            <img src={image} alt="Selfie" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="upload-img">
+                                                        <div
+                                                            className="change-photo-btn"
+                                                            style={{ backgroundColor: "rgb(167,0,0)" }}
+                                                        >
+                                                            {isUploading ? (
+                                                                <div className="text-center">
+                                                                    <Spinner
+                                                                        animation="border"
+                                                                        role="status"
+                                                                        style={{ color: "#fff" }}
+                                                                    >
+                                                                    </Spinner>
+                                                                </div>
+                                                            ) : (
+                                                                <span><i className="fa fa-upload"></i>Upload photo</span>
+                                                            )}
+
+                                                            <input
+                                                                name="sampleFile"
+                                                                type="file"
+                                                                className="upload"
+                                                                accept=".png,.jpg,.jpeg"
+                                                                onChange={onChangeFile}
+                                                            />
+                                                        </div>
+                                                        <small className="form-text text-muted">
+                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                      </small>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -241,11 +332,18 @@ function NewSeason(props) {
                         </Spinner>
                     </div>
                 ) : (
-                    <div className="submit-section">
-                        <button type="button" onClick={handleSubmitEvent} className="btn submit-btn">
-                            Create Drop
+                    name === "" || description === "" || image === r1 || types === [] || types.length === 0 ? (
+                        <div className="submit-section">
+                            <button type="button" disabled className="btn submit-btn">
+                                Create Drop
                   </button>
-                    </div>
+                        </div>
+                    ) : (
+                        <div className="submit-section">
+                            <button type="button" onClick={handleSubmitEvent} className="btn submit-btn">
+                                Create Drop
+                  </button>
+                        </div>)
                 )}
             </div>
 
