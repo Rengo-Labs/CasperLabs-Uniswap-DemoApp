@@ -1,21 +1,43 @@
-import { Grid } from '@material-ui/core/';
+import { Avatar, CardHeader, Grid } from '@material-ui/core/';
+import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
+import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import Cookies from "js-cookie";
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
+import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
+
 import jwtDecode from "jwt-decode";
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import DateTimePicker from 'react-datetime-picker';
-import NewNFTCards from '../../../../components/Cards/NewNFTCards';
 import { Scrollbars } from 'react-custom-scrollbars';
+import DateTimePicker from 'react-datetime-picker';
+import Web3 from 'web3';
+import r1 from '../../../../assets/img/patients/patient.jpg';
+import ipfs from '../../../../components/IPFS/ipfs';
+
+
+
 const useStyles = makeStyles((theme) => ({
     root: {
-        flexGrow: 1,
-        width: '100%',
-        backgroundColor: theme.palette.background.paper,
+        maxWidth: 345,
+    },
+    media: {
+        height: 300,
+    },
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
     },
     badge: {
         '& > *': {
@@ -46,25 +68,57 @@ function NewDrop(props) {
     const classes = useStyles();
     const [startTime, setStartTime] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date());
-    const [inputList, setInputList] = useState([{ id: 0, name: "Robot", price: "20" }, { id: 1, name: "Robot Cube", price: "2" }, { id: 2, name: "Cube", price: "15" }]);
+    const [inputList, setInputList] = useState([]);
+    const [imageData, setImageData] = useState([]);
+
+
+    // { id: 0, name: "Robot", price: "20" }, { id: 1, name: "Robot Cube", price: "2" }, { id: 2, name: "Cube", price: "15" }
     let [isSaving, setIsSaving] = useState(false);
     let [supply, setSupply] = useState("");
-    
+
     let [minimumBid, setMinimumBid] = useState();
 
     let [type, setType] = useState();
     let [types, setTypes] = useState([]);
+    const [typesImages, setTypesImages] = useState([]);
+    const [network, setNetwork] = useState("");
 
+    const [showNetworkModal, setShowNetworkModal] = useState(false);
+    const handleCloseNetworkModal = () => setShowNetworkModal(false);
+    const handleShowNetworkModal = () => setShowNetworkModal(true);
 
+    const [open, setOpen] = React.useState(false);
+    const handleCloseBackdrop = () => {
+        setOpen(false);
+    };
+    const handleShowBackdrop = () => {
+        setOpen(true);
+    };
+
+    let getMyCubes = () => {
+        axios.get("/token/TokenIds").then(
+            (response) => {
+                console.log("response", response);
+                setInputList(response.data.tokensdata);
+                setImageData(response.data.nftsdata);
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+            })
+    }
     useEffect(() => {
+        getMyCubes();
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
             newDrop: "active",
-            newSupefNFT:"",
-            myCubes:"",
-            myNFTs:"",
-            newCollection:"",
+            newSupefNFT: "",
+            myCubes: "",
+            myNFTs: "",
+            newCollection: "",
             orders: "",
             settings: "",
             privacyPolicy: "",
@@ -85,53 +139,125 @@ function NewDrop(props) {
     };
     const handleAddClick = (value) => {
 
-        setTypes([...types, { id: value.id, name: value.name, price: value.price }]);
+        setTypes([...types, value]);
+        var index = inputList.findIndex(i => i._id === value._id);
+        // console.log("imageData", imageData[index]);
+        // console.log("(...typesImages",...typesImages,imageData[index]);
+        setTypesImages([...typesImages, imageData[index]])
         setType("");
         // setCategory('');
         // setDescription('');
         // setFileData('');
     };
+    let loadWeb3 = async () => {
+        if (window.ethereum) {
+            window.web3 = new Web3(window.ethereum)
+            await window.ethereum.enable()
+        }
+        else if (window.web3) {
+            window.web3 = new Web3(window.web3.currentProvider)
+        }
+        else {
+            window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+        }
+    }
 
+    const handleSubmitEvent = async (e) => {
+        e.preventDefault();
 
-    const handleSubmitEvent = (event) => {
-        event.preventDefault();
         setIsSaving(true);
 
         let jwt = Cookies.get("Authorization");
         let jwtDecoded = jwtDecode(jwt);
         let exporter = jwtDecoded.id;
-        let fileData = new FormData();
-        fileData.append("exporterId", exporter);
-        let catagoryArray = [];
-        let descriptionArray = [];
-        console.log(descriptionArray);
 
-        fileData.append(`description`, JSON.stringify(descriptionArray));
-        fileData.append(`documentNames`, JSON.stringify(catagoryArray));
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        const network = await web3.eth.net.getNetworkType()
+        if (network !== 'ropsten') {
+            setNetwork(network);
+            setIsSaving(false);
+            handleShowNetworkModal();
+        }
+        else {
+            handleShowBackdrop();
+            const address = Addresses.CreateCubeAddress;
+            const abi = CreateCubeContract;
 
-        for (var pair of fileData.entries()) {
-            console.log(pair[0] + ', ' + pair[1]);
+            // let nftIds = [];
+            // for (let i = 0; i < selectedNFTList.length; i++) {
+            //     nftIds.push(selectedNFTList[i].nftId);
+            // }
+            // let uriData = {
+            //     title: name,
+            //     description: description,
+            //     nftids: nftIds,
+            //     ownermusicfile: musicOwner,
+            //     nonownermusicfile: musicNonOwner,
+            //     MusicArtistName: artist,
+            //     MusicArtistAbout: aboutTheTrack,
+            //     MusicArtistProfile: artistImage,
+            //     SalePrice: salePrice,
+            // }
+
+            var myContractInstance = await new web3.eth.Contract(abi, address);
+            console.log("myContractInstance", myContractInstance);
+            await myContractInstance.methods.Create_cube().send({ from: accounts[0] }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsSaving(false);
+                }
+            })
+                .on('receipt', (receipt) => {
+                    console.log("receipt", receipt);
+                    console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
+                    let ids = receipt.events.Transfer.returnValues.tokenId;
+                    let nftId = [];
+                    handleCloseBackdrop();
+                    // for (let i = 0; i < selectedNFTList.length; i++) {
+                    //     nftId.push(selectedNFTList[i]._id);
+                    // }
+                    // let cubeData = {
+                    //     tokenId: ids,
+                    //     title: name,
+                    //     description: description,
+                    //     nftids: nftId,
+                    //     ownermusicfile: musicOwner,
+                    //     nonownermusicfile: musicNonOwner,
+                    //     MusicArtistName: artist,
+                    //     MusicArtistAbout: aboutTheTrack,
+                    //     MusicArtistProfile: artistImage,
+                    //     musicartisttype: artistType,
+                    //     SalePrice: salePrice,
+                    // }
+                    // console.log("cubeData", cubeData);
+                    axios.post("/token/TokenIds",).then(
+                        (response) => {
+                            console.log('response', response);
+                            setIsSaving(false);
+
+                            let variant = "success";
+                            enqueueSnackbar('Cube Created Successfully.', { variant });
+                        },
+                        (error) => {
+                            if (process.env.NODE_ENV === "development") {
+                                console.log(error);
+                                console.log(error.response);
+                            }
+                            setIsSaving(false);
+                            let variant = "error";
+                            enqueueSnackbar('Unable to Create Cube.', { variant });
+                        }
+                    );
+                })
         }
 
-        axios.post("api/v1/exporter/addOrder", fileData).then(
-            (response) => {
-                setIsSaving(false);
-                let variant = "success";
-                enqueueSnackbar('Order Added Successfully.', { variant });
-            },
-            (error) => {
-                if (process.env.NODE_ENV === "development") {
-                    console.log(error);
-                    console.log(error.response);
-                }
-                setIsSaving(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Add Order.', { variant });
-
-            }
-        );
     };
-
     return (
         <div className="card">
             <ul className="breadcrumb" style={{ backgroundColor: "rgb(167,0,0)" }}>
@@ -152,16 +278,16 @@ function NewDrop(props) {
                                         id="combo-dox-demo"
                                         required
                                         options={inputList}
-                                        value={type}
+                                        // value={type}
                                         // disabled={isDisabledImporter}
                                         getOptionLabel={(option) =>
-                                            option.name
+                                            option.title + ',' + option.SalePrice
                                         }
                                         onChange={(event, value) => {
                                             if (value == null)
                                                 setType("");
                                             else {
-                                                console.log(value);
+                                                console.log(value, event);
                                                 setType(value.name)
                                                 handleAddClick(value);
                                             }
@@ -175,8 +301,6 @@ function NewDrop(props) {
                                         )}
                                     />
                                 </div>
-
-                             
                                 <div className="form-group">
                                     <label>Auction Starts At</label>
                                     <div className="form-group">
@@ -213,14 +337,11 @@ function NewDrop(props) {
                                 </div>
                             </div>
                         </form>
-
                     </div>
 
                     <div className="col-md-12 col-lg-6">
                         {types.length > 0 ? (
-                            <Scrollbars style={{ height: 600 }}>
-
-
+                            <Scrollbars style={{ height: 650 }}>
                                 {/* <!-- Change Password Form --> */}
                                 <div className="form-group">
                                     <div >
@@ -231,9 +352,56 @@ function NewDrop(props) {
                                             justify="flex-start"
                                         // alignItems="flex-start"
                                         >
-                                            {types.map((data, index) =>
+                                            {types.map((i, index) => (
+                                                <Grid item xs={12} sm={6} md={6} key={index}>
+                                                    <Card className={classes.root}>
+                                                        {/* style={{ height: "100%" }} variant="outlined" */}
+                                                        <CardActionArea>
+
+                                                            <CardMedia
+                                                                className={classes.media}
+                                                                // image={img}
+                                                                title=""
+                                                            >
+                                                                <div class="wrapper">
+                                                                    <div class="cube-box">
+                                                                        {typesImages[index].map((j, jindex) => (
+                                                                            <>
+                                                                                {/* {console.log(j)} */}
+                                                                                <img src={j.artwork} style={{ border: j.type === "Mastercraft" ? '4px solid #ff0000' : j.type === "Legendary" ? '4px solid #FFD700' : j.type === "Epic" ? '4px solid #9400D3' : j.type === "Rare" ? '4px solid #0000FF' : j.type === "Uncommon" ? '4px solid #008000' : j.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                                                                            </>
+                                                                        ))}
+                                                                        {new Array(6 - typesImages.length).fill(0).map((_, index) => (
+                                                                            < img src={r1} alt="" />
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </CardMedia>
+                                                            <CardContent>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Cube Description: </strong>{i.description}
+                                                                </Typography>
+
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Sale Price: </strong>{i.SalePrice}
+                                                                </Typography>
+                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
+                                                                <CardHeader
+                                                                    avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                    title={i.MusicArtistName}
+                                                                    subheader={i.MusicArtistAbout}
+                                                                />
+                                                            </CardContent>
+                                                        </CardActionArea>
+                                                        <CardActions>
+
+                                                        </CardActions>
+                                                    </Card>
+                                                </Grid >
+                                            ))}
+                                            {/* {types.map((data, index) =>
                                                 <NewNFTCards key={index} index={index} data={data} handleRemoveClick={handleRemoveClick}></NewNFTCards>
-                                            )}
+                                            )} */}
                                         </Grid>
                                     </div>
                                 </div>
@@ -260,7 +428,15 @@ function NewDrop(props) {
                     </div>
                 )}
             </div>
-
+            <NetworkErrorModal
+                show={showNetworkModal}
+                handleClose={handleCloseNetworkModal}
+                network={network}
+            >
+            </NetworkErrorModal>
+            <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </div>
 
     );
