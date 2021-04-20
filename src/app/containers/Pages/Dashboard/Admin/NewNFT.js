@@ -568,12 +568,12 @@ function NewNFT(props) {
                                                         name="sampleFile"
                                                         type="file"
                                                         className="upload"
-                                                        accept=".png,.jpg,.jpeg"
+                                                        accept=".png,.jpg,.jpeg,.gif"
                                                         onChange={onChangeFile}
                                                     />
                                                 </div>
                                                 <small className="form-text text-muted">
-                                                    Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                    Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                             </div>
 
@@ -757,12 +757,12 @@ function NewNFT(props) {
                                                                 name="sampleFile"
                                                                 type="file"
                                                                 className="upload"
-                                                                accept=".png,.jpg,.jpeg"
+                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                 onChange={onChangeSelfieHandler}
                                                             />
                                                         </div>
                                                         <small className="form-text text-muted">
-                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                     </div>
                                                 </div>
@@ -877,12 +877,12 @@ function NewNFT(props) {
                                                                 name="sampleFile"
                                                                 type="file"
                                                                 className="upload"
-                                                                accept=".png,.jpg,.jpeg"
+                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                 onChange={onChangeProducerHandler}
                                                             />
                                                         </div>
                                                         <small className="form-text text-muted">
-                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                     </div>
                                                 </div>
@@ -998,12 +998,12 @@ function NewNFT(props) {
                                                                 name="sampleFile"
                                                                 type="file"
                                                                 className="upload"
-                                                                accept=".png,.jpg,.jpeg"
+                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                 onChange={onChangeExecutiveProducerHandler}
                                                             />
                                                         </div>
                                                         <small className="form-text text-muted">
-                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                     </div>
                                                 </div>
@@ -1116,12 +1116,12 @@ function NewNFT(props) {
                                                                 name="sampleFile"
                                                                 type="file"
                                                                 className="upload"
-                                                                accept=".png,.jpg,.jpeg"
+                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                 onChange={onChangeFanHandler}
                                                             />
                                                         </div>
                                                         <small className="form-text text-muted">
-                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                     </div>
                                                 </div>

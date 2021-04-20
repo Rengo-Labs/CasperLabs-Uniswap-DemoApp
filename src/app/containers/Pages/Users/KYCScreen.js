@@ -202,12 +202,12 @@ function KYCScreen(props) {
                                                                                 name="sampleFile"
                                                                                 type="file"
                                                                                 className="upload"
-                                                                                accept=".png,.jpg,.jpeg"
+                                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                             // onChange={this.onChangeSelfieHandler}
                                                                             />
                                                                         </div>
                                                                         <small className="form-text text-muted">
-                                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                                     </div>
                                                                 </div>
@@ -241,12 +241,12 @@ function KYCScreen(props) {
                                                                                 name="sampleFile"
                                                                                 type="file"
                                                                                 className="upload"
-                                                                                accept=".png,.jpg,.jpeg"
+                                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                             // onChange={this.onChangeBusinessCertificateHandler}
                                                                             />
                                                                         </div>
                                                                         <small className="form-text text-muted">
-                                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                                     </div>
                                                                 </div>
@@ -281,12 +281,12 @@ function KYCScreen(props) {
                                                                                 name="sampleFile"
                                                                                 type="file"
                                                                                 className="upload"
-                                                                                accept=".png,.jpg,.jpeg"
+                                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                             // onChange={this.onChangePassportHandler}
                                                                             />
                                                                         </div>
                                                                         <small className="form-text text-muted">
-                                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                                     </div>
                                                                 </div>
@@ -321,12 +321,12 @@ function KYCScreen(props) {
                                                                                 name="sampleFile"
                                                                                 type="file"
                                                                                 className="upload"
-                                                                                accept=".png,.jpg,.jpeg"
+                                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                             // onChange={this.onChangePassportSelfieHandler}
                                                                             />
                                                                         </div>
                                                                         <small className="form-text text-muted">
-                                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                                     </div>
                                                                 </div>
@@ -355,12 +355,12 @@ function KYCScreen(props) {
                                                                                 type="file"
                                                                                 multiple
                                                                                 className="upload"
-                                                                                accept=".png,.jpg,.jpeg"
+                                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                             // onChange={this.onChangePictureHandler}
                                                                             />
                                                                         </div>
                                                                         <small className="form-text text-muted">
-                                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                                     </div>
 

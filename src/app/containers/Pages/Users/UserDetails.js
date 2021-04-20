@@ -128,12 +128,12 @@ class UserDetails extends Component {
                                             name="sampleFile"
                                             type="file"
                                             className="upload"
-                                            accept=".png,.jpg,.jpeg"
+                                            accept=".png,.jpg,.jpeg,.gif"
                                             onChange={this.onChangeSelfieHandler}
                                         />
                                     </div>
                                     <small className="form-text text-muted">
-                                        Allowed JPG, JPEG, PNG. Max size of 5MB
+                                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                 </div>
                             </div>
@@ -167,12 +167,12 @@ class UserDetails extends Component {
                                             name="sampleFile"
                                             type="file"
                                             className="upload"
-                                            accept=".png,.jpg,.jpeg"
+                                            accept=".png,.jpg,.jpeg,.gif"
                                             onChange={this.onChangeBusinessCertificateHandler}
                                         />
                                     </div>
                                     <small className="form-text text-muted">
-                                        Allowed JPG, JPEG, PNG. Max size of 5MB
+                                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                 </div>
                             </div>

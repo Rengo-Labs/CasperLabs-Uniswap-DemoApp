@@ -68,6 +68,8 @@ function NewDrop(props) {
     const classes = useStyles();
     const [startTime, setStartTime] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date());
+    const [startTimeStamp, setStartTimeStamp] = useState(startTime.getTime());
+    const [endTimeStamp, setEndTimeStamp] = useState(endTime.getTime());
     const [inputList, setInputList] = useState([]);
     const [imageData, setImageData] = useState([]);
     const [error, setError] = useState("");
@@ -266,7 +268,13 @@ function NewDrop(props) {
                     (response) => {
                         console.log('response', response);
                         setIsSaving(false);
-
+                        setStartTime(new Date());
+                        setEndTime(new Date());
+                        setName("");
+                        setDescription("");
+                        setMinimumBid();
+                        setBidDelta();
+                        setImage(r1);
                         let variant = "success";
                         enqueueSnackbar('Cube Created Successfully.', { variant });
                     },
@@ -422,12 +430,12 @@ function NewDrop(props) {
                                                                 name="sampleFile"
                                                                 type="file"
                                                                 className="upload"
-                                                                accept=".png,.jpg,.jpeg"
+                                                                accept=".png,.jpg,.jpeg,.gif"
                                                                 onChange={onChangeFile}
                                                             />
                                                         </div>
                                                         <small className="form-text text-muted">
-                                                            Allowed JPG, JPEG, PNG. Max size of 5MB
+                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
                                                     </div>
 
@@ -444,6 +452,7 @@ function NewDrop(props) {
                                             className="form-control"
                                             onChange={(e) => {
                                                 console.log(e);
+                                                setStartTimeStamp(e.getTime());
                                                 setStartTime(e)
                                             }}
                                             value={startTime}
@@ -455,6 +464,7 @@ function NewDrop(props) {
                                             className="form-control"
                                             onChange={(e) => {
                                                 console.log(e);
+                                                setEndTimeStamp(e.getTime());
                                                 setEndTime(e)
                                             }}
                                             value={endTime}
