@@ -1,23 +1,32 @@
-import { Grid } from '@material-ui/core/';
+import { CardHeader, Grid } from '@material-ui/core/';
+import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
+import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import Cookies from "js-cookie";
+import Button from '@material-ui/core/Button';
 import jwtDecode from "jwt-decode";
+import Countdown from 'react-countdown';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import DateTimePicker from 'react-datetime-picker';
-import NewNFTCards from '../../../../components/Cards/NewNFTCards';
 import { Scrollbars } from 'react-custom-scrollbars';
 import r1 from '../../../../assets/img/patients/patient.jpg';
 
+
 const useStyles = makeStyles((theme) => ({
     root: {
-        flexGrow: 1,
-        width: '100%',
-        backgroundColor: theme.palette.background.paper,
+        maxWidth: 345,
+    },
+
+    media: {
+        height: 300,
     },
     badge: {
         '& > *': {
@@ -46,9 +55,7 @@ function NewSeason(props) {
 
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
-    const [startTime, setStartTime] = useState(new Date());
-    const [endTime, setEndTime] = useState(new Date());
-    const [inputList, setInputList] = useState([{ id: 0, name: "Robot", price: "20" }, { id: 1, name: "Robot Cube", price: "2" }, { id: 2, name: "Cube", price: "15" }]);
+    const [inputList, setInputList] = useState([]);
     let [isSaving, setIsSaving] = useState(false);
     let [image, setImage] = useState(r1);
     let [drops, setDrops] = useState();
@@ -58,9 +65,23 @@ function NewSeason(props) {
 
     let [type, setType] = useState();
     let [types, setTypes] = useState([]);
-
+    let getMyDrops = () => {
+        axios.get("/drop/drops").then(
+            (response) => {
+                console.log("response", response);
+                setInputList(response.data.Dropdata);
+                // setImageData(response.data.nftsdata);
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+            })
+    }
 
     useEffect(() => {
+        getMyDrops();
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
@@ -91,11 +112,8 @@ function NewSeason(props) {
     };
     const handleAddClick = (value) => {
 
-        setTypes([...types, { id: value.id, name: value.name, price: value.price }]);
+        setTypes([...types, value]);
         setType("");
-        // setCategory('');
-        // setDescription('');
-        // setFileData('');
     };
 
 
@@ -107,12 +125,16 @@ function NewSeason(props) {
         let jwt = Cookies.get("Authorization");
         let jwtDecoded = jwtDecode(jwt);
         let exporter = jwtDecoded.id;
+        let dropList=[];
+        for (let i = 0; i < types.length; i++) {
+            dropList.push(types[i]._id);
+        }
 
         let SeasonData = {
             title: name,
             description: description,
             image: image,
-            dropId: drops
+            dropId: dropList
         }
         console.log("cubeData", SeasonData);
         axios.post("/season/createseason", SeasonData).then(
@@ -186,14 +208,14 @@ function NewSeason(props) {
                                         value={type}
                                         // disabled={isDisabledImporter}
                                         getOptionLabel={(option) =>
-                                            option.name
+                                            option.title
                                         }
                                         onChange={(event, value) => {
                                             if (value == null)
                                                 setType("");
                                             else {
                                                 console.log(value);
-                                                setType(value.name)
+                                                setType(value.title)
                                                 handleAddClick(value);
                                             }
                                         }}
@@ -206,8 +228,6 @@ function NewSeason(props) {
                                         )}
                                     />
                                 </div>
-
-
                                 <div className="form-group">
                                     <label>Season Name</label>
                                     <div className="form-group">
@@ -287,19 +307,14 @@ function NewSeason(props) {
                                                 </div>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
                         </form>
-
                     </div>
-
                     <div className="col-md-12 col-lg-6">
                         {types.length > 0 ? (
                             <Scrollbars style={{ height: 600 }}>
-
-
                                 {/* <!-- Change Password Form --> */}
                                 <div className="form-group">
                                     <div >
@@ -310,8 +325,69 @@ function NewSeason(props) {
                                             justify="flex-start"
                                         // alignItems="flex-start"
                                         >
-                                            {types.map((data, index) =>
-                                                <NewNFTCards key={index} index={index} data={data} handleRemoveClick={handleRemoveClick}></NewNFTCards>
+                                            {types.map((i, index) =>
+                                                <Grid item xs={12} sm={6} md={6} key={index}>
+                                                    {/* <Link to={"myDrops/cubes/" + i._id}> */}
+                                                    <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
+                                                        <CardActionArea>
+                                                            <CardHeader className="text-center"
+                                                                title={i.title}
+                                                            />
+                                                            <CardMedia
+                                                                className={classes.media}
+                                                                image={i.image}
+                                                                title=""
+                                                            >
+                                                            </CardMedia>
+                                                            <CardContent>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Drop Description: </strong>{i.description}
+                                                                </Typography>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Minimum Bid: </strong>{i.MinimumBid}
+                                                                </Typography>
+                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
+                                                                    {new Date() < new Date(i.AuctionStartsAt) ? (
+                                                                        <div style={{ color: "#00FF00" }} >
+
+                                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                                <strong>Auction Starts At:</strong>
+                                                                            </Typography>
+                                                                            {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionStartsAt))}
+                                                                            <Countdown daysInHours date={new Date(i.AuctionStartsAt)}>
+                                                                            </Countdown>
+                                                                        </div>
+                                                                    ) : new Date() > new Date(i.AuctionStartsAt) && new Date() < new Date(i.AuctionEndsAt) ? (
+                                                                        <div style={{ color: "#FF0000" }}>
+                                                                            {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionEndsAt.toLoca))}
+                                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                                <strong>Auction Ends At:</strong>
+                                                                            </Typography>
+                                                                            <Countdown daysInHours date={new Date(i.AuctionEndsAt)}>
+                                                                            </Countdown>
+                                                                        </div>) : (
+                                                                        <Typography variant="body2" style={{ color: "#FF0000" }} component="p">
+                                                                            <strong>Auction Ended</strong>
+                                                                        </Typography>
+                                                                    )}
+                                                                </Typography>
+                                                            </CardContent>
+                                                        </CardActionArea>
+                                                        <CardActions>
+                                                            <Button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    handleRemoveClick(index);
+                                                                }}
+                                                                className="btn btn-sm bg-danger-light btn-block"
+
+                                                            >
+                                                                Remove Drop
+    </Button>
+                                                        </CardActions>
+                                                    </Card>
+                                                    {/* </Link> */}
+                                                </Grid >
                                             )}
                                         </Grid>
                                     </div>

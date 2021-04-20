@@ -1043,8 +1043,6 @@ function NewNFT(props) {
                                                             setExecutiveProducer(value.Name);
                                                             setExecutiveInspirationForThePiece(value.Inspiration);
                                                             setExecutiveProducerImage(value.Profile);
-
-
                                                         }
                                                     }}
                                                     renderInput={(params) => (
