@@ -12,6 +12,7 @@ import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
 import r1 from '../../../../assets/img/patients/patient.jpg';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -131,62 +132,57 @@ function MyDrops(props) {
                             {tokenList.map((i, index) => (
 
                                 <Grid item xs={12} sm={6} md={3} key={index}>
-                                    <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
-                                        <CardActionArea>
-                                            <CardHeader className="text-center"
-                                                title={i.title}
-                                            />
-                                            <CardMedia
-                                                className={classes.media}
-                                                image={i.image}
-                                                title=""
-                                            >
-                                                {/* <div class="mainDiv">
-                                                    <div className="square" onClick={() => {
-                                                    }}></div>
-                                                    <div className="square2" onClick={() => {
-                                                    }}></div>
-                                                    <div className="square3" onClick={() => {
-                                                    }}></div>
-                                                </div> */}
-                                            </CardMedia>
-                                            <CardContent>
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Drop Description: </strong>{i.description}
-                                                </Typography>
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Minimum Bid: </strong>{i.MinimumBid}
-                                                </Typography>
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
-                                                    {new Date() < new Date(i.AuctionStartsAt) ? (
-                                                        <div style={{ color: "#00FF00" }} >
+                                    <Link to={"myDrops/cubes/" + i._id}>
+                                        <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
+                                            <CardActionArea>
+                                                <CardHeader className="text-center"
+                                                    title={i.title}
+                                                />
+                                                <CardMedia
+                                                    className={classes.media}
+                                                    image={i.image}
+                                                    title=""
+                                                >
+                                                </CardMedia>
+                                                <CardContent>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Drop Description: </strong>{i.description}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Minimum Bid: </strong>{i.MinimumBid}
+                                                    </Typography>
+                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
+                                                        {new Date() < new Date(i.AuctionStartsAt) ? (
+                                                            <div style={{ color: "#00FF00" }} >
 
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Auction Starts At:</strong>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Auction Starts At:</strong>
+                                                                </Typography>
+                                                                {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionStartsAt))}
+                                                                <Countdown daysInHours date={new Date(i.AuctionStartsAt)}>
+                                                                </Countdown>
+                                                            </div>
+                                                        ) : new Date() > new Date(i.AuctionStartsAt) && new Date() < new Date(i.AuctionEndsAt) ? (
+                                                            <div style={{ color: "#FF0000" }}>
+                                                                {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionEndsAt.toLoca))}
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Auction Ends At:</strong>
+                                                                </Typography>
+                                                                <Countdown daysInHours date={new Date(i.AuctionEndsAt)}>
+                                                                </Countdown>
+                                                            </div>) : (
+                                                            <Typography variant="body2" style={{ color: "#FF0000" }} component="p">
+                                                                <strong>Auction Ended</strong>
                                                             </Typography>
-                                                            <Countdown daysInHours date={new Date(i.AuctionStartsAt)}>
-                                                            </Countdown>
-                                                        </div>
-                                                    ) : new Date() > new Date(i.AuctionStartsAt) && new Date() < new Date(i.AuctionEndsAt) ? (
-                                                        <div style={{ color: "#FF0000" }}>
+                                                        )}
+                                                    </Typography>
+                                                </CardContent>
+                                            </CardActionArea>
+                                            <CardActions>
 
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Auction Ends At:</strong>
-                                                            </Typography>
-                                                            <Countdown daysInHours date={new Date(i.AuctionEndsAt)}>
-                                                            </Countdown>
-                                                        </div>) : (
-                                                        <Typography variant="body2" style={{ color: "#FF0000" }} component="p">
-                                                            <strong>Auction Ended</strong>
-                                                        </Typography>
-                                                    )}
-                                                </Typography>
-                                            </CardContent>
-                                        </CardActionArea>
-                                        <CardActions>
-
-                                        </CardActions>
-                                    </Card>
+                                            </CardActions>
+                                        </Card>
+                                    </Link>
                                 </Grid >
                             ))}
                         </Grid>

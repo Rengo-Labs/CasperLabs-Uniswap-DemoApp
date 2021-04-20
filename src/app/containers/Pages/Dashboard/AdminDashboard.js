@@ -11,6 +11,7 @@ import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import AdminDashboardDefaultScreen from "./Admin/AdminDashboardDefaultScreen";
 import AdminSidebar from "./Admin/AdminSidebar";
+import DropCubes from "./Admin/DropsCubes";
 import MyCubes from "./Admin/MyCubes";
 import MyDrops from "./Admin/MyDrops";
 import MyNFTs from "./Admin/MyNFTs";
@@ -203,6 +204,9 @@ function AdminDashboard(props) {
               <MyDrops setActiveTab={setActiveTab} />
             </Route>
             
+            <Route exact path={`${path}/myDrops/cubes/:dropId`}>
+              <DropCubes setActiveTab={setActiveTab} />
+            </Route>
             <Route exact path={`${path}/newCollection`}>
               <NewCollection setActiveTab={setActiveTab} />
             </Route>
