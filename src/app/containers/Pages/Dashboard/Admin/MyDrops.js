@@ -10,6 +10,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
+import Countdown from 'react-countdown';
 import r1 from '../../../../assets/img/patients/patient.jpg';
 
 const useStyles = makeStyles((theme) => ({
@@ -17,7 +18,8 @@ const useStyles = makeStyles((theme) => ({
         maxWidth: 345,
     },
     media: {
-        height: 300,
+        height: 0,
+        paddingTop: '100%', // 16:9
     },
     badge: {
         '& > *': {
@@ -58,11 +60,11 @@ function MyDrops(props) {
     };
     let getMyDrops = () => {
         handleShowBackdrop();
-        axios.get("/token/TokenIds").then(
+        axios.get("/drop/drops").then(
             (response) => {
                 console.log("response", response);
-                setTokenList(response.data.tokensdata);
-                setImageData(response.data.nftsdata);
+                setTokenList(response.data.Dropdata);
+                // setImageData(response.data.nftsdata);
                 handleCloseBackdrop();
             },
             (error) => {
@@ -105,85 +107,91 @@ function MyDrops(props) {
                 <li className="breadcrumb-item active">My Drops</li>
             </ul>
             <div className="card-body">
-                <form >
-                    <div className="form-group">
+                <div className="form-group">
 
-                        {open ? (
-                            <div align="center" className="text-center">
-                                <Spinner
-                                    animation="border"
-                                    role="status"
-                                    style={{ color: "#ff0000" }}
-                                >
-
-                                </Spinner>
-                                <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                            </div>
-                        ) : (
-                            <Grid
-                                container
-                                spacing={2}
-                                direction="row"
-                                justify="flex-start"
-                            // alignItems="flex-start"
+                    {open ? (
+                        <div align="center" className="text-center">
+                            <Spinner
+                                animation="border"
+                                role="status"
+                                style={{ color: "#ff0000" }}
                             >
-                                {tokenList.map((i, index) => (
 
-                                    <Grid item xs={12} sm={6} md={3}>
-                                        <Card className={classes.root}>
-                                            {/* style={{ height: "100%" }} variant="outlined" */}
-                                            <CardActionArea>
+                            </Spinner>
+                            <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                        </div>
+                    ) : (
+                        <Grid
+                            container
+                            spacing={2}
+                            direction="row"
+                            justify="flex-start"
+                        // alignItems="flex-start"
+                        >
+                            {tokenList.map((i, index) => (
 
-                                                <CardMedia
-                                                    className={classes.media}
-                                                    // image={img}
-                                                    title=""
-                                                >
+                                <Grid item xs={12} sm={6} md={3} key={index}>
+                                    <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
+                                        <CardActionArea>
+                                            <CardHeader className="text-center"
+                                                title={i.title}
+                                            />
+                                            <CardMedia
+                                                className={classes.media}
+                                                image={i.image}
+                                                title=""
+                                            >
+                                                {/* <div class="mainDiv">
+                                                    <div className="square" onClick={() => {
+                                                    }}></div>
+                                                    <div className="square2" onClick={() => {
+                                                    }}></div>
+                                                    <div className="square3" onClick={() => {
+                                                    }}></div>
+                                                </div> */}
+                                            </CardMedia>
+                                            <CardContent>
+                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                    <strong>Drop Description: </strong>{i.description}
+                                                </Typography>
+                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                    <strong>Minimum Bid: </strong>{i.MinimumBid}
+                                                </Typography>
+                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
+                                                    {new Date() < new Date(i.AuctionStartsAt) ? (
+                                                        <div style={{ color: "#00FF00" }} >
 
-
-                                                    <div class="wrapper">
-                                                        <div class="cube-box">
-                                                            {imageData[index].map((j, jindex) => (
-                                                                <>
-                                                                    {console.log(j)}
-                                                                    <img src={j.artwork} style={{ border: j.type === "Mastercraft" ? '4px solid #ff0000' : j.type === "Legendary" ? '4px solid #FFD700' : j.type === "Epic" ? '4px solid #9400D3' : j.type === "Rare" ? '4px solid #0000FF' : j.type === "Uncommon" ? '4px solid #008000' : j.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
-                                                                </>
-                                                            ))}
-                                                            {new Array(6 - imageData[index].length).fill(0).map((_, index) => (
-                                                                < img src={r1} alt="" />
-                                                            ))}
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Auction Starts At:</strong>
+                                                            </Typography>
+                                                            <Countdown daysInHours date={new Date(i.AuctionStartsAt)}>
+                                                            </Countdown>
                                                         </div>
-                                                    </div>
+                                                    ) : new Date() > new Date(i.AuctionStartsAt) && new Date() < new Date(i.AuctionEndsAt) ? (
+                                                        <div style={{ color: "#FF0000" }}>
 
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Auction Ends At:</strong>
+                                                            </Typography>
+                                                            <Countdown daysInHours date={new Date(i.AuctionEndsAt)}>
+                                                            </Countdown>
+                                                        </div>) : (
+                                                        <Typography variant="body2" style={{ color: "#FF0000" }} component="p">
+                                                            <strong>Auction Ended</strong>
+                                                        </Typography>
+                                                    )}
+                                                </Typography>
+                                            </CardContent>
+                                        </CardActionArea>
+                                        <CardActions>
 
-
-                                                </CardMedia>
-                                                <CardContent>
-                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Drop Description: </strong>{i.description}
-                                                    </Typography>
-
-                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Sale Price: </strong>{i.SalePrice}
-                                                    </Typography>
-                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                    <CardHeader
-                                                        avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                        title={i.MusicArtistName}
-                                                        subheader={i.MusicArtistAbout}
-                                                    />
-                                                </CardContent>
-                                            </CardActionArea>
-                                            <CardActions>
-
-                                            </CardActions>
-                                        </Card>
-                                    </Grid >
-                                ))}
-                            </Grid>
-                        )}
-                    </div>
-                </form>
+                                        </CardActions>
+                                    </Card>
+                                </Grid >
+                            ))}
+                        </Grid>
+                    )}
+                </div>
             </div >
             {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
                 <CircularProgress color="inherit" />
@@ -194,47 +202,3 @@ function MyDrops(props) {
 }
 
 export default MyDrops;
-{/* <Grid item xs={12} sm={6} md={3} key={index}>
-<Card style={{ height: "100%" }} variant="outlined">
-    <CardHeader className="text-center"
-        title={i.title}
-    />
-
-    <CardMedia
-        className={classes.media}
-        // image={img}
-        title=""
-    >
-
-        <div class="wrapper">
-            <div class="cube-box">
-                {imageData.map((i, index) => (
-                    <img src={i[0].artwork} style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
-                ))}
-                {new Array(6 - imageData.length).fill(0).map((_, index) => (
-                    < img src={r1} alt="" />
-                ))}
-            </div>
-        </div>
-
-
-
-    </CardMedia>
-    <CardContent>
-        <Typography variant="body2" color="textSecondary" component="p">
-            <strong>Cube Description: </strong>{i.description}
-        </Typography>
-
-        <Typography variant="body2" color="textSecondary" component="p">
-            <strong>Sale Price: </strong>{i.SalePricegi}
-        </Typography>
-        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-        <CardHeader
-            avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-            title={i.MusicArtistName}
-            subheader={i.MusicArtistAbout}
-        />
-
-    </CardContent>
-</Card>
-</Grid> */}

@@ -108,14 +108,14 @@ function NewSeason(props) {
         let jwtDecoded = jwtDecode(jwt);
         let exporter = jwtDecoded.id;
 
-        let DropData = {
-            name: name,
+        let SeasonData = {
+            title: name,
             description: description,
             image: image,
-            drops: drops
+            dropId: drops
         }
-        console.log("cubeData", DropData);
-        axios.post("/drop/createdrop", DropData).then(
+        console.log("cubeData", SeasonData);
+        axios.post("/season/createseason", SeasonData).then(
             (response) => {
                 console.log('response', response);
                 setIsSaving(false);
