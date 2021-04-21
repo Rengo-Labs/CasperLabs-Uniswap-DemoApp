@@ -8,6 +8,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import axios from 'axios';
+import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import r1 from '../../../../assets/img/patients/patient.jpg';
@@ -70,6 +71,12 @@ function MyCubes(props) {
                     console.log(error);
                     console.log(error.response);
                 }
+                if (error.response.data !== undefined) {
+                    if (error.response.data === "Unauthorized access (invalid token) !!") {
+                        Cookies.remove("Authorization");
+                        window.location.reload();
+                    }
+                }
                 handleCloseBackdrop();
             })
     }
@@ -83,6 +90,7 @@ function MyCubes(props) {
             newNFT: "",
             orders: "",
             myNFTs: "",
+            mySeason: "",
             myCubes: "active",
             myDrops: "",
             settings: "",

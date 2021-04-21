@@ -8,9 +8,9 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import axios from 'axios';
-import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
+import Cookies from "js-cookie";
 import Countdown from 'react-countdown';
 import r1 from '../../../../assets/img/patients/patient.jpg';
 import { Link } from 'react-router-dom';
@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-function MyDrops(props) {
+function MySeasons(props) {
     const classes = useStyles();
     const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
@@ -60,12 +60,12 @@ function MyDrops(props) {
     const handleShowBackdrop = () => {
         setOpen(true);
     };
-    let getMyDrops = () => {
+    let getMySeasons = () => {
         handleShowBackdrop();
-        axios.get("/drop/drops").then(
+        axios.get("/season/seasons").then(
             (response) => {
                 console.log("response", response);
-                setTokenList(response.data.Dropdata);
+                setTokenList(response.data.Seasondata);
                 // setImageData(response.data.nftsdata);
                 handleCloseBackdrop();
             },
@@ -85,7 +85,7 @@ function MyDrops(props) {
     }
 
     useEffect(() => {
-        getMyDrops();
+        getMySeasons();
         // getCollections();?
 
         props.setActiveTab({
@@ -94,8 +94,8 @@ function MyDrops(props) {
             orders: "",
             myNFTs: "",
             myCubes: "",
-            myDrops: "active",
-            mySeason:"",
+            myDrops: "",
+            mySeason:"active",
             settings: "",
             privacyPolicy: "",
             termsandconditions: "",
@@ -113,7 +113,7 @@ function MyDrops(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
-                <li className="breadcrumb-item active">My Drops</li>
+                <li className="breadcrumb-item active">My Seasons</li>
             </ul>
             <div className="card-body">
                 <div className="form-group">
@@ -138,9 +138,8 @@ function MyDrops(props) {
                         // alignItems="flex-start"
                         >
                             {tokenList.map((i, index) => (
-
                                 <Grid item xs={12} sm={6} md={3} key={index}>
-                                    <Link to={"myDrops/cubes/" + i._id}>
+                                    <Link to={"mySeason/drops/" + i._id}>
                                         <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                             <CardActionArea>
                                                 <CardHeader className="text-center"
@@ -154,36 +153,9 @@ function MyDrops(props) {
                                                 </CardMedia>
                                                 <CardContent>
                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Drop Description: </strong>{i.description}
+                                                        <strong>Season Description: </strong>{i.description}
                                                     </Typography>
-                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Minimum Bid: </strong>{i.MinimumBid}
-                                                    </Typography>
-                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
-                                                        {new Date() < new Date(i.AuctionStartsAt) ? (
-                                                            <div style={{ color: "#00FF00" }} >
 
-                                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Auction Starts At:</strong>
-                                                                </Typography>
-                                                                {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionStartsAt))}
-                                                                <Countdown daysInHours date={new Date(i.AuctionStartsAt)}>
-                                                                </Countdown>
-                                                            </div>
-                                                        ) : new Date() > new Date(i.AuctionStartsAt) && new Date() < new Date(i.AuctionEndsAt) ? (
-                                                            <div style={{ color: "#FF0000" }}>
-                                                                {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionEndsAt.toLoca))}
-                                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Auction Ends At:</strong>
-                                                                </Typography>
-                                                                <Countdown daysInHours date={new Date(i.AuctionEndsAt)}>
-                                                                </Countdown>
-                                                            </div>) : (
-                                                            <Typography variant="body2" style={{ color: "#FF0000" }} component="p">
-                                                                <strong>Auction Ended</strong>
-                                                            </Typography>
-                                                        )}
-                                                    </Typography>
                                                 </CardContent>
                                             </CardActionArea>
                                             <CardActions>
@@ -205,4 +177,4 @@ function MyDrops(props) {
     );
 }
 
-export default MyDrops;
+export default MySeasons;

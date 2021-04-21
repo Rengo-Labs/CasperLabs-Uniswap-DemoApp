@@ -29,6 +29,7 @@ function AdminDashboardDefaultScreen(props) {
       totalUserAccount: "",
       pendingUserAccount: "",
       disputedOrders: "",
+      mySeason:"",
       earningsList:"",
       referralEarnings:"",
       settings: "",

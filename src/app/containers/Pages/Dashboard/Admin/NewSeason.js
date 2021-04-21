@@ -77,6 +77,12 @@ function NewSeason(props) {
                     console.log(error);
                     console.log(error.response);
                 }
+                if (error.response.data !== undefined) {
+                    if (error.response.data === "Unauthorized access (invalid token) !!") {
+                        Cookies.remove("Authorization");
+                        window.location.reload();
+                    }
+                }
             })
     }
 
@@ -87,6 +93,7 @@ function NewSeason(props) {
             newNFT: "",
             newDrop: "",
             newSeason: "active",
+            mySeason:"",
             myNFTs: "",
             myCubes: "",
             myDrops: "",
@@ -125,7 +132,7 @@ function NewSeason(props) {
         let jwt = Cookies.get("Authorization");
         let jwtDecoded = jwtDecode(jwt);
         let exporter = jwtDecoded.id;
-        let dropList=[];
+        let dropList = [];
         for (let i = 0; i < types.length; i++) {
             dropList.push(types[i]._id);
         }
@@ -141,7 +148,10 @@ function NewSeason(props) {
             (response) => {
                 console.log('response', response);
                 setIsSaving(false);
-
+                setName("");
+                setDescription("");
+                setImage(r1);
+                types([]);
                 let variant = "success";
                 enqueueSnackbar('New Season Created Successfully.', { variant });
             },

@@ -68,9 +68,14 @@ function AdminSidebar(props) {
                 <i className="fas fa-boxes"></i> <span>New Season</span>
               </Link>
             </li>
+            <li className={props.activeTab.mySeason}>
+              <Link to={`${props.match.url}/mySeason`}>
+                <i className="fas fa-boxes"></i> <span>My Season</span>
+              </Link>
+            </li>
             <li className={props.activeTab.newCollection}>
               <Link to={`${props.match.url}/newCollection`}>
-                <i className="fas fa-layer-group"></i><span>New Collection</span>
+                <i className="fas fa-layer-group"></i><span>Collection</span>
               </Link>
             </li>
 

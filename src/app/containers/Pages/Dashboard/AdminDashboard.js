@@ -15,14 +15,17 @@ import DropCubes from "./Admin/DropsCubes";
 import MyCubes from "./Admin/MyCubes";
 import MyDrops from "./Admin/MyDrops";
 import MyNFTs from "./Admin/MyNFTs";
-import NewCollection from "./Admin/NewCollection";
+import MySeasons from "./Admin/MySeasons";
+import MyCollection from "./Admin/MyCollection";
 import NewCube from "./Admin/NewCube";
 import NewDrop from "./Admin/NewDrop";
 import NewNFT from "./Admin/NewNFT";
 import NewSeason from "./Admin/NewSeason";
 import RandomDrop from "./Admin/RandomDrop";
+import SeasonDrops from "./Admin/SeasonDrops";
 import ChangePassword from "./ChangePassword";
 import ProfileSetting from "./ProfileSetting";
+import CollectionNfts from "./Admin/CollectionNfts";
 
 axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
   "Authorization"
@@ -195,40 +198,50 @@ function AdminDashboard(props) {
             <Route exact path={`${path}/newSeason`}>
               <NewSeason setActiveTab={setActiveTab} />
             </Route>
+            <Route exact path={`${path}/mySeason`}>
+              <MySeasons setActiveTab={setActiveTab}/>
+            </Route>
             
+            <Route exact path={`${path}/mySeason/drops/:seasonId`}>
+                <SeasonDrops setActiveTab={setActiveTab} />
+              </Route>
             <Route exact path={`${path}/newDrop`}>
-              <NewDrop setActiveTab={setActiveTab} />
-            </Route>
-            
-            <Route exact path={`${path}/myDrops`}>
-              <MyDrops setActiveTab={setActiveTab} />
-            </Route>
-            
-            <Route exact path={`${path}/myDrops/cubes/:dropId`}>
-              <DropCubes setActiveTab={setActiveTab} />
-            </Route>
-            <Route exact path={`${path}/newCollection`}>
-              <NewCollection setActiveTab={setActiveTab} />
-            </Route>
+                <NewDrop setActiveTab={setActiveTab} />
+              </Route>
 
-            <Route exact path={`${path}/profilesettings`}>
-              <ProfileSetting
-                setActiveTab={setActiveTab}
-              />
-            </Route>
-            <Route exact path={`${path}/changepassword`}>
-              <ChangePassword setActiveTab={setActiveTab} />
-            </Route>
-            <Route path={`${path}`}>
-              <AdminDashboardDefaultScreen
-                match={props.match}
-                setActiveTab={setActiveTab}
-              />
-            </Route>
+              <Route exact path={`${path}/myDrops`}>
+                <MyDrops setActiveTab={setActiveTab} />
+              </Route>
+
+              <Route exact path={`${path}/myDrops/cubes/:dropId`}>
+                <DropCubes setActiveTab={setActiveTab} />
+              </Route>
+              <Route exact path={`${path}/newCollection`}>
+                <MyCollection setActiveTab={setActiveTab} />
+              </Route>
+
+
+              <Route exact path={`${path}/collection/nfts/:collectionId`}>
+                <CollectionNfts setActiveTab={setActiveTab} />
+              </Route>
+              <Route exact path={`${path}/profilesettings`}>
+                <ProfileSetting
+                  setActiveTab={setActiveTab}
+                />
+              </Route>
+              <Route exact path={`${path}/changepassword`}>
+                <ChangePassword setActiveTab={setActiveTab} />
+              </Route>
+              <Route path={`${path}`}>
+                <AdminDashboardDefaultScreen
+                  match={props.match}
+                  setActiveTab={setActiveTab}
+                />
+              </Route>
           </Switch>
         </div>
+        </div>
       </div>
-    </div>
   );
 }
 

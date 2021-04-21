@@ -8,11 +8,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
-import Cookies from "js-cookie";
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Spinner } from "react-bootstrap";
-
+import { Link, useParams } from "react-router-dom";
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -51,9 +50,9 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-function MyNFTs(props) {
+function CollectionNfts(props) {
     const classes = useStyles();
-
+    const { collectionId } = useParams();
     const [tokenList, setTokenList] = useState([]);
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
@@ -62,12 +61,15 @@ function MyNFTs(props) {
     const handleShowBackdrop = () => {
         setOpen(true);
     };
-    let getMyNFTs = () => {
+    let getCollectionNfts = () => {
         handleShowBackdrop();
-        axios.get("/nft/createnft").then(
+        let CollectioId={
+            collectionId:collectionId
+        }
+        axios.post("/collection/collections",CollectioId).then(
             (response) => {
                 console.log("response", response);
-                setTokenList(response.data.NFTdata);
+                setTokenList(response.data.Nftsdata);
                 handleCloseBackdrop();
             },
             (error) => {
@@ -75,25 +77,19 @@ function MyNFTs(props) {
                     console.log(error);
                     console.log(error.response);
                 }
-                if (error.response.data !== undefined) {
-                    if (error.response.data === "Unauthorized access (invalid token) !!") {
-                        Cookies.remove("Authorization");
-                        window.location.reload();
-                    }
-                }
                 handleCloseBackdrop();
             })
     }
 
     useEffect(() => {
-        getMyNFTs();
+        getCollectionNfts();
         // getCollections();?
 
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
             orders: "",
-            myNFTs: "active",
+            myNFTs: "",
             myCubes:"",
             myDrops: "",
             settings: "",
@@ -103,7 +99,7 @@ function MyNFTs(props) {
             changePassword: "",
             newDrop: "",
             newSupefNFT: "",
-            newCollection: "",
+            newCollection: "active",
             newRandomDrop: "",
         });
     }, []);
@@ -113,6 +109,9 @@ function MyNFTs(props) {
             <ul className="breadcrumb" style={{ backgroundColor: "rgb(167,0,0)" }}>
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
+                </li>
+                <li className="breadcrumb-item">
+                    <Link to="/dashboard/newCollection">Collections</Link>
                 </li>
                 <li className="breadcrumb-item active">My NFTs</li>
             </ul>
@@ -144,58 +143,58 @@ function MyNFTs(props) {
                                     <Grid item xs={12} sm={6} md={3} key={index}>
                                         <Card style={{ height: "100%" }} variant="outlined">
                                             <CardHeader className="text-center"
-                                                title={i.title}
+                                                title={i[0].title}
                                             />
                                             <CardMedia
-                                                style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                 className={classes.media}
-                                                image={i.artwork}
+                                                image={i[0].artwork}
 
                                                 title="NFT Image"
                                             />
                                             <CardContent>
                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Artwork Description: </strong>{i.description}
+                                                    <strong>Artwork Description: </strong>{i[0].description}
                                                 </Typography>
                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Token Rarity: </strong>{i.type}
+                                                    <strong>Token Rarity: </strong>{i[0].type}
                                                 </Typography>
                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Token Supply: </strong>{i.tokensupply}
+                                                    <strong>Token Supply: </strong>{i[0].tokensupply}
                                                 </Typography>
                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
                                                 <CardHeader
-                                                    avatar={<Avatar src={i.ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                    title={i.ImageArtistName}
-                                                    subheader={i.ImageArtistAbout}
+                                                    avatar={<Avatar src={i[0].ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                    title={i[0].ImageArtistName}
+                                                    subheader={i[0].ImageArtistAbout}
                                                 />
                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Website URL: </strong>{i.ImageArtistWebsite}
+                                                    <strong>Website URL: </strong>{i[0].ImageArtistWebsite}
                                                 </Typography>
                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
                                                 <CardHeader
-                                                    avatar={<Avatar src={i.ProducerProfile} aria-label="Producer" className={classes.avatar} />}
-                                                    title={i.ProducerName}
-                                                    subheader={i.ProducerInspiration}
+                                                    avatar={<Avatar src={i[0].ProducerProfile} aria-label="Producer" className={classes.avatar} />}
+                                                    title={i[0].ProducerName}
+                                                    subheader={i[0].ProducerInspiration}
                                                 />
                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
                                                 <CardHeader
-                                                    avatar={<Avatar src={i.ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
-                                                    title={i.ExecutiveProducerName}
-                                                    subheader={i.ExecutiveProducerInspiration}
+                                                    avatar={<Avatar src={i[0].ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
+                                                    title={i[0].ExecutiveProducerName}
+                                                    subheader={i[0].ExecutiveProducerInspiration}
                                                 />
                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
                                                 <CardHeader
-                                                    avatar={<Avatar src={i.FanProfile} aria-label="Fan" className={classes.avatar} />}
-                                                    title={i.FanName}
-                                                    subheader={i.FanInspiration}
+                                                    avatar={<Avatar src={i[0].FanProfile} aria-label="Fan" className={classes.avatar} />}
+                                                    title={i[0].FanName}
+                                                    subheader={i[0].FanInspiration}
                                                 />
 
                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Other: </strong>{i.other}
+                                                    <strong>Other: </strong>{i[0].other}
                                                 </Typography>
                                                 {/* <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Collection: </strong>{i.collectiontitle}
+                                                    <strong>Collection: </strong>{i[0].collectiontitle}
                                                 </Typography> */}
                                             </CardContent>
                                         </Card>
@@ -214,4 +213,4 @@ function MyNFTs(props) {
     );
 }
 
-export default MyNFTs;
+export default CollectionNfts;

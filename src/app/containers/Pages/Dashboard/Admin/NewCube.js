@@ -127,6 +127,12 @@ function NewCube(props) {
                     console.log(error);
                     console.log(error.response);
                 }
+                if (error.response.data !== undefined) {
+                    if (error.response.data === "Unauthorized access (invalid token) !!") {
+                        Cookies.remove("Authorization");
+                        window.location.reload();
+                    }
+                }
             })
     }
     let uploadMusicOwnerHandler = (e, index) => {
@@ -180,6 +186,7 @@ function NewCube(props) {
             newNFT: "",
             newSupefNFT: "active",
             myCubes:"",
+            mySeason:"",
             myNFTs: "",
             orders: "",
             myDrops: "",
@@ -202,6 +209,12 @@ function NewCube(props) {
                 if (process.env.NODE_ENV === "development") {
                     console.log(error);
                     console.log(error.response);
+                }
+                if (error.response.data !== undefined) {
+                    if (error.response.data === "Unauthorized access (invalid token) !!") {
+                        Cookies.remove("Authorization");
+                        window.location.reload();
+                    }
                 }
             })
     }

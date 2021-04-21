@@ -95,9 +95,9 @@ function NewNFT(props) {
     let [aboutTheArt, setAboutTheArt] = useState("");
     let [ipfsHash, setIpfsHash] = useState(null);
     let [description, setDescription] = useState("");
-    let [inspirationForThePiece, setInspirationForThePiece] = useState();
-    let [executiveInspirationForThePiece, setExecutiveInspirationForThePiece] = useState();
-    let [fanInspirationForThePiece, setFanInspirationForThePiece] = useState();
+    let [inspirationForThePiece, setInspirationForThePiece] = useState("");
+    let [executiveInspirationForThePiece, setExecutiveInspirationForThePiece] = useState("");
+    let [fanInspirationForThePiece, setFanInspirationForThePiece] = useState("");
 
     let [rarities, setRarities] = useState(["Mastercraft", "Legendary", "Epic", "Rare", "Uncommon", "Common"]);
     let [supplyType, setSupplyType] = useState("Single");
@@ -150,6 +150,12 @@ function NewNFT(props) {
                     console.log(error);
                     console.log(error.response);
                 }
+                if (error.response.data !== undefined) {
+                    if (error.response.data === "Unauthorized access (invalid token) !!") {
+                        Cookies.remove("Authorization");
+                        window.location.reload();
+                    }
+                }
             })
     }
     let getCollections = () => {
@@ -162,6 +168,12 @@ function NewNFT(props) {
                 if (process.env.NODE_ENV === "development") {
                     console.log(error);
                     console.log(error.response);
+                }
+                if (error.response.data !== undefined) {
+                    if (error.response.data === "Unauthorized access (invalid token) !!") {
+                        Cookies.remove("Authorization");
+                        window.location.reload();
+                    }
                 }
             })
     }
@@ -176,8 +188,9 @@ function NewNFT(props) {
             orders: "",
             settings: "",
             myNFTs: "",
+            mySeason: "",
             myDrops: "",
-            myCubes:"",
+            myCubes: "",
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",
@@ -203,108 +216,118 @@ function NewNFT(props) {
         event.preventDefault();
         setIsSaving(true);
 
-        let jwt = Cookies.get("Authorization");
-        let jwtDecoded = jwtDecode(jwt);
-        let exporter = jwtDecoded.id;
-        let fileData = new FormData();
+        if (tokenList.length === 0) {
 
-        await loadWeb3();
-        const web3 = window.web3
-        const accounts = await web3.eth.getAccounts();
-        const network = await web3.eth.net.getNetworkType()
-        if (network !== 'ropsten') {
-            setNetwork(network);
+            let variant = "error";
+            enqueueSnackbar('Add Nfts to Queue before Creation.', { variant });
             setIsSaving(false);
-            handleShow();
         }
         else {
-            handleShowBackdrop();
-            const address = Addresses.CreateNftAddress;
-            const abi = CreateNFTContract;
-            let totalImages = tokenList.length;
-            let AmountofNFTs = [];
-            let IPFsHashes = [];
-            for (let i = 0; i < tokenList.length; i++) {
-                AmountofNFTs.push(tokenList[i].tokensupply);
-                IPFsHashes.push(tokenList[i].ipfsHash);
+
+
+            let jwt = Cookies.get("Authorization");
+            let jwtDecoded = jwtDecode(jwt);
+            let exporter = jwtDecoded.id;
+            let fileData = new FormData();
+
+            await loadWeb3();
+            const web3 = window.web3
+            const accounts = await web3.eth.getAccounts();
+            const network = await web3.eth.net.getNetworkType()
+            if (network !== 'ropsten') {
+                setNetwork(network);
+                setIsSaving(false);
+                handleShow();
             }
-            console.log("AmountofNFTs", AmountofNFTs);
-            console.log("IPFsHashes", IPFsHashes);
-
-            var myContractInstance = await new web3.eth.Contract(abi, address);
-            console.log("myContractInstance", myContractInstance);
-            await myContractInstance.methods.new_batch(totalImages, AmountofNFTs, IPFsHashes).send({ from: accounts[0] }, (err, response) => {
-                console.log('get transaction', err, response);
-                if (err !== null) {
-                    console.log("err", err);
-                    let variant = "error";
-                    enqueueSnackbar('User Canceled Transaction', { variant });
-                    handleCloseBackdrop();
-                    setIsSaving(false);
+            else {
+                handleShowBackdrop();
+                const address = Addresses.CreateNftAddress;
+                const abi = CreateNFTContract;
+                let totalImages = tokenList.length;
+                let AmountofNFTs = [];
+                let IPFsHashes = [];
+                for (let i = 0; i < tokenList.length; i++) {
+                    AmountofNFTs.push(tokenList[i].tokensupply);
+                    IPFsHashes.push(tokenList[i].ipfsHash);
                 }
-            })
-                .on('receipt', (receipt) => {
-                    console.log("receipt", receipt);
-                    console.log("receipt", receipt.events.TransferBatch.returnValues.ids);
-                    let ids = receipt.events.TransferBatch.returnValues.ids;
-                    for (let i = 0; i < tokenList.length; i++) {
-                        tokenList[i].nftId = ids[i];
+                console.log("AmountofNFTs", AmountofNFTs);
+                console.log("IPFsHashes", IPFsHashes);
+
+                var myContractInstance = await new web3.eth.Contract(abi, address);
+                console.log("myContractInstance", myContractInstance);
+                await myContractInstance.methods.new_batch(totalImages, AmountofNFTs, IPFsHashes).send({ from: accounts[0] }, (err, response) => {
+                    console.log('get transaction', err, response);
+                    if (err !== null) {
+                        console.log("err", err);
+                        let variant = "error";
+                        enqueueSnackbar('User Canceled Transaction', { variant });
+                        handleCloseBackdrop();
+                        setIsSaving(false);
                     }
-
-                    let Data = {
-                        nftdata: tokenList
-                    }
-                    console.log("Data", Data);
-                    axios.post("/nft/createnft", Data).then(
-                        (response) => {
-                            console.log("response", response);
-                            let variant = "success";
-                            enqueueSnackbar('Nfts Created Successfully.', { variant });
-                            setTokenList([]);
-                            setIpfsHash("");
-                            setImage(r1);
-                            setName("");
-                            setDescription("");
-                            setRarity("");
-                            setTokenSupply(1);
-                            setImageArtist("");
-                            setAboutTheArt("");
-                            setWebsite("");
-                            setArtistImage(r1);
-                            setProducer("");
-                            setInspirationForThePiece("");
-                            setProducerImage(r1);
-                            setExecutiveProducer("");
-                            setExecutiveInspirationForThePiece("");
-                            setExecutiveProducerImage(r1);
-                            setFan("");
-                            setFanInspirationForThePiece("");
-                            setFanImage(r1);
-                            setOther("");
-                            setCollection("");
-                            setCollectionType("New");
-                            setImageArtistType("New");
-                            setProducerType("New");
-                            setExecutiveProducerType("New");
-                            setFanType("New");
-                            setSupplyType("Single");
-                            setCollectionId("");
-                            handleCloseBackdrop();
-                            setIsSaving(false);
-                        },
-                        (error) => {
-                            if (process.env.NODE_ENV === "development") {
-                                console.log(error);
-                                console.log(error.response);
-                            }
-
-                            let variant = "error";
-                            enqueueSnackbar('Unable to Create Nfts.', { variant });
-
-                            handleCloseBackdrop();
-                            setIsSaving(false);
-                        })
                 })
+                    .on('receipt', (receipt) => {
+                        console.log("receipt", receipt);
+                        console.log("receipt", receipt.events.TransferBatch.returnValues.ids);
+                        let ids = receipt.events.TransferBatch.returnValues.ids;
+                        for (let i = 0; i < tokenList.length; i++) {
+                            tokenList[i].nftId = ids[i];
+                        }
+
+                        let Data = {
+                            nftdata: tokenList
+                        }
+                        console.log("Data", Data);
+                        axios.post("/nft/createnft", Data).then(
+                            (response) => {
+                                console.log("response", response);
+                                let variant = "success";
+                                enqueueSnackbar('Nfts Created Successfully.', { variant });
+                                setTokenList([]);
+                                setIpfsHash("");
+                                setImage(r1);
+                                setName("");
+                                setDescription("");
+                                setRarity("");
+                                setTokenSupply(1);
+                                setImageArtist("");
+                                setAboutTheArt("");
+                                setWebsite("");
+                                setArtistImage(r1);
+                                setProducer("");
+                                setInspirationForThePiece("");
+                                setProducerImage(r1);
+                                setExecutiveProducer("");
+                                setExecutiveInspirationForThePiece("");
+                                setExecutiveProducerImage(r1);
+                                setFan("");
+                                setFanInspirationForThePiece("");
+                                setFanImage(r1);
+                                setOther("");
+                                setCollection("");
+                                setCollectionType("New");
+                                setImageArtistType("New");
+                                setProducerType("New");
+                                setExecutiveProducerType("New");
+                                setFanType("New");
+                                setSupplyType("Single");
+                                setCollectionId("");
+                                handleCloseBackdrop();
+                                setIsSaving(false);
+                            },
+                            (error) => {
+                                if (process.env.NODE_ENV === "development") {
+                                    console.log(error);
+                                    console.log(error.response);
+                                }
+
+                                let variant = "error";
+                                enqueueSnackbar('Unable to Create Nfts.', { variant });
+
+                                handleCloseBackdrop();
+                                setIsSaving(false);
+                            })
+                    })
+            }
         }
     };
     const handleRemoveClick = (index) => {
@@ -315,64 +338,133 @@ function NewNFT(props) {
 
     // handle click event of the Add button
     const handleAddClick = () => {
-        setTokenList([...tokenList, {
-            ipfsHash: ipfsHash,
-            artwork: image,
-            title: name,
-            description: description,
-            type: rarity,
-            tokensupply: tokenSupply,
-            ImageArtistName: imageArtist,
-            ImageArtistAbout: aboutTheArt,
-            ImageArtistWebsite: website,
-            ImageArtistProfile: artistImage,
-            ProducerName: producer,
-            ProducerInspiration: inspirationForThePiece,
-            ProducerProfile: producerImage,
-            ExecutiveProducerName: executiveProducer,
-            ExecutiveProducerInspiration: executiveInspirationForThePiece,
-            ExecutiveProducerProfile: executiveProducerImage,
-            FanName: fan,
-            FanInspiration: fanInspirationForThePiece,
-            FanProfile: fanImage,
-            other: other,
-            collectiontitle: collection,
-            collectiontype: collectionType,
-            imageartisttype: imageArtistType,
-            producertype: producerType,
-            executiveproducertype: executiveProducerType,
-            fantype: fanType,
-            supplytype: supplyType,
-            collectionId: collectionId,
-        }]);
-        setIpfsHash("");
-        setImage(r1);
-        setName("");
-        setDescription("");
-        setRarity("");
-        setTokenSupply(1);
-        setImageArtist("");
-        setAboutTheArt("");
-        setWebsite("");
-        setArtistImage(r1);
-        setProducer("");
-        setInspirationForThePiece("");
-        setProducerImage(r1);
-        setExecutiveProducer("");
-        setExecutiveInspirationForThePiece("");
-        setExecutiveProducerImage(r1);
-        setFan("");
-        setFanInspirationForThePiece("");
-        setFanImage(r1);
-        setOther("");
-        setCollection("");
-        setCollectionType("New");
-        setImageArtistType("New");
-        setProducerType("New");
-        setExecutiveProducerType("New");
-        setFanType("New");
-        setSupplyType("Single");
-        setCollectionId("");
+        if (image === r1) {
+            let variant = "error";
+            enqueueSnackbar('Please Upload Artwork Photo', { variant });
+        } else if (name === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Artwork Name', { variant });
+        } else if (description === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Artwork Description', { variant });
+        } else if (rarity === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Select Artwork Rarity', { variant });
+        } else if (tokenSupply === "" || tokenSupply === undefined || tokenSupply === null) {
+            let variant = "error";
+            enqueueSnackbar('Token Supply cannot be Empty', { variant });
+        } else if (tokenSupply < 0) {
+            let variant = "error";
+            enqueueSnackbar('Token Supply cannot be Negative', { variant });
+        } else if (tokenSupply < 0) {
+            let variant = "error";
+            enqueueSnackbar('Token Supply cannot be Negative', { variant });
+        } else if (imageArtist === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Image Artist Name', { variant });
+        } else if (aboutTheArt === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter About the Art', { variant });
+        } else if (artistImage === r1) {
+            let variant = "error";
+            enqueueSnackbar('Please Select Image Artist Image', { variant });
+        } else if (website === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Website of Image Artist', { variant });
+        } else if (producer === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Producer Name', { variant });
+        } else if (producerImage === r1) {
+            let variant = "error";
+            enqueueSnackbar('Please Select Producer Image', { variant });
+        } else if (inspirationForThePiece === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Producer Inspiration For The Piece', { variant });
+        } else if (executiveProducer === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Executive Producer Name', { variant });
+        } else if (executiveProducerImage === r1) {
+            let variant = "error";
+            enqueueSnackbar('Please Select Executive Producer Image', { variant });
+        } else if (executiveInspirationForThePiece === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Executive Producer Inspiration For The Piece', { variant });
+        } else if (fan === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Fan Name', { variant });
+        } else if (fanImage === r1) {
+            let variant = "error";
+            enqueueSnackbar('Please Select Fan Image', { variant });
+        } else if (fanInspirationForThePiece === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Fan Inspiration For The Piece', { variant });
+        } else if (other === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter other Input field', { variant });
+        } else if (collection === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Collection Name', { variant });
+        }
+        else {
+            setTokenList([...tokenList, {
+                ipfsHash: ipfsHash,
+                artwork: image,
+                title: name,
+                description: description,
+                type: rarity,
+                tokensupply: tokenSupply,
+                ImageArtistName: imageArtist,
+                ImageArtistAbout: aboutTheArt,
+                ImageArtistWebsite: website,
+                ImageArtistProfile: artistImage,
+                ProducerName: producer,
+                ProducerInspiration: inspirationForThePiece,
+                ProducerProfile: producerImage,
+                ExecutiveProducerName: executiveProducer,
+                ExecutiveProducerInspiration: executiveInspirationForThePiece,
+                ExecutiveProducerProfile: executiveProducerImage,
+                FanName: fan,
+                FanInspiration: fanInspirationForThePiece,
+                FanProfile: fanImage,
+                other: other,
+                collectiontitle: collection,
+                collectiontype: collectionType,
+                imageartisttype: imageArtistType,
+                producertype: producerType,
+                executiveproducertype: executiveProducerType,
+                fantype: fanType,
+                supplytype: supplyType,
+                collectionId: collectionId,
+            }]);
+            setIpfsHash("");
+            setImage(r1);
+            setName("");
+            setDescription("");
+            setRarity("");
+            setTokenSupply(1);
+            setImageArtist("");
+            setAboutTheArt("");
+            setWebsite("");
+            setArtistImage(r1);
+            setProducer("");
+            setInspirationForThePiece("");
+            setProducerImage(r1);
+            setExecutiveProducer("");
+            setExecutiveInspirationForThePiece("");
+            setExecutiveProducerImage(r1);
+            setFan("");
+            setFanInspirationForThePiece("");
+            setFanImage(r1);
+            setOther("");
+            setCollection("");
+            setCollectionType("New");
+            setImageArtistType("New");
+            setProducerType("New");
+            setExecutiveProducerType("New");
+            setFanType("New");
+            setSupplyType("Single");
+            setCollectionId("");
+        }
     };
 
     let onChangeFile = (e) => {
@@ -1245,7 +1337,7 @@ function NewNFT(props) {
 
                                 </div>
 
-                                {image === "" || name === "" || description === "" || tokenSupply === "" || imageArtist === "" || aboutTheArt === "" || website === "" || artistImage === "" || producer === "" || inspirationForThePiece === "" || producerImage === "" || executiveProducer === "" || executiveInspirationForThePiece === "" || executiveProducerImage === "" || fan === "" || fanInspirationForThePiece === "" || fanImage === "" || other === "" || collection === "" ? (
+                                {/* {image === "" || name === "" || description === "" || tokenSupply === "" || imageArtist === "" || aboutTheArt === "" || website === "" || artistImage === "" || producer === "" || inspirationForThePiece === "" || producerImage === "" || executiveProducer === "" || executiveInspirationForThePiece === "" || executiveProducerImage === "" || fan === "" || fanInspirationForThePiece === "" || fanImage === "" || other === "" || collection === "" ? (
                                     <button
                                         className="btn"
                                         type="submit"
@@ -1253,15 +1345,15 @@ function NewNFT(props) {
                                     >
                                         <i className="fa fa-plus"></i> Add NFT to queue
                                     </button>
-                                ) : (
-                                    <button
-                                        className="btn"
-                                        type="button"
-                                        onClick={() => handleAddClick()}
-                                    >
-                                        <i className="fa fa-plus"></i> Add NFT to queue
+                                ) : ( */}
+                                <button
+                                    className="btn"
+                                    type="button"
+                                    onClick={() => handleAddClick()}
+                                >
+                                    <i className="fa fa-plus"></i> Add NFT to queue
                                     </button>
-                                )}
+                                {/* )} */}
                             </div>
                         </form>
 
@@ -1372,19 +1464,19 @@ function NewNFT(props) {
                             </Spinner>
                         </div>
                     ) : (
-                        tokenList.length === 0 ? (
-                            <div className="submit-section">
-                                <button type="button" disabled className="btn submit-btn">
-                                    Batch create NFTs
-                        </button>
-                            </div>
-                        ) : (
-                            <div className="submit-section">
-                                <button type="button" onClick={(e) => handleSubmitEvent(e)} className="btn submit-btn">
-                                    Batch create NFTs
+                        // tokenList.length === 0 ? (
+                        //     <div className="submit-section">
+                        //         <button type="button" disabled className="btn submit-btn">
+                        //             Batch create NFTs
+                        // </button>
+                        //     </div>
+                        // ) : (
+                        <div className="submit-section">
+                            <button type="button" onClick={(e) => handleSubmitEvent(e)} className="btn submit-btn">
+                                Batch create NFTs
                   </button>
-                            </div>
-                        )
+                        </div>
+                        // )
 
                     )
                 }

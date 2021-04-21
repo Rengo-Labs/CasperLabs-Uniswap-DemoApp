@@ -8,12 +8,12 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import axios from 'axios';
-import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
 import r1 from '../../../../assets/img/patients/patient.jpg';
 import { Link } from 'react-router-dom';
+import { useParams } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -47,7 +47,8 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-function MyDrops(props) {
+function SeasonDrops(props) {
+    const { seasonId } = useParams();
     const classes = useStyles();
     const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
@@ -60,9 +61,12 @@ function MyDrops(props) {
     const handleShowBackdrop = () => {
         setOpen(true);
     };
-    let getMyDrops = () => {
+    let getSeasonDrops = () => {
         handleShowBackdrop();
-        axios.get("/drop/drops").then(
+        let SeasonId = {
+            seasonId: seasonId
+        }
+        axios.post("/season/seasons", SeasonId).then(
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.Dropdata);
@@ -74,18 +78,12 @@ function MyDrops(props) {
                     console.log(error);
                     console.log(error.response);
                 }
-                if (error.response.data !== undefined) {
-                    if (error.response.data === "Unauthorized access (invalid token) !!") {
-                        Cookies.remove("Authorization");
-                        window.location.reload();
-                    }
-                }
                 handleCloseBackdrop();
             })
     }
 
     useEffect(() => {
-        getMyDrops();
+        getSeasonDrops();
         // getCollections();?
 
         props.setActiveTab({
@@ -94,8 +92,8 @@ function MyDrops(props) {
             orders: "",
             myNFTs: "",
             myCubes: "",
-            myDrops: "active",
-            mySeason:"",
+            myDrops: "",
+            mySeason: "active",
             settings: "",
             privacyPolicy: "",
             termsandconditions: "",
@@ -113,7 +111,10 @@ function MyDrops(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
-                <li className="breadcrumb-item active">My Drops</li>
+                <li className="breadcrumb-item">
+                    <Link to="/dashboard/mySeason">My Season</Link>
+                </li>
+                <li className="breadcrumb-item active">Drops</li>
             </ul>
             <div className="card-body">
                 <div className="form-group">
@@ -140,43 +141,43 @@ function MyDrops(props) {
                             {tokenList.map((i, index) => (
 
                                 <Grid item xs={12} sm={6} md={3} key={index}>
-                                    <Link to={"myDrops/cubes/" + i._id}>
+                                    <Link to={"/dashboard/myDrops/cubes/" + i[0]._id}>
                                         <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                             <CardActionArea>
                                                 <CardHeader className="text-center"
-                                                    title={i.title}
+                                                    title={i[0].title}
                                                 />
                                                 <CardMedia
                                                     className={classes.media}
-                                                    image={i.image}
+                                                    image={i[0].image}
                                                     title=""
                                                 >
                                                 </CardMedia>
                                                 <CardContent>
                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Drop Description: </strong>{i.description}
+                                                        <strong>Drop Description: </strong>{i[0].description}
                                                     </Typography>
                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Minimum Bid: </strong>{i.MinimumBid}
+                                                        <strong>Minimum Bid: </strong>{i[0].MinimumBid}
                                                     </Typography>
                                                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
-                                                        {new Date() < new Date(i.AuctionStartsAt) ? (
+                                                        {new Date() < new Date(i[0].AuctionStartsAt) ? (
                                                             <div style={{ color: "#00FF00" }} >
 
                                                                 <Typography variant="body2" color="textSecondary" component="p">
                                                                     <strong>Auction Starts At:</strong>
                                                                 </Typography>
-                                                                {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionStartsAt))}
-                                                                <Countdown daysInHours date={new Date(i.AuctionStartsAt)}>
+                                                                {console.log("Date(i[0].AuctionStartsAt)", Date(i[0].AuctionStartsAt))}
+                                                                <Countdown daysInHours date={new Date(i[0].AuctionStartsAt)}>
                                                                 </Countdown>
                                                             </div>
-                                                        ) : new Date() > new Date(i.AuctionStartsAt) && new Date() < new Date(i.AuctionEndsAt) ? (
+                                                        ) : new Date() > new Date(i[0].AuctionStartsAt) && new Date() < new Date(i[0].AuctionEndsAt) ? (
                                                             <div style={{ color: "#FF0000" }}>
-                                                                {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionEndsAt.toLoca))}
+                                                                {console.log("Date(i[0].AuctionStartsAt)", Date(i[0].AuctionEndsAt.toLoca))}
                                                                 <Typography variant="body2" color="textSecondary" component="p">
                                                                     <strong>Auction Ends At:</strong>
                                                                 </Typography>
-                                                                <Countdown daysInHours date={new Date(i.AuctionEndsAt)}>
+                                                                <Countdown daysInHours date={new Date(i[0].AuctionEndsAt)}>
                                                                 </Countdown>
                                                             </div>) : (
                                                             <Typography variant="body2" style={{ color: "#FF0000" }} component="p">
@@ -205,4 +206,4 @@ function MyDrops(props) {
     );
 }
 
-export default MyDrops;
+export default SeasonDrops;

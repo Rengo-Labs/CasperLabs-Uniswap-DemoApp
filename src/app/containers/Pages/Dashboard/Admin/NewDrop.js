@@ -9,6 +9,7 @@ import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
+
 import Cookies from "js-cookie";
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -122,6 +123,7 @@ function NewDrop(props) {
             newNFT: "",
             newDrop: "active",
             newSupefNFT: "",
+            mySeason:"",
             myCubes: "",
             myDrops: "",
             myNFTs: "",

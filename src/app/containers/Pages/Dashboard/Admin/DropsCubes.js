@@ -94,6 +94,7 @@ function DropCubes(props) {
             newNFT: "",
             orders: "",
             myNFTs: "",
+            mySeason:"",
             myCubes: "",
             myDrops: "active",
             settings: "",
@@ -113,6 +114,7 @@ function DropCubes(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
+                
                 <li className="breadcrumb-item">
                     <Link to="/dashboard/myDrops">My Drops</Link>
                 </li>
