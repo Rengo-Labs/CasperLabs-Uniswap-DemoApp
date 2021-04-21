@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import StorageIcon from '@material-ui/icons/Storage';
 import ListAltIcon from '@material-ui/icons/ListAlt';
+import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
 function AdminSidebar(props) {
   let handleLogout = (e) => {
     Cookies.remove("Authorization");
@@ -70,7 +71,7 @@ function AdminSidebar(props) {
             </li>
             <li className={props.activeTab.mySeason}>
               <Link to={`${props.match.url}/mySeason`}>
-                <i className="fas fa-boxes"></i> <span>My Season</span>
+                <LibraryBooksIcon/> <span>My Season</span>
               </Link>
             </li>
             <li className={props.activeTab.newCollection}>

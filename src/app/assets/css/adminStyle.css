@@ -1446,9 +1446,9 @@ button.bg-danger:hover {
   margin-left: 0px;
 }
 .admin-header .header-left .logo img {
-  max-height: 70px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  max-height: 100px;
+  /* padding-top: 5px; */
+  padding-bottom: 10px;
   width: auto;
 }
 .header-left .logo.logo-small {

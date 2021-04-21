@@ -1740,7 +1740,7 @@ button.bg-danger:hover {
   -ms-flex-pack: space-between;
   /* position: relative; */
   position: fixed;
-  height: 70px;
+  height: 90px;
   padding: 0 40px;
   margin-bottom: 0;
   z-index: 20;
@@ -7415,9 +7415,9 @@ html.menu-opened body {
     text-align: center;
     margin-right: 0;
   }
-  .navbar-brand.logo img {
-    height: 40px;
-  }
+  /* .navbar-brand.logo img {
+    height: 100px;
+  } */
   .search-box form {
     display: block;
   }

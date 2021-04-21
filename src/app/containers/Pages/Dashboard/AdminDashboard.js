@@ -9,6 +9,8 @@ import "../../../assets/css/style.css";
 import patient from "../../../assets/img/patients/patient.jpg";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
+import Logo from "../../../assets/img/logo.png"
+
 import AdminDashboardDefaultScreen from "./Admin/AdminDashboardDefaultScreen";
 import AdminSidebar from "./Admin/AdminSidebar";
 import DropCubes from "./Admin/DropsCubes";
@@ -80,8 +82,8 @@ function AdminDashboard(props) {
             onClick={(e) => e.preventDefault()}
             style={{ color: 'rgb(167,0,0)' }}
           >
-            {/* <img src={Logo} alt="Logo" /> */}
-            Robot Drop
+            <img src={Logo} alt="Logo"  width="100" height="100" />
+            {/* Robot Drop */}
           </a>
           <a
             href="/"
@@ -89,8 +91,8 @@ function AdminDashboard(props) {
             onClick={(e) => e.preventDefault()}
             style={{ color: 'rgb(167,0,0)' }}
           >
-            {/* <img src={Logo} alt="Logo" width="30" height="30" /> */}
-            Robot Drop
+            <img src={Logo} alt="Logo" width="100" height="100" />
+            {/* Robot Drop */}
           </a>
         </div>
         {/* <!-- /Logo --> */}

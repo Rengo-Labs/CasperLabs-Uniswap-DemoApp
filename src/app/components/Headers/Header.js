@@ -135,8 +135,8 @@ function HeaderHome(props) {
           </a>
 
           <Link style={{ color: 'rgb(167,0,0)' }} to="/" className="navbar-brand logo">
-            {/* <img src={Logo} alt="Logo" width="100" height="60" /> */}
-            Robot Drop
+            <img src={Logo} alt="Logo" width="130" />
+            {/* Robot Drop */}
           </Link>
 
           {/* <Link style={{ color: 'rgb(167,0,0)' }} to="/kyc" className="navbar-brand">
@@ -147,8 +147,8 @@ function HeaderHome(props) {
         <div className="main-menu-wrapper">
           <div className="menu-header">
             <a style={{ color: 'rgb(167,0,0)' }} href="/" className="menu-logo">
-              {/* <img src={Logo} alt="Logo" width="100" height="60" /> */}
-              Robot Drop
+              <img src={Logo} alt="Logo" width="100" height="60" />
+              {/* Robot Drop */}
             </a>
             <a
               id="menu_close"
