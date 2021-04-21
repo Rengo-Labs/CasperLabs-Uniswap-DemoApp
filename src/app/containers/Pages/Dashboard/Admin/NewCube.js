@@ -80,9 +80,9 @@ function NewCube(props) {
     const [tokenList, setTokenList] = useState([]);
     const [selectedNFTList, setSelectedNFTList] = useState([])
     let [isSaving, setIsSaving] = useState(false);
-    let [name, setName] = useState();
-    let [description, setDescription] = useState();
-    let [aboutTheTrack, setAboutTheTrack] = useState();
+    let [name, setName] = useState("");
+    let [description, setDescription] = useState("");
+    let [aboutTheTrack, setAboutTheTrack] = useState("");
     let [salePrice, setSalePrice] = useState();
     let [artistTypes, setArtistTypes] = useState([]);
 
@@ -185,8 +185,8 @@ function NewCube(props) {
             dashboard: "",
             newNFT: "",
             newSupefNFT: "active",
-            myCubes:"",
-            mySeason:"",
+            myCubes: "",
+            mySeason: "",
             myNFTs: "",
             orders: "",
             myDrops: "",
@@ -232,7 +232,6 @@ function NewCube(props) {
     }
     const handleSubmitEvent = async (e) => {
         e.preventDefault();
-
         setIsSaving(true);
 
         let jwt = Cookies.get("Authorization");
@@ -240,117 +239,162 @@ function NewCube(props) {
         let exporter = jwtDecoded.id;
         console.log("exporter", exporter);
         let fileData = new FormData();
-
-        await loadWeb3();
-        const web3 = window.web3
-        const accounts = await web3.eth.getAccounts();
-        const network = await web3.eth.net.getNetworkType()
-        if (network !== 'ropsten') {
-            setNetwork(network);
+        if (selectedNFTList.length === 0) {
+            let variant = "error";
+            enqueueSnackbar('Please Select Nfts first', { variant });
             setIsSaving(false);
-            handleShowNetworkModal();
+        } else if (name === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Cube Name', { variant });
+            setIsSaving(false);
+        } else if (description === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Cube Description', { variant });
+            setIsSaving(false);
+        } else if (salePrice === "" || salePrice === null || salePrice === undefined) {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Cube Price', { variant });
+            setIsSaving(false);
+        } else if (salePrice < 0) {
+            let variant = "error";
+            enqueueSnackbar('Sale Price Cannot be Negative', { variant });
+            setIsSaving(false);
+        } else if (musicOwner === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Owner Music File', { variant });
+            setIsSaving(false);
+        } else if (musicNonOwner === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Non Owner Music File', { variant });
+            setIsSaving(false);
+        } else if (artist === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Music Artist Name', { variant });
+            setIsSaving(false);
+        } else if (artistImage === logo) {
+            let variant = "error";
+            enqueueSnackbar('Please Uplaod Music Artist Image', { variant });
+            setIsSaving(false);
+        } else if (aboutTheTrack === "") {
+            let variant = "error";
+            enqueueSnackbar('Please Enter Music Artist About the Track', { variant });
+            setIsSaving(false);
         }
         else {
-            handleShowBackdrop();
-            const address = Addresses.CreateCubeAddress;
-            const abi = CreateCubeContract;
-
-            let nftIds = [];
-            for (let i = 0; i < selectedNFTList.length; i++) {
-                nftIds.push(selectedNFTList[i].nftId);
+            await loadWeb3();
+            const web3 = window.web3
+            const accounts = await web3.eth.getAccounts();
+            const network = await web3.eth.net.getNetworkType()
+            if (network !== 'ropsten') {
+                setNetwork(network);
+                setIsSaving(false);
+                handleShowNetworkModal();
             }
-            let uriData = {
-                title: name,
-                description: description,
-                nftids: nftIds,
-                ownermusicfile: musicOwner,
-                nonownermusicfile: musicNonOwner,
-                MusicArtistName: artist,
-                MusicArtistAbout: aboutTheTrack,
-                MusicArtistProfile: artistImage,
-                SalePrice: salePrice,
-            }
-            const reader = new window.FileReader();
-            const blob = new Blob([JSON.stringify(uriData, null, 2)], { type: 'application/json' });
-            console.log("blob", blob);
-            reader.readAsArrayBuffer(blob);
-            reader.onloadend = () => {
-                setBuffer(Buffer(reader.result));
-                ipfs.add(Buffer(reader.result), async (err, result) => {
-                    if (err) {
-                        console.log(err);
-                        handleCloseBackdrop();
-                            setIsSaving(false);
-                        return
-                    }
-                    console.log("HASH", result[0].hash);
+            else {
+                handleShowBackdrop();
+                const address = Addresses.CreateCubeAddress;
+                const abi = CreateCubeContract;
 
-                    var myContractInstance = await new web3.eth.Contract(abi, address);
-                    console.log("myContractInstance", myContractInstance);
-                    await myContractInstance.methods.Create_cube(result[0].hash).send({ from: accounts[0] }, (err, response) => {
-                        console.log('get transaction', err, response);
-                        if (err !== null) {
-                            console.log("err", err);
-                            let variant = "error";
-                            enqueueSnackbar('User Canceled Transaction', { variant });
+                let nftIds = [];
+                for (let i = 0; i < selectedNFTList.length; i++) {
+                    nftIds.push(selectedNFTList[i].nftId);
+                }
+                let uriData = {
+                    title: name,
+                    description: description,
+                    nftids: nftIds,
+                    ownermusicfile: musicOwner,
+                    nonownermusicfile: musicNonOwner,
+                    MusicArtistName: artist,
+                    MusicArtistAbout: aboutTheTrack,
+                    MusicArtistProfile: artistImage,
+                    SalePrice: salePrice,
+                }
+                const reader = new window.FileReader();
+                const blob = new Blob([JSON.stringify(uriData, null, 2)], { type: 'application/json' });
+                console.log("blob", blob);
+                reader.readAsArrayBuffer(blob);
+                reader.onloadend = () => {
+                    setBuffer(Buffer(reader.result));
+                    ipfs.add(Buffer(reader.result), async (err, result) => {
+                        if (err) {
+                            console.log(err);
                             handleCloseBackdrop();
                             setIsSaving(false);
+                            return
                         }
-                    })
-                        .on('receipt', (receipt) => {
-                            console.log("receipt", receipt);
-                            console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
-                            let ids = receipt.events.Transfer.returnValues.tokenId;
-                            let nftId = [];
-                            handleCloseBackdrop();
-                            for (let i = 0; i < selectedNFTList.length; i++) {
-                                nftId.push(selectedNFTList[i]._id);
-                            }
-                            let cubeData = {
-                                tokenId: ids,
-                                title: name,
-                                description: description,
-                                nftids: nftId,
-                                ownermusicfile: musicOwner,
-                                nonownermusicfile: musicNonOwner,
-                                MusicArtistName: artist,
-                                MusicArtistAbout: aboutTheTrack,
-                                MusicArtistProfile: artistImage,
-                                musicartisttype: artistType,
-                                SalePrice: salePrice,
-                            }
-                            console.log("cubeData", cubeData);
-                            axios.post("/token/TokenIds", cubeData).then(
-                                (response) => {
-                                    console.log('response', response);
-                                    setIsSaving(false);
-                                    setSelectedNFTList([]);
-                                    setName('');
-                                    setDescription('');
-                                    setMusicOwner('');
-                                    setMusicNonOwner('');
-                                    setArtist('');
-                                    setAboutTheTrack('');
-                                    setArtistImage(logo)
-                                    setArtistType('New')
-                                    setSalePrice();
-                                    let variant = "success";
-                                    enqueueSnackbar('Cube Created Successfully.', { variant });
-                                },
-                                (error) => {
-                                    if (process.env.NODE_ENV === "development") {
-                                        console.log(error);
-                                        console.log(error.response);
-                                    }
-                                    setIsSaving(false);
-                                    let variant = "error";
-                                    enqueueSnackbar('Unable to Create Cube.', { variant });
-                                }
-                            );
-                        })
-                })
+                        console.log("HASH", result[0].hash);
 
+                        var myContractInstance = await new web3.eth.Contract(abi, address);
+                        console.log("myContractInstance", myContractInstance);
+                        await myContractInstance.methods.Create_cube(result[0].hash).send({ from: accounts[0] }, (err, response) => {
+                            console.log('get transaction', err, response);
+                            if (err !== null) {
+                                console.log("err", err);
+                                let variant = "error";
+                                enqueueSnackbar('User Canceled Transaction', { variant });
+                                handleCloseBackdrop();
+                                setIsSaving(false);
+                            }
+                        })
+                            .on('receipt', (receipt) => {
+                                console.log("receipt", receipt);
+                                console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
+                                let ids = receipt.events.Transfer.returnValues.tokenId;
+                                let nftId = [];
+                                handleCloseBackdrop();
+                                for (let i = 0; i < selectedNFTList.length; i++) {
+                                    nftId.push(selectedNFTList[i]._id);
+                                }
+                                let cubeData = {
+                                    tokenId: ids,
+                                    title: name,
+                                    description: description,
+                                    nftids: nftId,
+                                    ownermusicfile: musicOwner,
+                                    nonownermusicfile: musicNonOwner,
+                                    MusicArtistName: artist,
+                                    MusicArtistAbout: aboutTheTrack,
+                                    MusicArtistProfile: artistImage,
+                                    musicartisttype: artistType,
+                                    SalePrice: salePrice,
+                                }
+                                console.log("cubeData", cubeData);
+                                axios.post("/token/TokenIds", cubeData).then(
+                                    (response) => {
+                                        console.log('response', response);
+                                        setIsSaving(false);
+                                        setSelectedNFTList([]);
+                                        setName('');
+                                        setDescription('');
+                                        setMusicOwner('');
+                                        setMusicNonOwner('');
+                                        setArtist('');
+                                        setAboutTheTrack('');
+                                        setArtistImage(logo)
+                                        setArtistType('New')
+                                        setSalePrice();
+                                        let variant = "success";
+                                        enqueueSnackbar('Cube Created Successfully.', { variant });
+                                    },
+                                    (error) => {
+                                        if (process.env.NODE_ENV === "development") {
+                                            console.log(error);
+                                            console.log(error.response);
+                                        }
+                                        setIsSaving(false);
+                                        let variant = "error";
+                                        enqueueSnackbar('Unable to Create Cube.', { variant });
+                                    }
+                                );
+                            })
+                    })
+
+                }
             }
+
+
+
         }
 
     };
@@ -781,19 +825,19 @@ function NewCube(props) {
                         </Spinner>
                     </div>
                 ) : (
-                    selectedNFTList.length === 0 || salePrice === undefined || description === "" || name === "" || artist === "" || artistImage === logo || aboutTheTrack === "" || musicNonOwner === "" || musicOwner === "" ? (
-                        <div className="submit-section">
-                            <button type="button" disabled className="btn submit-btn">
-                                Create Cube
-                    </button>
-                        </div>
-                    ) : (
-                        <div className="submit-section">
-                            <button type="button" onClick={(e) => handleSubmitEvent(e)} className="btn submit-btn">
-                                Create Cube
+                    // selectedNFTList.length === 0 || salePrice === undefined || description === "" || name === "" || artist === "" || artistImage === logo || aboutTheTrack === "" || musicNonOwner === "" || musicOwner === "" ? (
+                    //     <div className="submit-section">
+                    //         <button type="button" disabled className="btn submit-btn">
+                    //             Create Cube
+                    // </button>
+                    //     </div>
+                    // ) : (
+                    <div className="submit-section">
+                        <button type="button" onClick={(e) => handleSubmitEvent(e)} className="btn submit-btn">
+                            Create Cube
                   </button>
-                        </div>
-                    )
+                    </div>
+                    // )
 
                 )}
             </div>
