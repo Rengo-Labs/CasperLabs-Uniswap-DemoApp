@@ -3,6 +3,7 @@ import {
     CardContent,
     CardMedia,
     Grid,
+    TablePagination,
     Typography
 } from '@material-ui/core/';
 import CardActionArea from '@material-ui/core/CardActionArea';
@@ -51,23 +52,26 @@ function MyCollection(props) {
     const { enqueueSnackbar } = useSnackbar();
     let [collections, setCollections] = useState([]);
     let [collection, setCollection] = useState("");
-
-
+    const [rowsPerPage, setRowsPerPage] = React.useState(8);
+    const [page, setPage] = React.useState(0);
     let [isCreating, setIsCreating] = useState(false);
-    let [disabledButton, setDisabledButton] = useState(true);
-    let [earningPerTrade, setEarningPerTrade] = useState("01");
-    let [view, setView] = useState('list');
+    let [open, setOpen] = useState(false);
+
+    let [collectionCount, setCollectionCount] = useState(0);
 
     const classes = useStyles();
-    let getCollections = () => {
+    let getCollections = (start, end) => {
         // axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
         //     "Authorization"
         // )}`;
+        setOpen(true);
         axios
-            .get(`/collection/collections`)
+            .get(`/collection/collections/${start}/${end}`)
             .then((response) => {
-                console.log("response.data", response.data.Collectiondata);
+                console.log("response.data", response.data);
                 setCollections(response.data.Collectiondata);
+                setCollectionCount(response.data.CollectionCount)
+                setOpen(false);
             })
             .catch((error) => {
                 console.log(error.response.data);
@@ -77,7 +81,7 @@ function MyCollection(props) {
                         window.location.reload();
                     }
                 }
-
+                setOpen(false);
             });
     };
 
@@ -104,8 +108,22 @@ function MyCollection(props) {
                 enqueueSnackbar('Unable to Create Collection .', { variant });
             });
     };
+    const handleChangePage = (event, newPage) => {
+        console.log("newPage", newPage);
+        setPage(newPage);
+        console.log("Start", newPage * rowsPerPage);
+        console.log("End", newPage * rowsPerPage + rowsPerPage);
+        getCollections(newPage * rowsPerPage, newPage * rowsPerPage + rowsPerPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        getCollections(0, parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
     useEffect(() => {
-        getCollections();
+        getCollections(0, rowsPerPage);
         props.setActiveTab({
             dashboard: "",
             totalUserAccount: "",
@@ -125,10 +143,6 @@ function MyCollection(props) {
             newRandomDrop: ""
         });// eslint-disable-next-line
     }, []);
-    const handleChange = (event, nextView) => {
-        // console.log('nextView', nextView);
-        setView(nextView);
-    };
     return (
         <div className="card">
             <ul className="breadcrumb" style={{ backgroundColor: "rgb(167, 0, 0)" }}>
@@ -171,35 +185,57 @@ function MyCollection(props) {
             </div> */}
             <div className="card-body">
                 <div className={classes.root}>
-                    <Grid
-                        container
-                        spacing={2}
-                        direction="row"
-                        justify="flex-start"
-                    >
-                        {collections.map((i, index) => (
-                            <Grid item xs={12} sm={6} md={3} key={index}>
-                                <Link to={"/dashboard/collection/nfts/" + i._id}>
-                                    <Card className={classes.cardHeight}>
-                                        <CardActionArea>
-                                            <CardMedia
-                                                className={classes.media}
-                                                image={i.image}
-                                                title="Contemplative Reptile"
-                                            />
-                                            <CardContent>
-                                                <Typography gutterBottom variant="h5" className="text-center" component="h2">
-                                                    {i.collectiontitle}
-                                                </Typography>
-                                            </CardContent>
-                                        </CardActionArea>
-                                    </Card>
-                                </Link>
-                            </Grid>
-                        ))}
-                    </Grid>
+                    {open ? (
+                        <div align="center" className="text-center">
+                            <Spinner
+                                animation="border"
+                                role="status"
+                                style={{ color: "#ff0000" }}
+                            >
+
+                            </Spinner>
+                            <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                        </div>
+                    ) : (
+                        <Grid
+                            container
+                            spacing={2}
+                            direction="row"
+                            justify="flex-start"
+                        >
+                            {collections.map((i, index) => (
+                                <Grid item xs={12} sm={6} md={3} key={index}>
+                                    <Link to={"/dashboard/collection/nfts/" + i._id}>
+                                        <Card style={{ height: "100%" }} variant="outlined" className={classes.cardHeight}>
+                                            <CardActionArea>
+                                                <CardMedia
+                                                    className={classes.media}
+                                                    image={i.image}
+                                                    title="Contemplative Reptile"
+                                                />
+                                                <CardContent>
+                                                    <Typography gutterBottom variant="h5" className="text-center" component="h2">
+                                                        {i.collectiontitle}
+                                                    </Typography>
+                                                </CardContent>
+                                            </CardActionArea>
+                                        </Card>
+                                    </Link>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
                 </div>
             </div>
+            <TablePagination
+                rowsPerPageOptions={[4, 8, 12, 24]}
+                component="div"
+                count={collectionCount}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+            />
         </div >
     );
 }

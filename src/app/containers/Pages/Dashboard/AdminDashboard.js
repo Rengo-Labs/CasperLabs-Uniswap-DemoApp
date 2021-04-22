@@ -28,6 +28,7 @@ import SeasonDrops from "./Admin/SeasonDrops";
 import ChangePassword from "./ChangePassword";
 import ProfileSetting from "./ProfileSetting";
 import CollectionNfts from "./Admin/CollectionNfts";
+import CubeNFTs from "./Admin/CubeNFTs";
 
 axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
   "Authorization"
@@ -217,6 +218,10 @@ function AdminDashboard(props) {
 
               <Route exact path={`${path}/myDrops/cubes/:dropId`}>
                 <DropCubes setActiveTab={setActiveTab} />
+              </Route>
+              
+              <Route exact path={`${path}/myCubes/Nfts/:cubeId`}>
+                <CubeNFTs setActiveTab={setActiveTab} />
               </Route>
               <Route exact path={`${path}/newCollection`}>
                 <MyCollection setActiveTab={setActiveTab} />

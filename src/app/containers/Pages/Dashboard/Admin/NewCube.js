@@ -362,6 +362,7 @@ function NewCube(props) {
                                 console.log("cubeData", cubeData);
                                 axios.post("/token/TokenIds", cubeData).then(
                                     (response) => {
+
                                         console.log('response', response);
                                         setIsSaving(false);
                                         setSelectedNFTList([]);
@@ -387,6 +388,30 @@ function NewCube(props) {
                                         enqueueSnackbar('Unable to Create Cube.', { variant });
                                     }
                                 );
+                                let TrasactionData = {
+                                    tokenId: ids,
+                                    from: receipt.events.Transfer.returnValues.from,
+                                    to: receipt.events.Transfer.returnValues.to,
+                                    transaction: receipt.events.transactionHash
+                                }
+                                axios.post("/transaction/tokenTransaction ", TrasactionData).then(
+                                    (response) => {
+                                        console.log('response', response);
+                                        setIsSaving(false);
+                                        let variant = "success";
+                                        enqueueSnackbar('Cube Created Successfully.', { variant });
+                                    },
+                                    (error) => {
+                                        if (process.env.NODE_ENV === "development") {
+                                            console.log(error);
+                                            console.log(error.response);
+                                        }
+                                        setIsSaving(false);
+                                        let variant = "error";
+                                        enqueueSnackbar('Unable to Create Cube.', { variant });
+                                    }
+                                );
+
                             })
                     })
 

@@ -94,7 +94,7 @@ function DropCubes(props) {
             newNFT: "",
             orders: "",
             myNFTs: "",
-            mySeason:"",
+            mySeason: "",
             myCubes: "",
             myDrops: "active",
             settings: "",
@@ -114,7 +114,7 @@ function DropCubes(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
-                
+
                 <li className="breadcrumb-item">
                     <Link to="/dashboard/myDrops">My Drops</Link>
                 </li>
@@ -176,52 +176,54 @@ function DropCubes(props) {
                         >
                             {cubeData.map((i, index) => (
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
-                                        {/* style={{ height: "100%" }} variant="outlined" */}
-                                        <CardActionArea>
-                                            <CardMedia
-                                                className={classes.media}
-                                                // image={img}
-                                                title=""
-                                            >
-                                                <div class="wrapper">
-                                                    <div class="cube-box">
-                                                        {console.log("imageData", imageData)}
-                                                        {imageData[index].map((j, jindex) => (
-                                                            <>
-                                                                {console.log(j)}
-                                                                <img src={j.artwork} style={{ border: j.type === "Mastercraft" ? '4px solid #ff0000' : j.type === "Legendary" ? '4px solid #FFD700' : j.type === "Epic" ? '4px solid #9400D3' : j.type === "Rare" ? '4px solid #0000FF' : j.type === "Uncommon" ? '4px solid #008000' : j.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
-                                                            </>
-                                                        ))}
-                                                        {new Array(6 - imageData[index].length).fill(0).map((_, index) => (
-                                                            < img src={r1} alt="" />
-                                                        ))}
+                                    <Link to={"/dashboard/myCubes/Nfts/" + i._id}>
+                                        <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
+                                            {/* style={{ height: "100%" }} variant="outlined" */}
+                                            <CardActionArea>
+                                                <CardMedia
+                                                    className={classes.media}
+                                                    // image={img}
+                                                    title=""
+                                                >
+                                                    <div class="wrapper">
+                                                        <div class="cube-box">
+                                                            {console.log("imageData", imageData)}
+                                                            {imageData[index].map((j, jindex) => (
+                                                                <>
+                                                                    {console.log(j)}
+                                                                    <img src={j.artwork} style={{ border: j.type === "Mastercraft" ? '4px solid #ff0000' : j.type === "Legendary" ? '4px solid #FFD700' : j.type === "Epic" ? '4px solid #9400D3' : j.type === "Rare" ? '4px solid #0000FF' : j.type === "Uncommon" ? '4px solid #008000' : j.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                                                                </>
+                                                            ))}
+                                                            {new Array(6 - imageData[index].length).fill(0).map((_, index) => (
+                                                                < img src={r1} alt="" />
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                </div>
 
 
 
-                                            </CardMedia>
-                                            <CardContent>
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Cube Description: </strong>{i.description}
-                                                </Typography>
+                                                </CardMedia>
+                                                <CardContent>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Cube Description: </strong>{i.description}
+                                                    </Typography>
 
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Sale Price: </strong>{i.SalePrice}
-                                                </Typography>
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                    title={i.MusicArtistName}
-                                                    subheader={i.MusicArtistAbout}
-                                                />
-                                            </CardContent>
-                                        </CardActionArea>
-                                        <CardActions>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Sale Price: </strong>{i.SalePrice}
+                                                    </Typography>
+                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
+                                                    <CardHeader
+                                                        avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                        title={i.MusicArtistName}
+                                                        subheader={i.MusicArtistAbout}
+                                                    />
+                                                </CardContent>
+                                            </CardActionArea>
+                                            <CardActions>
 
-                                        </CardActions>
-                                    </Card>
+                                            </CardActions>
+                                        </Card>
+                                    </Link>
                                 </Grid >
                             ))}
                         </Grid>

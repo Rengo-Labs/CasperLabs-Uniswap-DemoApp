@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
 import r1 from '../../../../assets/img/patients/patient.jpg';
+import TablePagination from '@material-ui/core/TablePagination';
 import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
@@ -53,6 +54,9 @@ function MyDrops(props) {
     const [tokenList, setTokenList] = useState([]);
     const [imageData, setImageData] = useState([]);
 
+    const [rowsPerPage, setRowsPerPage] = React.useState(8);
+    const [totalDrops, setTotalDrops] = React.useState(0);
+    const [page, setPage] = React.useState(0);
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
         setOpen(false);
@@ -60,13 +64,13 @@ function MyDrops(props) {
     const handleShowBackdrop = () => {
         setOpen(true);
     };
-    let getMyDrops = () => {
+    let getMyDrops = (start, end) => {
         handleShowBackdrop();
-        axios.get("/drop/drops").then(
+        axios.get(`/drop/drops/${start}/${end}`).then(
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.Dropdata);
-                // setImageData(response.data.nftsdata);
+                setTotalDrops(response.data.Dropscount);
                 handleCloseBackdrop();
             },
             (error) => {
@@ -85,7 +89,7 @@ function MyDrops(props) {
     }
 
     useEffect(() => {
-        getMyDrops();
+        getMyDrops(0, rowsPerPage);
         // getCollections();?
 
         props.setActiveTab({
@@ -95,7 +99,7 @@ function MyDrops(props) {
             myNFTs: "",
             myCubes: "",
             myDrops: "active",
-            mySeason:"",
+            mySeason: "",
             settings: "",
             privacyPolicy: "",
             termsandconditions: "",
@@ -106,7 +110,19 @@ function MyDrops(props) {
             newRandomDrop: "",
         });
     }, []);
+    const handleChangePage = (event, newPage) => {
+        console.log("newPage", newPage);
+        setPage(newPage);
+        console.log("Start", newPage * rowsPerPage);
+        console.log("End", newPage * rowsPerPage + rowsPerPage);
+        getMyDrops(newPage * rowsPerPage, newPage * rowsPerPage + rowsPerPage);
+    };
 
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        getMyDrops(0, parseInt(event.target.value, 10));
+        setPage(0);
+    };
     return (
         <div className="card">
             <ul className="breadcrumb" style={{ backgroundColor: "rgb(167,0,0)" }}>
@@ -197,9 +213,15 @@ function MyDrops(props) {
                     )}
                 </div>
             </div >
-            {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
-                <CircularProgress color="inherit" />
-            </Backdrop> */}
+            <TablePagination
+                rowsPerPageOptions={[4, 8, 12, 24]}
+                component="div"
+                count={totalDrops}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+            />
         </div >
 
     );

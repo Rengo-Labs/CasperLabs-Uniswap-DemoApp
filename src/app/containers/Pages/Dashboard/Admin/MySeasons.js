@@ -1,4 +1,4 @@
-import { Avatar, CardHeader, Grid } from '@material-ui/core/';
+import { Avatar, CardHeader, Grid, TablePagination } from '@material-ui/core/';
 import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
 
@@ -51,7 +51,10 @@ function MySeasons(props) {
     const classes = useStyles();
     const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
-    const [imageData, setImageData] = useState([]);
+    const [page, setPage] = useState(0);
+
+    const [rowsPerPage, setRowsPerPage] = React.useState(8);
+    const [totalSeasons, setTotalseasons] = React.useState(0);
 
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
@@ -60,13 +63,13 @@ function MySeasons(props) {
     const handleShowBackdrop = () => {
         setOpen(true);
     };
-    let getMySeasons = () => {
+    let getMySeasons = (start, end) => {
         handleShowBackdrop();
-        axios.get("/season/seasons").then(
+        axios.get(`/season/seasons/${start}/${end}`).then(
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.Seasondata);
-                // setImageData(response.data.nftsdata);
+                setTotalseasons(response.data.Seasonscount);
                 handleCloseBackdrop();
             },
             (error) => {
@@ -83,9 +86,21 @@ function MySeasons(props) {
                 handleCloseBackdrop();
             })
     }
+    const handleChangePage = (event, newPage) => {
+        console.log("newPage", newPage);
+        setPage(newPage);
+        console.log("Start", newPage * rowsPerPage);
+        console.log("End", newPage * rowsPerPage + rowsPerPage);
+        getMySeasons(newPage * rowsPerPage, newPage * rowsPerPage + rowsPerPage);
+    };
 
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        getMySeasons(0, parseInt(event.target.value, 10));
+        setPage(0);
+    };
     useEffect(() => {
-        getMySeasons();
+        getMySeasons(0, rowsPerPage);
         // getCollections();?
 
         props.setActiveTab({
@@ -95,7 +110,7 @@ function MySeasons(props) {
             myNFTs: "",
             myCubes: "",
             myDrops: "",
-            mySeason:"active",
+            mySeason: "active",
             settings: "",
             privacyPolicy: "",
             termsandconditions: "",
@@ -169,9 +184,15 @@ function MySeasons(props) {
                     )}
                 </div>
             </div >
-            {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
-                <CircularProgress color="inherit" />
-            </Backdrop> */}
+            <TablePagination
+                rowsPerPageOptions={[4, 8, 12, 24]}
+                component="div"
+                count={totalSeasons}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+            />
         </div >
 
     );
