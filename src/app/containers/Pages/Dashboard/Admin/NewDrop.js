@@ -13,7 +13,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
+import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 
@@ -123,7 +123,7 @@ function NewDrop(props) {
             newNFT: "",
             newDrop: "active",
             newSupefNFT: "",
-            mySeason:"",
+            mySeason: "",
             myCubes: "",
             myDrops: "",
             myNFTs: "",
@@ -186,37 +186,13 @@ function NewDrop(props) {
         }
         else {
             handleShowBackdrop();
-            // const address = Addresses.CreateCubeAddress;
-            // const abi = CreateCubeContract;
-
-            // let tokenId = [];
-            // for (let i = 0; i < types.length; i++) {
-            //     tokenId.push(types[i].tokenId);
-            // }
-
-            // var myContractInstance = await new web3.eth.Contract(abi, address);
-            // console.log("myContractInstance", myContractInstance);
-            // await myContractInstance.methods.Create_cube(startTime, endTime, minimumBid, tokenId).send({ from: accounts[0] }, (err, response) => {
-            //     console.log('get transaction', err, response);
-            //     if (err !== null) {
-            //         console.log("err", err);
-            //         let variant = "error";
-            //         enqueueSnackbar('User Canceled Transaction', { variant });
-            //         handleCloseBackdrop();
-            //         setIsSaving(false);
-            //     }
-            // })
-            //     .on('receipt', (receipt) => {
-            //         console.log("receipt", receipt);
-            //         console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
-            //         let ids = receipt.events.Transfer.returnValues.tokenId;
+            const address = Addresses.AuctionAddress;
+            const abi = CreateAuctionContract;
             let tokensId = [];
             handleCloseBackdrop();
             for (let i = 0; i < types.length; i++) {
                 tokensId.push(types[i]._id);
             }
-
-
             if (tokensId.length === 0) {
                 let variant = "error";
                 enqueueSnackbar('Please Select Cubes to create drop', { variant });
@@ -255,42 +231,67 @@ function NewDrop(props) {
                 setIsSaving(false);
             }
             else {
-                let DropData = {
-                    tokenId: tokensId,
-                    AuctionStartsAt: startTime,
-                    AuctionEndsAt: endTime,
-                    MinimumBid: minimumBid,
-                    bidDelta: bidDelta,
-                    title: name,
-                    description: description,
-                    image: image
+                let tokenId = [];
+                for (let i = 0; i < types.length; i++) {
+                    tokenId.push(types[i].tokenId);
                 }
-                console.log("cubeData", DropData);
-                axios.post("/drop/createdrop", DropData).then(
-                    (response) => {
-                        console.log('response', response);
-                        setIsSaving(false);
-                        setStartTime(new Date());
-                        setEndTime(new Date());
-                        setName("");
-                        setDescription("");
-                        setMinimumBid();
-                        setBidDelta();
-                        setImage(r1);
-                        let variant = "success";
-                        enqueueSnackbar('Cube Created Successfully.', { variant });
-                    },
-                    (error) => {
-                        if (process.env.NODE_ENV === "development") {
-                            console.log(error);
-                            console.log(error.response);
-                        }
-                        setIsSaving(false);
+
+                var myContractInstance = await new web3.eth.Contract(abi, address);
+                console.log("myContractInstance", myContractInstance);
+                await myContractInstance.methods.create_new_auction(startTimeStamp, endTimeStamp, minimumBid, tokenId).send({ from: accounts[0] }, (err, response) => {
+                    console.log('get transaction', err, response);
+                    if (err !== null) {
+                        console.log("err", err);
                         let variant = "error";
-                        enqueueSnackbar('Unable to Create Cube.', { variant });
+                        enqueueSnackbar('User Canceled Transaction', { variant });
+                        handleCloseBackdrop();
+                        setIsSaving(false);
                     }
-                );
-                // })
+                })
+                    .on('receipt', (receipt) => {
+                        console.log("receipt", receipt);
+                        console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
+                        let ids = receipt.events.Transfer.returnValues.tokenId;
+
+
+
+
+                        let DropData = {
+                            tokenId: tokensId,
+                            AuctionStartsAt: startTime,
+                            AuctionEndsAt: endTime,
+                            MinimumBid: minimumBid,
+                            bidDelta: bidDelta,
+                            title: name,
+                            description: description,
+                            image: image
+                        }
+                        console.log("cubeData", DropData);
+                        axios.post("/drop/createdrop", DropData).then(
+                            (response) => {
+                                console.log('response', response);
+                                setIsSaving(false);
+                                setStartTime(new Date());
+                                setEndTime(new Date());
+                                setName("");
+                                setDescription("");
+                                setMinimumBid();
+                                setBidDelta();
+                                setImage(r1);
+                                let variant = "success";
+                                enqueueSnackbar('Cube Created Successfully.', { variant });
+                            },
+                            (error) => {
+                                if (process.env.NODE_ENV === "development") {
+                                    console.log(error);
+                                    console.log(error.response);
+                                }
+                                setIsSaving(false);
+                                let variant = "error";
+                                enqueueSnackbar('Unable to Create Cube.', { variant });
+                            }
+                        );
+                    })
             }
         }
 
