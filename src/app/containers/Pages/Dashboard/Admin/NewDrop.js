@@ -235,10 +235,9 @@ function NewDrop(props) {
                 for (let i = 0; i < types.length; i++) {
                     tokenId.push(types[i].tokenId);
                 }
-
                 var myContractInstance = await new web3.eth.Contract(abi, address);
                 console.log("myContractInstance", myContractInstance);
-                await myContractInstance.methods.create_new_auction(startTimeStamp, endTimeStamp, minimumBid, tokenId).send({ from: accounts[0] }, (err, response) => {
+                await myContractInstance.methods.create_new_auction(accounts[0], startTimeStamp, endTimeStamp, minimumBid, tokenId).send({ from: accounts[0] }, (err, response) => {
                     console.log('get transaction', err, response);
                     if (err !== null) {
                         console.log("err", err);
@@ -252,9 +251,6 @@ function NewDrop(props) {
                         console.log("receipt", receipt);
                         console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
                         let ids = receipt.events.Transfer.returnValues.tokenId;
-
-
-
 
                         let DropData = {
                             tokenId: tokensId,
