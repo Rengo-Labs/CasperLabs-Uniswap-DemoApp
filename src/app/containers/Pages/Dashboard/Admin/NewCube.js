@@ -243,6 +243,10 @@ function NewCube(props) {
             let variant = "error";
             enqueueSnackbar('Please Select Nfts first', { variant });
             setIsSaving(false);
+        }if (selectedNFTList.length < 6) {
+            let variant = "error";
+            enqueueSnackbar('Total Nfts Cannot be Less than 6', { variant });
+            setIsSaving(false);
         } else if (name === "") {
             let variant = "error";
             enqueueSnackbar('Please Enter Cube Name', { variant });
@@ -705,9 +709,6 @@ function NewCube(props) {
                                         </div>
 
                                     )}
-
-
-
 
                                     {/* {title === '' || description === '' || tokenSupply === '' || fileData === '' ? (
                                         <button
