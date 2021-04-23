@@ -2,9 +2,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "drop_id",
-				"type": "string"
+				"internalType": "uint256",
+				"name": "_dropId",
+				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
@@ -26,6 +26,54 @@
 	{
 		"inputs": [
 			{
+				"internalType": "uint256",
+				"name": "_dropId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_cubeid",
+				"type": "uint256"
+			}
+		],
+		"name": "calimNFT",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_dropId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_cubeid",
+				"type": "uint256"
+			}
+		],
+		"name": "claimFunds",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "contract SUPER_NFT",
 				"name": "_superNft",
 				"type": "address"
@@ -40,7 +88,7 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "Cube_ID",
+				"name": "cubeId",
 				"type": "uint256"
 			},
 			{
@@ -60,116 +108,24 @@
 		"type": "event"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "drop_id",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_cubeid",
-				"type": "uint256"
-			}
-		],
-		"name": "Calim_NFT",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "drop_id",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_cubeid",
-				"type": "uint256"
-			}
-		],
-		"name": "Claim_Funds",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address payable",
-				"name": "_owner",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "start_time",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "end_time",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_min_bid",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "_cubeids",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "string",
-				"name": "drop_id",
-				"type": "string"
-			}
-		],
-		"name": "create_new_auction",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"anonymous": false,
 		"inputs": [
 			{
 				"indexed": false,
 				"internalType": "address",
-				"name": "OWNER",
+				"name": "owner",
 				"type": "address"
 			},
 			{
 				"indexed": false,
 				"internalType": "address",
-				"name": "Winner",
+				"name": "winner",
 				"type": "address"
 			},
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "Cube_ID",
+				"name": "cubeId",
 				"type": "uint256"
 			}
 		],
@@ -181,14 +137,91 @@
 		"inputs": [
 			{
 				"indexed": false,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
 				"internalType": "uint256",
-				"name": "Cube_ID",
+				"name": "startTime",
 				"type": "uint256"
 			},
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "Amount",
+				"name": "endTime",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "minBid",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "dropId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256[]",
+				"name": "cubeID",
+				"type": "uint256[]"
+			}
+		],
+		"name": "New_Auction",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_startTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_endTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_minBid",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "_cubeIds",
+				"type": "uint256[]"
+			}
+		],
+		"name": "newAuction",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "cubeId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
 				"type": "uint256"
 			}
 		],
@@ -198,9 +231,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "drop_id",
-				"type": "string"
+				"internalType": "uint256",
+				"name": "_dropId",
+				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
@@ -225,13 +258,13 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "Cube_ID",
+				"name": "cubeId",
 				"type": "uint256"
 			},
 			{
 				"indexed": false,
 				"internalType": "address",
-				"name": "withdrawer",
+				"name": "withDrawer",
 				"type": "address"
 			},
 			{
@@ -247,12 +280,12 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "drop_id",
-				"type": "string"
+				"internalType": "uint256",
+				"name": "_dropId",
+				"type": "uint256"
 			}
 		],
-		"name": "get_auction_end",
+		"name": "getAuctionEnd",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -266,12 +299,12 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "drop_id",
-				"type": "string"
+				"internalType": "uint256",
+				"name": "_dropId",
+				"type": "uint256"
 			}
 		],
-		"name": "get_auction_start",
+		"name": "getAuctionStart",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -295,7 +328,7 @@
 				"type": "uint256"
 			}
 		],
-		"name": "get_bid_by_user",
+		"name": "getBidByUser",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -308,7 +341,7 @@
 	},
 	{
 		"inputs": [],
-		"name": "get_current_time",
+		"name": "getCurrentTime",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -327,7 +360,7 @@
 				"type": "uint256"
 			}
 		],
-		"name": "get_highestBid",
+		"name": "getHighestBid",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -346,7 +379,7 @@
 				"type": "uint256"
 			}
 		],
-		"name": "get_highestBidder",
+		"name": "getHighestBidder",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -360,12 +393,12 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "drop_id",
-				"type": "string"
+				"internalType": "uint256",
+				"name": "_dropId",
+				"type": "uint256"
 			}
 		],
-		"name": "get_minimumBid",
+		"name": "getMinimumBid",
 		"outputs": [
 			{
 				"internalType": "uint256",

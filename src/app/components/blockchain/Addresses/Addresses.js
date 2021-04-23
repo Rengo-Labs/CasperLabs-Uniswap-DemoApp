@@ -1,4 +1,4 @@
 export const USDTTokenAddress = '0xd60c953142753c1339e5686d48256a90F59e53CA';
 export const CreateNftAddress = '0x4C503aC20F910937412E3CF7162141d3e9Dc838b';
 export const CreateCubeAddress = '0x3C0E07120129f12cc59EA82501eA2219D53ef573';
-export const AuctionAddress = "0x83379d44b61948D4faA511129ffbFa81a0c5700b";
+export const AuctionAddress = "0x1F452b1C87158fE0fe881821E86a615165952eE4";

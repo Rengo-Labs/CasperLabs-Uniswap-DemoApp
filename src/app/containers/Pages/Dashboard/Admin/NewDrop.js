@@ -8,6 +8,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import Button from '@material-ui/core/Button';
 import axios from "axios";
 
 import Cookies from "js-cookie";
@@ -113,6 +114,12 @@ function NewDrop(props) {
                 if (process.env.NODE_ENV === "development") {
                     console.log(error);
                     console.log(error.response);
+                }
+                if (error.response.data !== undefined) {
+                    if (error.response.data === "Unauthorized access (invalid token) !!") {
+                        Cookies.remove("Authorization");
+                        window.location.reload();
+                    }
                 }
             })
     }
@@ -237,7 +244,7 @@ function NewDrop(props) {
                 }
                 var myContractInstance = await new web3.eth.Contract(abi, address);
                 console.log("myContractInstance", myContractInstance);
-                await myContractInstance.methods.create_new_auction(accounts[0], startTimeStamp, endTimeStamp, minimumBid, tokenId).send({ from: accounts[0] }, (err, response) => {
+                var receipt = await myContractInstance.methods.newAuction(startTimeStamp, endTimeStamp, minimumBid, tokenId).send({ from: accounts[0] }, (err, response) => {
                     console.log('get transaction', err, response);
                     if (err !== null) {
                         console.log("err", err);
@@ -245,49 +252,52 @@ function NewDrop(props) {
                         enqueueSnackbar('User Canceled Transaction', { variant });
                         handleCloseBackdrop();
                         setIsSaving(false);
+                        return;
                     }
+                    
                 })
-                    .on('receipt', (receipt) => {
-                        console.log("receipt", receipt);
-                        console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
-                        let ids = receipt.events.Transfer.returnValues.tokenId;
+                // .on('receipt', (receipt) => {
+                console.log("receipt", receipt);
+                console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.New_Auction.returnValues.dropId);
+                let dropId = receipt.events.New_Auction.returnValues.dropId;
 
-                        let DropData = {
-                            tokenId: tokensId,
-                            AuctionStartsAt: startTime,
-                            AuctionEndsAt: endTime,
-                            MinimumBid: minimumBid,
-                            bidDelta: bidDelta,
-                            title: name,
-                            description: description,
-                            image: image
+                let DropData = {
+                    tokenId: tokensId,
+                    dropId:dropId,
+                    AuctionStartsAt: startTime,
+                    AuctionEndsAt: endTime,
+                    MinimumBid: minimumBid,
+                    bidDelta: bidDelta,
+                    title: name,
+                    description: description,
+                    image: image
+                }
+                console.log("cubeData", DropData);
+                axios.post("/drop/createdrop", DropData).then(
+                    (response) => {
+                        console.log('response', response);
+                        setIsSaving(false);
+                        setStartTime(new Date());
+                        setEndTime(new Date());
+                        setName("");
+                        setDescription("");
+                        setMinimumBid();
+                        setBidDelta();
+                        setImage(r1);
+                        let variant = "success";
+                        enqueueSnackbar('Cube Created Successfully.', { variant });
+                    },
+                    (error) => {
+                        if (process.env.NODE_ENV === "development") {
+                            console.log(error);
+                            console.log(error.response);
                         }
-                        console.log("cubeData", DropData);
-                        axios.post("/drop/createdrop", DropData).then(
-                            (response) => {
-                                console.log('response', response);
-                                setIsSaving(false);
-                                setStartTime(new Date());
-                                setEndTime(new Date());
-                                setName("");
-                                setDescription("");
-                                setMinimumBid();
-                                setBidDelta();
-                                setImage(r1);
-                                let variant = "success";
-                                enqueueSnackbar('Cube Created Successfully.', { variant });
-                            },
-                            (error) => {
-                                if (process.env.NODE_ENV === "development") {
-                                    console.log(error);
-                                    console.log(error.response);
-                                }
-                                setIsSaving(false);
-                                let variant = "error";
-                                enqueueSnackbar('Unable to Create Cube.', { variant });
-                            }
-                        );
-                    })
+                        setIsSaving(false);
+                        let variant = "error";
+                        enqueueSnackbar('Unable to Create Cube.', { variant });
+                    }
+                );
+                // })
             }
         }
 
@@ -561,7 +571,16 @@ function NewDrop(props) {
                                                             </CardContent>
                                                         </CardActionArea>
                                                         <CardActions>
+                                                            <Button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    handleRemoveClick(index, i);
+                                                                }}
+                                                                className="btn btn-sm bg-danger-light btn-block"
 
+                                                            >
+                                                                Remove NFT
+    </Button>
                                                         </CardActions>
                                                     </Card>
                                                 </Grid >
