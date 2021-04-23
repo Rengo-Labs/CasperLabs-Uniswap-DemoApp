@@ -14,19 +14,15 @@ import PricingBanner from "./Home/PricingBanner";
 import TrendingCollections from "./Home/TrendingCollections";
 import VirtailWorlds from "./Home/VirtualWorlds";
 
-function HomeScreen() {
+function MarketPlace() {
 
   return (
     <>
       <div className="main-wrapper">
         <div className="home-section home-full-height">
-          <HeaderHome selectedNav={"Home"} />
-
+          <HeaderHome selectedNav={"Market"} />
           <HomeBanner />
-
-          <TrendingCollections />
           <DigitalArt />
-          <Collectible /> 
 
         </div>
 
@@ -36,4 +32,4 @@ function HomeScreen() {
   );
 }
 
-export default HomeScreen;
+export default MarketPlace;

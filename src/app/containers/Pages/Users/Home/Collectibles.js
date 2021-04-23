@@ -49,7 +49,7 @@ function Collectible() {
                 {/* <!-- Page Header --> */}
                 <div className="page-header">
                     <Container>
-                        <h3><pre>Collectibles</pre></h3>
+                        <h3><pre>Drops</pre></h3>
                         <hr></hr>
                         <div className={classes.card}>
                             <Grid

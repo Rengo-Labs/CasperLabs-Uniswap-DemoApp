@@ -1836,6 +1836,7 @@ button.bg-danger:hover {
   -webkit-justify-content: center;
   -ms-flex-pack: center;
 }
+
 .header-navbar-rht li:last-child {
   padding-right: 0px;
 }

@@ -49,7 +49,7 @@ import {
           {/* <!-- Page Header --> */}
           <div className="page-header">
             <Container>
-              <h3><pre>Digital Art</pre></h3>
+              <h3><pre>Market Place</pre></h3>
               <hr></hr>
               <div className={classes.card}>
                 <Grid

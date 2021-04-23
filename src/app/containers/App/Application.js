@@ -4,6 +4,8 @@ import { SnackbarProvider } from 'notistack';
 import React, { useEffect } from "react";
 import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
 import AdminDashboard from "../Pages/Dashboard/AdminDashboard";
+import UserDashboard from "../Pages/Dashboard/UserDashboard";
+import AuctionDrops from "../Pages/Users/AuctionDrops";
 // import ExporterDashboard from "../Pages/Dashboard/ExporterDashboard";
 // import ImporterDashboard from "../Pages/Dashboard/ImporterDashboard";
 import EmailVerification from "../Pages/Users/EmailVerification";
@@ -11,6 +13,7 @@ import ForgotPassword from "../Pages/Users/ForgotPassword";
 import HomeScreen from "../Pages/Users/HomeScreen";
 import KYCScreen from "../Pages/Users/KYCScreen";
 import LoginScreen from "../Pages/Users/LoginScreen";
+import MarketPlace from "../Pages/Users/MarketPlace";
 import PrivacyPolicy from "../Pages/Users/PrivacyPolicy";
 import RegisterScreen from "../Pages/Users/RegisterScreen";
 import TermsAndConditions from "../Pages/Users/TermsAndConditions";
@@ -25,7 +28,7 @@ function App() {
       console.log(jwtDecode(jwt));
       // setjwtDecoded(jwtDecode(jwt));
       jwtDecoded = jwtDecode(jwt);
-      console.log("jwtDecoded",jwtDecoded);
+      console.log("jwtDecoded", jwtDecoded);
       isLoggedIn = true;
       // setIsLoggedIn(true);
     } else {
@@ -50,26 +53,26 @@ function App() {
               isLoggedIn ? (
                 <AdminDashboard {...props} jwtDecoded={jwtDecoded} />
               ) : (
-                  <Redirect to="/login" />
-                )
+                <Redirect to="/" />
+              )
             }
           />
         );
       }
-      //  else if (jwtDecoded.roles === "importer") {
-      //   return (
-      //     <Route
-      //       {...rest}
-      //       render={(props) =>
-      //         isLoggedIn ? (
-      //           <ImporterDashboard {...props} jwtDecoded={jwtDecoded} />
-      //         ) : (
-      //             <Redirect to="/login" />
-      //           )
-      //       }
-      //     />
-      //   );
-      // }
+      else if (jwtDecoded.roles === "user") {
+        return (
+          <Route
+            {...rest}
+            render={(props) =>
+              isLoggedIn ? (
+                <UserDashboard {...props} jwtDecoded={jwtDecoded} />
+              ) : (
+                <Redirect to="/" />
+              )
+            }
+          />
+        );
+      }
       // else if (jwtDecoded.roles === "exporter") {
       //   return (
       //     <Route
@@ -84,7 +87,7 @@ function App() {
       //     />
       //   );
       // }
-    } 
+    }
     else {
       return <Redirect to="/" />;
     }
@@ -92,12 +95,8 @@ function App() {
 
   const LoginRegisterRedirectCheck = ({ path, ...rest }) => {
     checkLoginStatus();
-    if (jwtDecoded && isLoggedIn) {
+    if (jwtDecoded && isLoggedIn && jwtDecoded.roles === "admin") {
       return <Redirect to="/dashboard" />;
-    } else if (path === "/login") {
-      return <Route component={LoginScreen} />;
-    } else if (path === "/register") {
-      return <Route component={RegisterScreen} />;
     } else {
       return <Route component={HomeScreen} />;
     }
@@ -115,10 +114,15 @@ function App() {
             path="/emailverification/:email/:token"
             render={(routeProps) => <EmailVerification {...routeProps} />}
           />
-          <Route path="/kyc" component={KYCScreen} />
+          <Route path="/marketPlace" component={MarketPlace} />
+          <Route path="/auctionDrops" component={AuctionDrops} />
 
           <Route path="/termsandconditions" component={TermsAndConditions} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
+          {/* {jwtDecoded.roles === "user" ? (
+            <Route path="/dasboard" component={UserDashboard} />
+          ) : (null)} */}
+
           <PrivateRoute path="/dashboard" />
         </Switch>
       </BrowserRouter>

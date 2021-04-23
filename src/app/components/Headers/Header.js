@@ -32,38 +32,30 @@ function HeaderHome(props) {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-
   const selectedStyling = {
-    border: "2px solid #ff5252",
-    padding: "5px",
+    border: "2px solid 'rgb(167,0,0)'",
+    padding: "10px 20px",
     borderRadius: "5px",
-    color: 'rgb(167,0,0)'
-    // height: "30%",
-    // marginTop: "40%"
+    color: '#FFF',
+    backgroundColor: 'rgb(167,0,0)'
   };
   const defaultStyling = {
-    padding: "7px",
+    // border: "2px solid rgb(167,0,0)",
+    padding: "10px 20px",
+    borderRadius: "5px",
+    // color: '#FFF',
+    // backgroundColor: "#000"
   };
   const selectedNavStyle = {
-    search: props.selectedNav === "search" ? selectedStyling : defaultStyling,
-    Browse: props.selectedNav === "Browse" ? selectedStyling : defaultStyling,
-    Activity: props.selectedNav === "Activity" ? selectedStyling : defaultStyling,
-    Ranking: props.selectedNav === "Ranking" ? selectedStyling : defaultStyling,
+    search: props.selectedNav === "search" ? defaultStyling : defaultStyling,
+    Market: props.selectedNav === "Market" ? selectedStyling : defaultStyling,
+    Drops: props.selectedNav === "Drops" ? selectedStyling : defaultStyling,
+    Home: props.selectedNav === "Home" ? selectedStyling : defaultStyling,
     Blog: props.selectedNav === "Blog" ? selectedStyling : defaultStyling,
     Community: props.selectedNav === "Community" ? selectedStyling : defaultStyling,
     create: props.selectedNav === "create" ? selectedStyling : defaultStyling,
   };
 
-  let toggle1 = () => {
-    setDropdownOpen1(prevState => (!prevState.dropdownOpen1));
-  }
-  let onMouseEnter = () => {
-    setDropdownOpen1(true);
-  }
-
-  let onMouseLeave = () => {
-    setDropdownOpen1(false);
-  }
   let Login = async () => {
     setIsLoading(true);
     if (window.ethereum) {
@@ -87,8 +79,8 @@ function HeaderHome(props) {
     }
     else {
       let loginData = {
-        // address: accounts[0],
-        address: "0xf363D646C2767dB90Af945ebD6F71367166159A2",
+        address: accounts[0],
+        // address: "0xf363D646C2767dB90Af945ebD6F71367166159A2",
         network: network,
         // roles: 'admin'
       }
@@ -97,6 +89,9 @@ function HeaderHome(props) {
           console.log("response", response);
           Cookies.set("Authorization", response.data.token, {
           });
+          if (response.data.roles === "user") {
+            localStorage.setItem("Address", accounts[0]);
+          }
           setIsLoading(false);
           window.location.reload();
 
@@ -146,13 +141,13 @@ function HeaderHome(props) {
 
         <div className="main-menu-wrapper">
           <div className="menu-header">
-            <a style={{ color: 'rgb(167,0,0)' }} href="/" className="menu-logo">
+            {/* <a style={{ color: 'rgb(167,0,0)' }} href="/" className="menu-logo">
               <img src={Logo} alt="Logo" width="100" height="60" />
-              {/* Robot Drop */}
-            </a>
+            </a> */}
             <a
               id="menu_close"
               className="menu-close"
+              style={{ color: 'rgb(167,0,0)' }}
               href="/"
               onClick={(e) => {
                 e.preventDefault();
@@ -160,10 +155,11 @@ function HeaderHome(props) {
               }}
             >
               <i className="fas fa-times"></i>
+              {" "}Close
             </a>
           </div>
           <ul
-            className="main-nav"
+            className="main-nav "
             style={{
               marginTop: "4px",
             }}
@@ -182,109 +178,42 @@ function HeaderHome(props) {
             </li>
             <li className="login-link ">
               <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
-                {/* {isLoading ? (
-                  <div className="text-center">
-                    <Spinner
-                      animation="border"
-                      role="status"
-                      style={{ color: "ff0000" }}
-                    >
-                      <span className="sr-only">Loading...</span>
-                    </Spinner>
-                  </div>
-                ) : ( */}
-                <span style={selectedNavStyle.Community} onClick={() => Login()}>
+
+                {localStorage.getItem("Address") ? (
+                  <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                    <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
+                  </a>
+                ) : (<span style={selectedNavStyle.Community} onClick={() => Login()}>
                   Login
-                  </span>
-                {/* ) */}
-
-                {/* } */}
-                {/* <span style={selectedNavStyle.Community}>
-                  Login
-                  </span> */}
-              </Link>
-            </li>
-            <li>
-              <span style={selectedNavStyle.search} >
-                <input type="text" className="form-control" placeholder="search"></input>
-              </span>
-            </li>
-            {/* <li>
-              <Link to="/" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Browse}>
-                  Browse
-                  </span>
-              </Link>
-
-            </li>
-            <li>
-              <Link to="/" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Activity}>
-                  Activity
-                  </span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Ranking}>
-                  Ranking
-                  </span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Blog}>
-                  Blog
-                  </span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Community}>
-                  Community
-                  </span>
-              </Link>
-            </li>
-            <li>
-              <Link>
-                <span style={selectedNavStyle.create}>
-                  <Dropdown
-                    className="d-inline-block"
-                    onMouseOver={onMouseEnter}
-                    onMouseLeave={onMouseLeave}
-                    isOpen={dropdownOpen1}
-                    toggle={toggle1}
-                  >
-                    <DropdownToggle caret>Create</DropdownToggle>
-                    <DropdownMenu>
-                      <DropdownItem header>Submenu 1</DropdownItem>
-                      <Link to="/" style={{ color: 'rgb(167,0,0)' }} >
-
-                        <DropdownItem>My Collections</DropdownItem>
-                      </Link>
-                    </DropdownMenu>
-          &nbsp;&nbsp;&nbsp;
-        </Dropdown>
                 </span>
+                )}
               </Link>
-            </li> */}
-            {/* <li>
-              <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Community}>
-                  Login
+            </li>
+            <li>
+              <Link to="/" style={{ color: 'rgb(167,0,0)' }} >
+                <span style={selectedNavStyle.Home}>
+                  Home
                   </span>
               </Link>
-            </li> */}
+            </li>
+            <li>
+              <Link to="/marketPlace" style={{ color: 'rgb(167,0,0)' }} >
+                <span style={selectedNavStyle.Market}>
+                  Market
+                  </span>
+              </Link>
+            </li>
+            <li>
+              <Link to="/auctionDrops" style={{ color: 'rgb(167,0,0)' }} >
+                <span style={selectedNavStyle.Drops}>
+                  Drops
+                  </span>
+              </Link>
+            </li>
+          
           </ul>
         </div>
         <ul className="nav header-navbar-rht">
-          {/* <li>
-            <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
-              <span style={selectedNavStyle.Community}>
-                Login
-                  </span>
-            </Link>
-          </li> */}
           <li >{isLoading ? (
             <div className="text-center">
               <Spinner
@@ -296,20 +225,29 @@ function HeaderHome(props) {
               </Spinner>
             </div>
           ) : (
-            <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
-              Login
-            </span>
-          )
-
-          }
+            localStorage.getItem("Address") ? (
+              <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
+              </a>
+            ) : (
+              <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
+                Login
+              </span>
+            )
+          )}
 
           </li>
           <li >
             {/* <Button variant="primary" onClick={handleShow}>
               Launch demo modal
       </Button> */}
-
-            <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+            {localStorage.getItem("Address") ? (
+              <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
+                Dashboard
+              </Link>
+            ) : (
+              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+            )}
 
             {/* <Link
               to="/login"
