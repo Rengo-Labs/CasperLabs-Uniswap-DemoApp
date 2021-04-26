@@ -238,9 +238,6 @@ function HeaderHome(props) {
 
           </li>
           <li >
-            {/* <Button variant="primary" onClick={handleShow}>
-              Launch demo modal
-      </Button> */}
             {localStorage.getItem("Address") ? (
               <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
                 Dashboard
@@ -248,14 +245,6 @@ function HeaderHome(props) {
             ) : (
               <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
             )}
-
-            {/* <Link
-              to="/login"
-              // className="nav-link header-login"
-              className="nav-link btn"
-              style={{ borderRadius: "5px", backgroundColor: "rgb(167,0,0)" }}
-            >
-            </Link> */}
           </li>
         </ul>
         <NetworkErrorModal

@@ -20,8 +20,6 @@ import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import ReactDOM from "react-dom";
 import Cube from "react-3d-cube";
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
 
 
 const useStyles = makeStyles({
@@ -58,14 +56,14 @@ function NFTCube(props) {
 
                                     }}
                                 >
-                                    <Cube size={230} index="front">
+                                    {/* <Cube size={230} index="front">
                                         <LazyLoadImage src={r1} effect="blur" alt="front" />
                                         <LazyLoadImage src={r2} effect="blur" alt="right" />
                                         <LazyLoadImage src={r3} effect="blur" alt="back" />
                                         <LazyLoadImage src={r4} effect="blur" alt="left" />
                                         <LazyLoadImage src={r5} effect="blur" alt="top" />
                                         <LazyLoadImage src={r6} effect="blur" alt="bottom" />
-                                    </Cube>
+                                    </Cube> */}
                                 </div>
                             </div>
 
