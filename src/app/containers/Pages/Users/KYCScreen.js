@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
-import loginBanner from "../../../assets/img/importExport.jpg";
+// import loginBanner from "../../../assets/img/importExport.jpg";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";

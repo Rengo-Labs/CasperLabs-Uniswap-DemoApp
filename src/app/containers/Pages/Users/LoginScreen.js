@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
-import loginBanner from "../../../assets/img/importExport.jpg";
+// import loginBanner from "../../../assets/img/importExport.jpg";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";
@@ -237,12 +237,12 @@ function LoginScreen(props) {
                         className="col-md-8 col-lg-7 login-left"
                         style={{ textAlign: "center" }}
                       >
-                        <img
+                        {/* <img
                           src={loginBanner}
                           className="img-fluid"
                           alt="Doccure Login"
                           style={{ height: "400px", paddingTop: "20px" }}
-                        />
+                        /> */}
                       </div>
                       <div className="col-md-11 col-lg-5 login-right">
                         {twoFACheck ? (

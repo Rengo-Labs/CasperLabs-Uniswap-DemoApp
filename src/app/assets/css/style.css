@@ -2347,7 +2347,7 @@ html.menu-opened body {
   overflow: hidden;
 }
 .section-inefficiencies {
-  background: #f9f9f9 url(../img/third-div.png) no-repeat bottom center;
+  /* background: #f9f9f9 url(../img/third-div.png) no-repeat bottom center; */
   min-height: 190px;
   background-size: 100% auto;
   /* position: relative; */
@@ -2412,7 +2412,7 @@ html.menu-opened body {
   width: 240px;
 }
 .search-location .form-control {
-  background: #fff url(../img/location.png) no-repeat 10px center;
+  /* background: #fff url(../img/location.png) no-repeat 10px center; */
 }
 .search-box .search-info {
   -ms-flex: 0 0 490px;
@@ -2422,7 +2422,7 @@ html.menu-opened body {
   width: 490px;
 }
 .search-info .form-control {
-  background: #fff url(../img/search.png) no-repeat 10px center;
+  /* background: #fff url(../img/search.png) no-repeat 10px center; */
 }
 .search-box .search-btn {
   width: 46px;
