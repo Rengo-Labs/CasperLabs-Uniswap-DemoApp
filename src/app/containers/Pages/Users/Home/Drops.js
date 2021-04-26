@@ -1,35 +1,18 @@
-import "../../../assets/css/bootstrap.min.css";
-import "../../../assets/css/style.css";
-import "../../../assets/plugins/fontawesome/css/all.min.css";
-import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import Footer from "../../../components/Footers/Footer";
-import HeaderHome from "../../../components/Headers/Header";
-import Collectible from "./Home/Drops";
-import DigitalArt from "./Home/Market";
-import HomeBanner from "./Home/HomeBanner";
-import PricingBanner from "./Home/PricingBanner";
-import TrendingCollections from "./Home/TrendingCollections";
-import VirtailWorlds from "./Home/VirtualWorlds";
-import { Avatar, CardHeader, Grid } from '@material-ui/core/';
-import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-
+import {
+    Card,
+    CardContent, CardHeader, Grid
+} from '@material-ui/core/';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import React, { useEffect, useState } from "react";
+import { Container, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Countdown from 'react-countdown';
-import Cookies from "js-cookie";
-import React, { useEffect, useState } from "react";
-import { Spinner } from "react-bootstrap";
 
-import r1 from '../../../assets/img/patients/patient.jpg';
-import TablePagination from '@material-ui/core/TablePagination';
-
-import MyDrops from "../Dashboard/Admin/MyDrops";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -61,63 +44,46 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-function AuctionDrops() {
-    const classes = useStyles();
+function Drops() {
     const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
     const [imageData, setImageData] = useState([]);
 
-    const [rowsPerPage, setRowsPerPage] = React.useState(12);
+    const [rowsPerPage, setRowsPerPage] = React.useState(4);
     const [totalDrops, setTotalDrops] = React.useState(0);
     const [page, setPage] = React.useState(0);
     const [open, setOpen] = React.useState(false);
-    const handleCloseBackdrop = () => {
-        setOpen(false);
-    };
-    const handleShowBackdrop = () => {
-        setOpen(true);
-    };
+    const classes = useStyles();
     let getMyDrops = (start, end) => {
-        handleShowBackdrop();
         axios.get(`/drop/drops/${start}/${end}`).then(
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.Dropdata);
                 setTotalDrops(response.data.Dropscount);
-                handleCloseBackdrop();
             },
             (error) => {
                 if (process.env.NODE_ENV === "development") {
                     console.log(error);
                     console.log(error.response);
                 }
-                handleCloseBackdrop();
             })
     }
     useEffect(() => {
         getMyDrops(0, rowsPerPage);
     }, []);
-    const handleChangePage = (event, newPage) => {
-        console.log("newPage", newPage);
-        setPage(newPage);
-        console.log("Start", newPage * rowsPerPage);
-        console.log("End", newPage * rowsPerPage + rowsPerPage);
-        getMyDrops(newPage * rowsPerPage, newPage * rowsPerPage + rowsPerPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        getMyDrops(0, parseInt(event.target.value, 10));
-        setPage(0);
-    };
     return (
-        <>
-            <div className="main-wrapper">
-                <div className="home-section home-full-height">
-                    <HeaderHome selectedNav={"Drops"} />
-                    <div className="card-body">
-                        <div className="form-group"  style={{minHeight:'500px',marginTop:'120px'}}>
 
+        <>
+
+            <div className="container-fluid">
+                {/* <!-- Page Header --> */}
+                <div className="page-header">
+                    {/* <Container> */}
+
+                    <div className="card-body">
+                        <h3><pre>Dropss<Link to="/auctionDrops" style={{ float: 'right', color: "#ff0000" }}>View All </Link></pre></h3>
+                        <hr></hr>
+                        <div className="form-group" >
                             {open ? (
                                 <div align="center" className="text-center">
                                     <Spinner
@@ -125,7 +91,6 @@ function AuctionDrops() {
                                         role="status"
                                         style={{ color: "#ff0000" }}
                                     >
-
                                     </Spinner>
                                     <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                 </div>
@@ -140,7 +105,7 @@ function AuctionDrops() {
                                     {tokenList.map((i, index) => (
 
                                         <Grid item xs={12} sm={6} md={3} key={index}>
-                                            <Link to={"/auctionDrops/DropCubes/" + i._id}>
+                                            <Link to={"myDrops/cubes/" + i._id}>
                                                 <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                     <CardActionArea>
                                                         <CardHeader className="text-center"
@@ -186,9 +151,6 @@ function AuctionDrops() {
                                                             </Typography>
                                                         </CardContent>
                                                     </CardActionArea>
-                                                    <CardActions>
-
-                                                    </CardActions>
                                                 </Card>
                                             </Link>
                                         </Grid >
@@ -197,21 +159,13 @@ function AuctionDrops() {
                             )}
                         </div>
                     </div >
-                    <TablePagination
-                        rowsPerPageOptions={[12,24,48]}
-                        component="div"
-                        count={totalDrops}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onChangePage={handleChangePage}
-                        onChangeRowsPerPage={handleChangeRowsPerPage}
-                    />
-                </div>
+                    {/* </Container> */}
 
-                <Footer position={"relative"} />
-            </div>
+                </div>
+            </div >
+
         </>
     );
 }
 
-export default AuctionDrops;
+export default Drops;

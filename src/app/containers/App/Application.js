@@ -4,8 +4,10 @@ import { SnackbarProvider } from 'notistack';
 import React, { useEffect } from "react";
 import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
 import AdminDashboard from "../Pages/Dashboard/AdminDashboard";
+import CubeNFTs from "../Pages/Users/Drops/CubeNFTs";
 import UserDashboard from "../Pages/Dashboard/UserDashboard";
 import AuctionDrops from "../Pages/Users/AuctionDrops";
+import DropCubes from "../Pages/Users/Drops/DropCubes";
 // import ExporterDashboard from "../Pages/Dashboard/ExporterDashboard";
 // import ImporterDashboard from "../Pages/Dashboard/ImporterDashboard";
 import EmailVerification from "../Pages/Users/EmailVerification";
@@ -115,8 +117,10 @@ function App() {
             render={(routeProps) => <EmailVerification {...routeProps} />}
           />
           <Route path="/marketPlace" component={MarketPlace} />
-          <Route path="/auctionDrops" component={AuctionDrops} />
-
+          <Route exact path="/auctionDrops" component={AuctionDrops} />
+          <Route exact path="/auctionDrops/DropCubes/:dropId" component={DropCubes} />
+          <Route exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs}/>
+              
           <Route path="/termsandconditions" component={TermsAndConditions} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           {/* {jwtDecoded.roles === "user" ? (

@@ -5,8 +5,8 @@ import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";
 import HeaderHome from "../../../components/Headers/Header";
-import Collectible from "./Home/Collectibles";
-import DigitalArt from "./Home/DigitalArt";
+import Drops from "./Home/Drops";
+import Market from "./Home/Market";
 import HomeBanner from "./Home/HomeBanner";
 import PricingBanner from "./Home/PricingBanner";
 import TrendingCollections from "./Home/TrendingCollections";
@@ -22,9 +22,9 @@ function HomeScreen() {
 
           <HomeBanner />
 
-          <TrendingCollections />
-          <DigitalArt />
-          <Collectible /> 
+          {/* <TrendingCollections /> */}
+          {/* <Market /> */}
+          <Drops /> 
 
         </div>
 
