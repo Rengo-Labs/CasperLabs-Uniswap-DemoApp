@@ -21,7 +21,6 @@ import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import r1 from '../../../../assets/img/patients/patient.jpg';
-import audio from '../../../../assets/mp3/music.mp3';
 // import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';

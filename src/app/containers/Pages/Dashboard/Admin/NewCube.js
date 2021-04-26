@@ -25,7 +25,6 @@ import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import logo from "../../../../assets/img/img-04.jpg";
 import r1 from '../../../../assets/img/patients/patient.jpg';
-import audio from '../../../../assets/mp3/music.mp3';
 import robot1 from '../../../../assets/img/r1.jpg';
 import robot2 from '../../../../assets/img/r2.jpg';
 import robot3 from '../../../../assets/img/r3.jpg';
