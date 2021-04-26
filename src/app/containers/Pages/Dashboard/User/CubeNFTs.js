@@ -169,7 +169,7 @@ function CubeNFTs(props) {
                                                 color="" label="@UserName" />
                                             <h1>{cubeData.title} </h1>
                                             <h4>Reserve Price</h4>
-                                            <h2>{cubeData.SalePrice} ETH </h2>
+                                            <h2>{cubeData.SalePrice/ 10 ** 18} ETH </h2>
                                             <h3 className="text-muted">Music Artist</h3>
                                             <CardHeader
                                                 avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}

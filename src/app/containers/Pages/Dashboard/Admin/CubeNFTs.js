@@ -16,6 +16,7 @@ import Chip from '@material-ui/core/Chip';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import { Row } from "react-bootstrap";
 import r1 from '../../../../assets/img/patients/patient.jpg';
+import Countdown from 'react-countdown';
 
 import { useParams } from "react-router-dom";
 
@@ -62,9 +63,12 @@ const useStyles = makeStyles((theme) => ({
 
 function CubeNFTs(props) {
     const classes = useStyles();
-    const { cubeId } = useParams();
+    const { dropId, cubeId } = useParams();
+    // console.log("dropId", dropId);
     const [tokenList, setTokenList] = useState([]);
     const [cubeData, setCubeData] = useState({});
+    const [dropData, setDropData] = useState({});
+
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
         setOpen(false);
@@ -74,14 +78,21 @@ function CubeNFTs(props) {
     };
     let getCubeNFTs = () => {
         handleShowBackdrop();
+
         let Data = {
-            tokenId: cubeId
+            tokenId: cubeId,
+            check: dropId === "notdrop" ? dropId : "drop",
+            dropId: dropId !== "notdrop" ? dropId : null,
         }
+        console.log("Data", Data);
         axios.post("/token/SingleTokenId", Data).then(
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.nftdata);
                 setCubeData(response.data.tokensdata);
+                if (dropId !== "notdrop") {
+                    setDropData(response.data.Dropdata);
+                }
                 handleCloseBackdrop();
             },
             (error) => {
@@ -135,42 +146,62 @@ function CubeNFTs(props) {
                     <section className="section">
                         <div className="container-fluid">
                             <div className="" style={{ paddingTop: "0px" }}>
-                                <div className="" >
-                                    <div className="row">
-                                        <div className="col-md-12 col-lg-6">
-                                            <Card className={classes.root}>
-                                                <CardActionArea>
-
-                                                    <CardMedia
-                                                        className={classes.media1}
-                                                        title=""
-                                                        image=""
-                                                    >
-                                                        <div class="wrapper">
-                                                            <div class="cube-box">
-                                                                {tokenList.map((j, jindex) => (
-                                                                        <img src={j[0].artwork} key={jindex} style={{ border: j[0].type === "Mastercraft" ? '4px solid #ff0000' : j[0].type === "Legendary" ? '4px solid #FFD700' : j[0].type === "Epic" ? '4px solid #9400D3' : j[0].type === "Rare" ? '4px solid #0000FF' : j[0].type === "Uncommon" ? '4px solid #008000' : j[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
-                                                                ))}
-                                                                {new Array(6 - tokenList.length).fill(0).map((_, index) => (
-                                                                    < img src={r1} alt="" />
-                                                                ))}
-                                                            </div>
+                                <div className="row">
+                                    <div className="col-md-12 col-lg-6">
+                                        <Card className={classes.root}>
+                                            <CardActionArea>
+                                                <CardMedia
+                                                    className={classes.media1}
+                                                    title=""
+                                                    image=""
+                                                >
+                                                    <div class="wrapper">
+                                                        <div class="cube-box">
+                                                            {tokenList.map((j, jindex) => (
+                                                                <img src={j[0].artwork} key={jindex} style={{ border: j[0].type === "Mastercraft" ? '4px solid #ff0000' : j[0].type === "Legendary" ? '4px solid #FFD700' : j[0].type === "Epic" ? '4px solid #9400D3' : j[0].type === "Rare" ? '4px solid #0000FF' : j[0].type === "Uncommon" ? '4px solid #008000' : j[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                                                            ))}
+                                                            {new Array(6 - tokenList.length).fill(0).map((_, index) => (
+                                                                < img src={r1} alt="" />
+                                                            ))}
                                                         </div>
+                                                    </div>
+                                                </CardMedia>
+                                            </CardActionArea>
+                                        </Card>
+                                    </div>
 
-
-                                                    </CardMedia>
-
-                                                </CardActionArea>
-                                            </Card>
-
-                                        </div>
+                                    {dropId !== "notdrop" ? (
                                         <div className="col-md-12 col-lg-6">
                                             <Chip clickable style={{ marginTop: '20px' }}
                                                 color="" label="@UserName" />
                                             <h1>{cubeData.title} </h1>
-                                            <h4>Reserve Price</h4>
-                                            <h2>{cubeData.SalePrice} ETH </h2>
+                                            <h2>Minimum Bid : {dropData.MinimumBid / 10 ** 18} ETH </h2>
+                                            <h2>Bid Delta : {dropData.bidDelta / 10 ** 18} ETH </h2>
+                                            {new Date() < new Date(dropData.AuctionStartsAt) ? (
+                                                <Typography variant="h5" gutterBottom color="textSecondary">
+                                                    <strong>Auction Starts At:</strong>
+                                                    <span style={{ color: "#00FF00" }} >
+                                                        <Countdown daysInHours date={new Date(dropData.AuctionStartsAt)}>
+                                                        </Countdown>
+                                                    </span>
+                                                </Typography>
+
+                                            ) : new Date() > new Date(dropData.AuctionStartsAt) && new Date() < new Date(dropData.AuctionEndsAt) ? (
+                                                <Typography variant="h5" gutterBottom color="textSecondary" component="p">
+                                                    <strong>Auction Ends At: </strong>
+                                                    <span style={{ color: "#FF0000" }}>
+                                                        <Countdown daysInHours date={new Date(dropData.AuctionEndsAt)}>
+                                                        </Countdown>
+                                                    </span>
+                                                </Typography>
+
+                                            ) : (
+                                                <Typography variant="h5" gutterBottom style={{ color: "#FF0000" }} component="p">
+                                                    <strong>Auction Ended</strong>
+                                                </Typography>
+                                            )}
                                             <h3 className="text-muted">Music Artist</h3>
+
                                             <CardHeader
                                                 avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
                                                 title={cubeData.MusicArtistName}
@@ -181,10 +212,26 @@ function CubeNFTs(props) {
 
                                             </Row>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="col-md-12 col-lg-6">
+                                            <Chip clickable style={{ marginTop: '20px' }}
+                                                color="" label="@UserName" />
+                                            <h1>{cubeData.title} </h1>
+                                            <h4>Reserve Price</h4>
+                                            <h2>{cubeData.SalePrice / 10 ** 18} ETH </h2>
+                                            <h3 className="text-muted">Music Artist</h3>
+                                            <CardHeader
+                                                avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                title={cubeData.MusicArtistName}
+                                                subheader={cubeData.MusicArtistAbout}
+                                            />
+                                        </div>
+                                    )}
+
                                 </div>
                             </div>
                         </div>
+
                     </section >
                     <div className="form-group">
 

@@ -104,7 +104,7 @@ function NewDrop(props) {
     };
 
     let getMyCubes = () => {
-        axios.get("/token/TokenIds").then(
+        axios.get("/token/TokenIdsnotonauction").then(
             (response) => {
                 console.log("response", response);
                 setInputList(response.data.tokensdata);
@@ -143,14 +143,14 @@ function NewDrop(props) {
             newRandomDrop: ""
         });
     }, []);
-    const handleRemoveClick = (index) => {
+    const handleRemoveClick = (index, newCube) => {
         console.log("index", index);
         console.log("inputList", types);
 
         const list = [...types];
         console.log("list", list);
         list.splice(index, 1);
-
+        setInputList(inputList => [...inputList, newCube])
         setTypes(list);
     };
     const handleAddClick = (value) => {
@@ -158,6 +158,9 @@ function NewDrop(props) {
         setTypes([...types, value]);
         var index = inputList.findIndex(i => i._id === value._id);
         setTypesImages([...typesImages, imageData[index]])
+        const list = [...inputList];
+        list.splice(index, 1);
+        setInputList(list);
         setType("");
     };
     let loadWeb3 = async () => {
@@ -244,7 +247,10 @@ function NewDrop(props) {
                 }
                 var myContractInstance = await new web3.eth.Contract(abi, address);
                 console.log("myContractInstance", myContractInstance);
-                var receipt = await myContractInstance.methods.newAuction(startTimeStamp, endTimeStamp, minimumBid, tokenId).send({ from: accounts[0] }, (err, response) => {
+                const minBid=minimumBid * 10 ** 18;
+                // console.log("minimumBid",minimumBid );
+                // console.log("minimumBid * 10 ** 18",(minimumBid * 10 ** 18).toString());
+                var receipt = await myContractInstance.methods.newAuction(startTimeStamp, endTimeStamp, (minimumBid * 10 ** 18).toString(), tokenId).send({ from: accounts[0] }, (err, response) => {
                     console.log('get transaction', err, response);
                     if (err !== null) {
                         console.log("err", err);
@@ -254,7 +260,7 @@ function NewDrop(props) {
                         setIsSaving(false);
                         return;
                     }
-                    
+
                 })
                 // .on('receipt', (receipt) => {
                 console.log("receipt", receipt);
@@ -263,11 +269,11 @@ function NewDrop(props) {
 
                 let DropData = {
                     tokenId: tokensId,
-                    dropId:dropId,
+                    dropId: dropId,
                     AuctionStartsAt: startTime,
                     AuctionEndsAt: endTime,
-                    MinimumBid: minimumBid,
-                    bidDelta: bidDelta,
+                    MinimumBid: minimumBid * 10 ** 18,
+                    bidDelta: bidDelta*10**18,
                     title: name,
                     description: description,
                     image: image
@@ -281,6 +287,9 @@ function NewDrop(props) {
                         setEndTime(new Date());
                         setName("");
                         setDescription("");
+                        setTypes([]);
+                        setTypesImages([])
+                        setType("");
                         setMinimumBid();
                         setBidDelta();
                         setImage(r1);
@@ -352,7 +361,7 @@ function NewDrop(props) {
                                         // value={type}
                                         // disabled={isDisabledImporter}
                                         getOptionLabel={(option) =>
-                                            option.title + ',' + option.SalePrice
+                                            option.title + ',' + option.SalePrice / 10 ** 18
                                         }
                                         onChange={(event, value) => {
                                             if (value == null)
@@ -531,7 +540,7 @@ function NewDrop(props) {
                                         >
                                             {types.map((i, index) => (
                                                 <Grid item xs={12} sm={6} md={6} key={index}>
-                                                    <Card className={classes.root}>
+                                                    <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                         {/* style={{ height: "100%" }} variant="outlined" */}
                                                         <CardActionArea>
 
@@ -556,11 +565,15 @@ function NewDrop(props) {
                                                             </CardMedia>
                                                             <CardContent>
                                                                 <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Cube Title: </strong>{i.title}
+                                                                </Typography>
+
+                                                                <Typography variant="body2" color="textSecondary" component="p">
                                                                     <strong>Cube Description: </strong>{i.description}
                                                                 </Typography>
 
                                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Sale Price: </strong>{i.SalePrice}
+                                                                    <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18}
                                                                 </Typography>
                                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
                                                                 <CardHeader

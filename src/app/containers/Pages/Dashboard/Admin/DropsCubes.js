@@ -66,7 +66,7 @@ function DropCubes(props) {
     let getDropCubes = () => {
         handleShowBackdrop();
         let DropId = {
-            dropId: dropId
+            dropId: dropId,
         }
         axios.post("/drop/drops", DropId).then(
             (response) => {
@@ -129,7 +129,7 @@ function DropCubes(props) {
                         <strong>Drop Description: </strong>{tokenList.description}
                     </Typography>
                     <Typography variant="body2" color="textSecondary" component="p">
-                        <strong>Minimum Bid: </strong>{tokenList.MinimumBid}
+                        <strong>Minimum Bid: </strong>{tokenList.MinimumBid / 10 ** 18}
                     </Typography>
                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-left">
                         {new Date() < new Date(tokenList.AuctionStartsAt) ? (
@@ -176,7 +176,7 @@ function DropCubes(props) {
                         >
                             {cubeData.map((i, index) => (
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <Link to={"/dashboard/myCubes/Nfts/" + i._id}>
+                                    <Link to={"/dashboard/myCubes/Nfts/" + dropId + "/" + i._id}>
                                         <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                             {/* style={{ height: "100%" }} variant="outlined" */}
                                             <CardActionArea>
@@ -209,7 +209,7 @@ function DropCubes(props) {
                                                     </Typography>
 
                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Sale Price: </strong>{i.SalePrice}
+                                                        <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18}
                                                     </Typography>
                                                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
                                                     <CardHeader

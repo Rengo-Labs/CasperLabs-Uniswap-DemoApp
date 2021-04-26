@@ -158,7 +158,7 @@ function SeasonDrops(props) {
                                                         <strong>Drop Description: </strong>{i[0].description}
                                                     </Typography>
                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Minimum Bid: </strong>{i[0].MinimumBid}
+                                                        <strong>Minimum Bid: </strong>{i[0].MinimumBid / 10 ** 18}
                                                     </Typography>
                                                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
                                                         {new Date() < new Date(i[0].AuctionStartsAt) ? (

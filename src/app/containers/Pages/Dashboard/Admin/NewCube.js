@@ -242,7 +242,7 @@ function NewCube(props) {
             let variant = "error";
             enqueueSnackbar('Please Select Nfts first', { variant });
             setIsSaving(false);
-        }if (selectedNFTList.length < 6) {
+        } if (selectedNFTList.length < 6) {
             let variant = "error";
             enqueueSnackbar('Total Nfts Cannot be Less than 6', { variant });
             setIsSaving(false);
@@ -264,11 +264,11 @@ function NewCube(props) {
             setIsSaving(false);
         } else if (musicOwner === "") {
             let variant = "error";
-            enqueueSnackbar('Please Owner Music File', { variant });
+            enqueueSnackbar('Please upload Owner Music File', { variant });
             setIsSaving(false);
         } else if (musicNonOwner === "") {
             let variant = "error";
-            enqueueSnackbar('Please Non Owner Music File', { variant });
+            enqueueSnackbar('Please upload Non Owner Music File', { variant });
             setIsSaving(false);
         } else if (artist === "") {
             let variant = "error";
@@ -311,7 +311,7 @@ function NewCube(props) {
                     MusicArtistName: artist,
                     MusicArtistAbout: aboutTheTrack,
                     MusicArtistProfile: artistImage,
-                    SalePrice: salePrice,
+                    SalePrice: salePrice * 10 ** 18,
                 }
                 const reader = new window.FileReader();
                 const blob = new Blob([JSON.stringify(uriData, null, 2)], { type: 'application/json' });
@@ -360,7 +360,7 @@ function NewCube(props) {
                                     MusicArtistAbout: aboutTheTrack,
                                     MusicArtistProfile: artistImage,
                                     musicartisttype: artistType,
-                                    SalePrice: salePrice,
+                                    SalePrice: salePrice * 10 ** 18,
                                 }
                                 console.log("cubeData", cubeData);
                                 axios.post("/token/TokenIds", cubeData).then(
@@ -395,14 +395,12 @@ function NewCube(props) {
                                     tokenId: ids,
                                     from: receipt.events.Transfer.returnValues.from,
                                     to: receipt.events.Transfer.returnValues.to,
-                                    transaction: receipt.events.transactionHash
+                                    transaction: receipt.transactionHash
                                 }
                                 axios.post("/transaction/tokenTransaction ", TrasactionData).then(
                                     (response) => {
                                         console.log('response', response);
                                         setIsSaving(false);
-                                        let variant = "success";
-                                        enqueueSnackbar('Cube Created Successfully.', { variant });
                                     },
                                     (error) => {
                                         if (process.env.NODE_ENV === "development") {
@@ -410,8 +408,6 @@ function NewCube(props) {
                                             console.log(error.response);
                                         }
                                         setIsSaving(false);
-                                        let variant = "error";
-                                        enqueueSnackbar('Unable to Create Cube.', { variant });
                                     }
                                 );
 
