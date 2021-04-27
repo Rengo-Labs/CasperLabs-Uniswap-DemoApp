@@ -290,7 +290,7 @@ export default function ScrollableTabsButtonForce(props) {
                                                                 animation="border"
                                                                 role="status"
                                                                 className="bg-danger-light"
-                                                            //   style={{ color: "#00d0f1" }}
+                                                            //   style={{ color: "#ff0000" }}
                                                             >
                                                                 <span className="sr-only">Loading...</span>
                                                             </Spinner>

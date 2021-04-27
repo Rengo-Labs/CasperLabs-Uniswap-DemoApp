@@ -68,6 +68,8 @@ function CubeNFTs(props) {
     const [tokenList, setTokenList] = useState([]);
     const [cubeData, setCubeData] = useState({});
     const [dropData, setDropData] = useState({});
+    const [transactionHistory, setTransactionHistory] = useState([]);
+
 
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
@@ -93,7 +95,25 @@ function CubeNFTs(props) {
                 if (dropId !== "notdrop") {
                     setDropData(response.data.Dropdata);
                 }
-                handleCloseBackdrop();
+                axios.get(`/transaction/tokenTransaction/${response.data.tokensdata.tokenId}`).then((res) => {
+                    console.log("res", res);
+                    setTransactionHistory(res.data.transactions)
+                    handleCloseBackdrop();
+                }, (error) => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(error);
+                        console.log(error.response);
+
+                    }
+                    if (error.response.data !== undefined) {
+                        if (error.response.data === "Unauthorized access (invalid token) !!") {
+                            Cookies.remove("Authorization");
+                            window.location.reload();
+                        }
+                    }
+                    handleCloseBackdrop();
+                })
+                // handleCloseBackdrop();
             },
             (error) => {
                 if (process.env.NODE_ENV === "development") {
@@ -247,77 +267,110 @@ function CubeNFTs(props) {
                                 <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                             </div>
                         ) : (
-                            <Grid
-                                container
-                                spacing={2}
-                                direction="row"
-                                justify="flex-start"
-                            // alignItems="flex-start"
-                            >
-                                {console.log("tokenList", tokenList)}
-                                {tokenList.map((i, index) => (
+                            <div className="row">
+                                <div className="col-md-12 col-lg-6">
+                                    <Grid
+                                        container
+                                        spacing={2}
+                                        direction="row"
+                                        justify="flex-start"
+                                    // alignItems="flex-start"
+                                    >
+                                        {console.log("tokenList", tokenList)}
 
-                                    <Grid item xs={12} sm={6} md={3} key={index}>
-                                        <Card style={{ height: "100%" }} variant="outlined">
-                                            <CardHeader className="text-center"
-                                                title={i[0].title}
-                                            />
-                                            <CardMedia
-                                                style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
-                                                className={classes.media}
-                                                image={i[0].artwork}
+                                        {tokenList.map((i, index) => (
 
-                                                title="NFT Image"
-                                            />
-                                            <CardContent>
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Artwork Description: </strong>{i[0].description}
-                                                </Typography>
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Token Rarity: </strong>{i[0].type}
-                                                </Typography>
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Token Supply: </strong>{i[0].tokensupply}
-                                                </Typography>
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i[0].ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                    title={i[0].ImageArtistName}
-                                                    subheader={i[0].ImageArtistAbout}
-                                                />
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Website URL: </strong>{i[0].ImageArtistWebsite}
-                                                </Typography>
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i[0].ProducerProfile} aria-label="Producer" className={classes.avatar} />}
-                                                    title={i[0].ProducerName}
-                                                    subheader={i[0].ProducerInspiration}
-                                                />
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i[0].ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
-                                                    title={i[0].ExecutiveProducerName}
-                                                    subheader={i[0].ExecutiveProducerInspiration}
-                                                />
-                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
-                                                <CardHeader
-                                                    avatar={<Avatar src={i[0].FanProfile} aria-label="Fan" className={classes.avatar} />}
-                                                    title={i[0].FanName}
-                                                    subheader={i[0].FanInspiration}
-                                                />
+                                            <Grid item xs={12} sm={6} md={6} key={index}>
+                                                <Card style={{ height: "100%" }} variant="outlined">
+                                                    <CardHeader className="text-center"
+                                                        title={i[0].title}
+                                                    />
+                                                    <CardMedia
+                                                        style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                        className={classes.media}
+                                                        image={i[0].artwork}
 
-                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Other: </strong>{i[0].other}
-                                                </Typography>
-                                                {/* <Typography variant="body2" color="textSecondary" component="p">
+                                                        title="NFT Image"
+                                                    />
+                                                    <CardContent>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Artwork Description: </strong>{i[0].description}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Token Rarity: </strong>{i[0].type}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Token Supply: </strong>{i[0].tokensupply}
+                                                        </Typography>
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i[0].ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                            title={i[0].ImageArtistName}
+                                                            subheader={i[0].ImageArtistAbout}
+                                                        />
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Website URL: </strong>{i[0].ImageArtistWebsite}
+                                                        </Typography>
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i[0].ProducerProfile} aria-label="Producer" className={classes.avatar} />}
+                                                            title={i[0].ProducerName}
+                                                            subheader={i[0].ProducerInspiration}
+                                                        />
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i[0].ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
+                                                            title={i[0].ExecutiveProducerName}
+                                                            subheader={i[0].ExecutiveProducerInspiration}
+                                                        />
+                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={i[0].FanProfile} aria-label="Fan" className={classes.avatar} />}
+                                                            title={i[0].FanName}
+                                                            subheader={i[0].FanInspiration}
+                                                        />
+
+                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Other: </strong>{i[0].other}
+                                                        </Typography>
+                                                        {/* <Typography variant="body2" color="textSecondary" component="p">
                                                     <strong>Collection: </strong>{i[0].collectiontitle}
                                                 </Typography> */}
-                                            </CardContent>
-                                        </Card>
+                                                    </CardContent>
+                                                </Card>
+                                            </Grid>
+                                        ))}
+
                                     </Grid>
-                                ))}
-                            </Grid>
+                                </div>
+                                <div className="col-md-12 col-lg-6">
+                                    <div className="form-group">
+                                        <Typography variant="h5" gutterBottom>
+                                            History
+                                                    </Typography>
+                                        {transactionHistory.map((i, index) => (
+                                            <Card className={classes.root} key={index}>
+
+                                                <CardActionArea style={{ margin: '5px' }}>
+
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>From : </strong>{i.from}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>To : </strong>{i.to}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Hash : </strong>
+                                                        <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                                                            <span style={{ cursor: 'pointer' }}>{i.transaction.substr(0, 20)}. . .</span>
+                                                        </a>
+                                                    </Typography>
+                                                </CardActionArea>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         )}
                     </div>
                 </form>

@@ -136,7 +136,7 @@ a {
   color:#FFFFFF;
 }
 a:hover {
-  color: #3498DB;
+  color: #ff0000;
   /* color: #FFFFFF; */
 }
 a:hover,
@@ -272,7 +272,7 @@ table.table td h2 a {
   color: #a70000;
 }
 table.table td h2 a:hover {
-  color: #3498DB;
+  color: #ff0000;
 }
 table.table td h2 span {
   color: #888;
@@ -360,13 +360,13 @@ table.table td h2 span {
 }
 .bg-primary,
 .badge-primary {
-  background-color: #09e5ab !important;
+  background-color: #ff0000 !important;
 }
 a.bg-primary:focus,
 a.bg-primary:hover,
 button.bg-primary:focus,
 button.bg-primary:hover {
-  background-color: #3498DB !important;
+  background-color: #ff0000 !important;
 }
 .bg-success,
 .badge-success {
@@ -417,7 +417,7 @@ button.bg-danger:hover {
 }
 .text-primary,
 .dropdown-menu > li > a.text-primary {
-  color: #09e5ab !important;
+  color: #ff0000 !important;
 }
 .text-success,
 .dropdown-menu > li > a.text-success {
@@ -443,16 +443,16 @@ button.bg-danger:hover {
   color: #757575 !important;
 }
 .btn-primary {
-  background-color: #09e5ab;
-  border: 1px solid #09e5ab;
+  background-color: #ff0000;
+  border: 1px solid #ff0000;
 }
 .btn-primary:hover,
 .btn-primary:focus,
 .btn-primary.active,
 .btn-primary:active,
 .open > .dropdown-toggle.btn-primary {
-  background-color: #3498DB;
-  border: 1px solid #3498DB;
+  background-color: #ff0000;
+  border: 1px solid #ff0000;
 }
 .btn-primary.active.focus,
 .btn-primary.active:focus,
@@ -463,14 +463,14 @@ button.bg-danger:hover {
 .open > .dropdown-toggle.btn-primary.focus,
 .open > .dropdown-toggle.btn-primary:focus,
 .open > .dropdown-toggle.btn-primary:hover {
-  background-color: #3498DB;
-  border: 1px solid #3498DB;
+  background-color: #ff0000;
+  border: 1px solid #ff0000;
 }
 .btn-primary.active:not(:disabled):not(.disabled),
 .btn-primary:active:not(:disabled):not(.disabled),
 .show > .btn-primary.dropdown-toggle {
-  background-color: #3498DB;
-  border-color: #3498DB;
+  background-color: #ff0000;
+  border-color: #ff0000;
   color: #fff;
 }
 .btn-primary.active:focus:not(:disabled):not(.disabled),
@@ -480,8 +480,8 @@ button.bg-danger:hover {
 }
 .btn-primary.disabled,
 .btn-primary:disabled {
-  background-color: #09e5ab;
-  border-color: #09e5ab;
+  background-color: #c06d6d;
+  border-color: #ff0000;
   color: #fff;
 }
 .btn-secondary.active:focus:not(:disabled):not(.disabled),
@@ -669,12 +669,12 @@ button.bg-danger:hover {
   box-shadow: unset;
 }
 .btn-outline-primary {
-  color: #09e5ab;
-  border-color: #09e5ab;
+  color: #ff0000;
+  border-color: #ff0000;
 }
 .btn-outline-primary:hover {
-  background-color: #09e5ab;
-  border-color: #09e5ab;
+  background-color: #ff0000;
+  border-color: #ff0000;
 }
 .btn-outline-primary:focus,
 .btn-outline-primary.focus {
@@ -682,14 +682,14 @@ button.bg-danger:hover {
 }
 .btn-outline-primary.disabled,
 .btn-outline-primary:disabled {
-  color: #09e5ab;
+  color: #ff0000;
   background-color: transparent;
 }
 .btn-outline-primary:not(:disabled):not(.disabled):active,
 .btn-outline-primary:not(:disabled):not(.disabled).active,
 .show > .btn-outline-primary.dropdown-toggle {
-  background-color: #09e5ab;
-  border-color: #09e5ab;
+  background-color: #ff0000;
+  border-color: #ff0000;
 }
 .btn-outline-primary:not(:disabled):not(.disabled):active:focus,
 .btn-outline-primary:not(:disabled):not(.disabled).active:focus,
@@ -1877,7 +1877,7 @@ button.bg-danger:hover {
   color: #fff;
 }
 .header-navbar-rht li .dropdown-menu a:hover {
-  color: #3498DB;
+  color: #ff0000;
   letter-spacing: 0.5px;
   padding-left: 20px;
   background-color: #fff;
@@ -2183,7 +2183,7 @@ html.menu-opened body {
   transition: all 0.4s ease 0s;
 }
 .footer .social-icon ul li a:hover {
-  color: #09e5ab;
+  color: #ff0000;
 }
 .policy-menu {
   font-size: 14px;
@@ -2203,7 +2203,7 @@ html.menu-opened body {
 }
 .policy-menu li a:hover,
 .policy-menu li a:focus {
-  color: #09e5ab;
+  color: #ff0000;
 }
 .policy-menu li::after {
   color: #fff;
@@ -2266,7 +2266,7 @@ html.menu-opened body {
   font-size: 13px;
 }
 .login-right .dont-have a {
-  color: #3498DB;
+  color: #ff0000;
 }
 .login-btn {
   font-size: 18px;
@@ -3044,7 +3044,7 @@ html.menu-opened body {
   margin-bottom: 25px;
 }
 .doc-location a {
-  color: #09e5ab;
+  color: #ff0000;
   font-weight: 500;
 }
 .doctor-widget .doc-name {
@@ -3174,7 +3174,7 @@ html.menu-opened body {
   margin-bottom: 25px;
 }
 .clinic-direction a {
-  color: #09e5ab;
+  color: #ff0000;
   font-weight: 500;
 }
 .doctor-action {
@@ -3195,14 +3195,14 @@ html.menu-opened body {
 }
 .msg-btn:hover,
 .msg-btn:focus {
-  background-color: #09e5ab;
-  border-color: #09e5ab;
+  background-color: #ff0000;
+  border-color: #ff0000;
   color: #fff;
 }
 .call-btn:hover,
 .call-btn:focus {
-  background-color: #09e5ab;
-  border-color: #09e5ab;
+  background-color: #ff0000;
+  border-color: #ff0000;
   color: #fff;
 }
 .user-tabs .nav-tabs > li > a {
@@ -3889,7 +3889,7 @@ html.menu-opened body {
   color: #fff;
   width: 60px;
   height: 60px;
-  border: 2px solid #09e5ab;
+  border: 2px solid #ff0000;
   border-radius: 50%;
   display: -webkit-inline-box;
   display: -ms-inline-flexbox;
@@ -3899,7 +3899,7 @@ html.menu-opened body {
   -ms-flex-pack: center;
   font-size: 30px;
   margin-bottom: 30px;
-  background-color: #09e5ab;
+  background-color: #ff0000;
 }
 .success-cont h3 {
   font-size: 24px;
@@ -5334,7 +5334,7 @@ html.menu-opened body {
   width: 16px;
 }
 .unread-msg {
-  background-color: #09e5ab;
+  background-color: #ff0000;
   border-radius: 2px;
   color: #a70000;
   font-size: 10px;
@@ -6625,10 +6625,10 @@ html.menu-opened body {
     transform: translateY(0);
   }
   .main-nav .has-submenu.active > a {
-    color: #3498DB;
+    color: #ff0000;
   }
   .main-nav .has-submenu.active .submenu li.active > a {
-    color: #3498DB;
+    color: #ff0000;
   }
   .main-nav > li .submenu li:first-child a {
     border-top: 0;
@@ -6649,7 +6649,7 @@ html.menu-opened body {
     margin-top: 10px;
   }
   .main-nav li .submenu a:hover {
-    color: #3498DB;
+    color: #ff0000;
     letter-spacing: 0.5px;
     padding-left: 20px;
   }
@@ -6819,10 +6819,10 @@ html.menu-opened body {
     content: "\f078";
   }
   .main-nav .has-submenu.active > a {
-    color: #3498DB;
+    color: #ff0000;
   }
   .main-nav .has-submenu.active .submenu li.active > a {
-    color: #3498DB;
+    color: #ff0000;
   }
   .login-left {
     display: none;

@@ -81,7 +81,7 @@ function Drops() {
                     {/* <Container> */}
 
                     <div className="card-body">
-                        <h3><pre>Dropss<Link to="/auctionDrops" style={{ float: 'right', color: "#ff0000" }}>View All </Link></pre></h3>
+                        <h3><pre>Drops<Link to="/auctionDrops" style={{ float: 'right', color: "#ff0000" }}>View All </Link></pre></h3>
                         <hr></hr>
                         <div className="form-group" >
                             {open ? (
@@ -105,7 +105,7 @@ function Drops() {
                                     {tokenList.map((i, index) => (
 
                                         <Grid item xs={12} sm={6} md={3} key={index}>
-                                            <Link to={"myDrops/cubes/" + i._id}>
+                                            <Link to={"/auctionDrops/DropCubes/" + i._id}>
                                                 <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                     <CardActionArea>
                                                         <CardHeader className="text-center"

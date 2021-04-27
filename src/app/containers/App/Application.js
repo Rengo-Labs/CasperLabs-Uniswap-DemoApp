@@ -99,6 +99,14 @@ function App() {
     checkLoginStatus();
     if (jwtDecoded && isLoggedIn && jwtDecoded.roles === "admin") {
       return <Redirect to="/dashboard" />;
+    } else if (path === "/marketPlace") {
+      return <Route component={MarketPlace} />;
+    } else if (path === "/auctionDrops") {
+      return <Route component={AuctionDrops} />;
+    } else if (path === "/auctionDrops/DropCubes/:dropId") {
+      return <Route exact path="/auctionDrops/DropCubes/:dropId" render={(routeProps) => <DropCubes {...routeProps} />} />
+    } else if (path === "/auctionDrops/DropCubes/Nfts/:dropId/:cubeId") {
+      return <Route exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs} />;
     } else {
       return <Route component={HomeScreen} />;
     }
@@ -111,16 +119,16 @@ function App() {
           <LoginRegisterRedirectCheck exact path="/" />
           <LoginRegisterRedirectCheck exact path="/login" />
           <LoginRegisterRedirectCheck exact path="/register" />
+          <LoginRegisterRedirectCheck exact path="/marketPlace" />
+          <LoginRegisterRedirectCheck exact path="/auctionDrops" />
+          <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/:dropId" component={DropCubes} />
+          <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs} />
           <Route path="/forgotpassword" component={ForgotPassword} />
           <Route
             path="/emailverification/:email/:token"
             render={(routeProps) => <EmailVerification {...routeProps} />}
           />
-          <Route path="/marketPlace" component={MarketPlace} />
-          <Route exact path="/auctionDrops" component={AuctionDrops} />
-          <Route exact path="/auctionDrops/DropCubes/:dropId" component={DropCubes} />
-          <Route exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs}/>
-              
+
           <Route path="/termsandconditions" component={TermsAndConditions} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           {/* {jwtDecoded.roles === "user" ? (

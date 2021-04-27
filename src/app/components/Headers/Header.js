@@ -106,6 +106,56 @@ function HeaderHome(props) {
     }
 
   }
+  let LoginUser = async () => {
+    setIsLoading(true);
+    if (window.ethereum) {
+      window.web3 = new Web3(window.ethereum)
+      await window.ethereum.enable()
+    }
+    else if (window.web3) {
+      window.web3 = new Web3(window.web3.currentProvider)
+    }
+    else {
+      window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+    }
+
+    const web3 = window.web3
+    const accounts = await web3.eth.getAccounts();
+    const network = await web3.eth.net.getNetworkType()
+    console.log("Account test: ", accounts[0], network);
+    if (network !== 'ropsten') {
+      setNetwork(network);
+      handleShow();
+    }
+    else {
+      let loginData = {
+        address: accounts[0],
+        // address: "0xf363D646C2767dB90Af945ebD6F71367166159A2",
+        network: network,
+        // roles: 'admin'
+      }
+      Axios.post("user/auth/login", loginData).then(
+        (response) => {
+          console.log("response", response);
+          Cookies.set("Authorization", response.data.token, {
+          });
+          if (response.data.roles === "user") {
+            localStorage.setItem("Address", accounts[0]);
+          }
+          setIsLoading(false);
+          window.location.reload();
+
+        },
+        (error) => {
+          if (process.env.NODE_ENV === "development") {
+            console.log(error);
+            console.log(error.response);
+          }
+          setIsLoading(false);
+        })
+    }
+
+  }
   return (
     <header className={`header ${menuOpenedClass}`}>
       <nav
@@ -183,9 +233,28 @@ function HeaderHome(props) {
                   <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
                     <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
                   </a>
-                ) : (<span style={selectedNavStyle.Community} onClick={() => Login()}>
-                  Login
+                ) : (
+                  <>
+                    <span style={selectedNavStyle.Community} onClick={() => Login()}>
+                      Admin Login
                 </span>
+                  </>
+                )}
+              </Link>
+            </li>
+            <li className="login-link ">
+              <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
+
+                {localStorage.getItem("Address") ? (
+                  <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                    <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
+                  </a>
+                ) : (
+                  <>
+                    <span style={selectedNavStyle.Community} onClick={() => LoginUser()}>
+                      User Login
+              </span>
+                  </>
                 )}
               </Link>
             </li>
@@ -210,7 +279,7 @@ function HeaderHome(props) {
                   </span>
               </Link>
             </li>
-          
+
           </ul>
         </div>
         <ul className="nav header-navbar-rht">
@@ -230,9 +299,37 @@ function HeaderHome(props) {
                 <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
               </a>
             ) : (
-              <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
-                Login
+              <>
+                <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
+                  Admin Login
               </span>
+              </>
+            )
+          )}
+
+          </li>
+          <li >{isLoading ? (
+            <div className="text-center">
+              <Spinner
+                animation="border"
+                role="status"
+                style={{ color: "ff0000" }}
+              >
+                <span className="sr-only">Loading...</span>
+              </Spinner>
+            </div>
+          ) : (
+            localStorage.getItem("Address") ? (
+              <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
+              </a>
+            ) : (
+              <>
+
+                <span style={{ cursor: 'pointer' }} onClick={() => LoginUser()}>
+                  User Login
+            </span>
+              </>
             )
           )}
 

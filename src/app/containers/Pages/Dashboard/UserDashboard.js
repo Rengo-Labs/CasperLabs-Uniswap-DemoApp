@@ -11,7 +11,7 @@ import patient from "../../../assets/img/patients/patient.jpg";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import ChangePassword from "./ChangePassword";
-import ProfileSetting from "./ProfileSetting";
+import ProfileSetting from "./User/ProfileSetting";
 import CubeNFTs from "./User/CubeNFTs";
 import MyCubes from "./User/MyCubes";
 import UserDashboardDefaultScreen from "./User/UserDashboardDefaultScreen";

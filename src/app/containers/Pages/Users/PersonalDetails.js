@@ -259,7 +259,7 @@ class PersonalDetails extends Component {
                                 <Spinner
                                     animation="border"
                                     role="status"
-                                    style={{ color: "#00d0f1" }}
+                                    style={{ color: "#ff0000" }}
                                 >
                                     <span className="sr-only">Loading...</span>
                                 </Spinner>
