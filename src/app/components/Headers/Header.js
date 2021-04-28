@@ -295,9 +295,7 @@ function HeaderHome(props) {
             </div>
           ) : (
             localStorage.getItem("Address") ? (
-              <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
-                <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
-              </a>
+              null
             ) : (
               <>
                 <span style={{ cursor: 'pointer' }} onClick={() => Login()}>

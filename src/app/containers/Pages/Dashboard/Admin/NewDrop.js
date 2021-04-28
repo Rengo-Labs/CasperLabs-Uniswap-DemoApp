@@ -199,7 +199,7 @@ function NewDrop(props) {
             const address = Addresses.AuctionAddress;
             const abi = CreateAuctionContract;
             let tokensId = [];
-            handleCloseBackdrop();
+            // handleCloseBackdrop();
             for (let i = 0; i < types.length; i++) {
                 tokensId.push(types[i]._id);
             }

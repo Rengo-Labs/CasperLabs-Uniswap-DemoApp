@@ -59,7 +59,7 @@ function ConfirmBidModal(props) {
                 <Button variant="primary" onClick={props.handleClose}>
                     Close
     </Button>
-                <Button variant="primary" onClick={props.handleClose}>
+                <Button variant="primary" onClick={props.ConfirmBidding}>
                     Yes, Proceed!
     </Button>
             </Modal.Footer>

@@ -96,7 +96,7 @@ function DropCubes(props) {
                 <HeaderHome selectedNav={"Drops"} />
                 <div className="card">
 
-                    <div className="card-body" style={{marginTop:'110px'}}>
+                    <div className="card-body" style={{ marginTop: '110px' }}>
                         <div className="form-group">
                             <Typography variant="body2" color="textSecondary" component="p">
                                 <strong>Drop Name: </strong>{tokenList.title}
@@ -161,7 +161,7 @@ function DropCubes(props) {
                                                             // image={img}
                                                             title=""
                                                         >
-                                                            <div class="wrapper">
+                                                            {/* <div class="wrapper">
                                                                 <div class="cube-box">
                                                                     {console.log("imageData", imageData)}
                                                                     {imageData[index].map((j, jindex) => (
@@ -174,6 +174,12 @@ function DropCubes(props) {
                                                                         < img src={r1} alt="" />
                                                                     ))}
                                                                 </div>
+                                                            </div> */}
+                                                            <div class="mainDiv">
+
+                                                                <div className="square"></div>
+                                                                <div className="square2"></div>
+                                                                <div className="square3"></div>
                                                             </div>
 
 

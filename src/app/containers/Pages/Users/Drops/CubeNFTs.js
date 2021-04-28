@@ -24,12 +24,16 @@ import LoginErrorModal from '../../../../components/Modals/LoginErrorModal';
 import ConfirmBidModal from '../../../../components/Modals/ConfirmBidModal';
 import Web3 from 'web3';
 import { Minimize } from '@material-ui/icons';
+import jwtDecode from "jwt-decode";
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 import { Button } from 'react-bootstrap';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
+import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import { Howl } from 'howler';
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -75,8 +79,33 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
+// const useAudio = url => {
+
+//   , []);
+
+// return [playing, toggle];
+// };
 
 function CubeNFTs(props) {
+
+    let jwt = Cookies.get("Authorization");
+    let jwtDecoded = jwtDecode(jwt);
+    const [ownerAudio, setOwnerAudio] = useState(new Audio());
+    const [nonOwnerAudio, setNonOwnerAudio] = useState(new Audio());
+    // new Audio(url)
+    console.log("audio", ownerAudio);
+
+    useEffect(() => {
+        ownerAudio.addEventListener('ended', () => ownerAudio.pause());
+        nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
+        return () => {
+            ownerAudio.removeEventListener('ended', () => ownerAudio.pause());
+            nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
+        };
+    }, []);
+
+
+
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
     const { dropId, cubeId } = useParams();
@@ -87,8 +116,35 @@ function CubeNFTs(props) {
     const [bid, setBid] = useState();
     const [balance, setBalance] = useState();
     const [hide, setHide] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [network, setNetwork] = useState("");
     const [transactionHistory, setTransactionHistory] = useState([]);
+
+    //MUSIC 
+    // let ownerAudio;
+    // const [ownerAudio, setOwnerAudio] = useState("");
+    // const [NonOwnerAudio, setNonOwnerAudio] = useState("");
+    const soundPlay = () => {
+
+        console.log(cubeData.ownermusicfile);
+        if (cubeData.userId === jwtDecoded.userId) {
+            // const sound = new Howl({
+            //     src: cubeData.ownermusicfile,
+            //     html5: true
+            // });
+            var sound = new Audio(cubeData.ownermusicfile)
+            sound.play();
+        }
+        else {
+            // const sound = new Howl({
+            //     src: cubeData.nonownermusicfile,
+            //     html5: true
+            // });
+
+            var sound = new Audio(cubeData.nonownermusicfile)
+            sound.play();
+        }
+    }
 
     const [open, setOpen] = React.useState(false);
     const handleClose = () => {
@@ -112,6 +168,14 @@ function CubeNFTs(props) {
     };
     const handleShowBidModal = () => {
         setOpenBidModal(true);
+    };
+
+    const [openSpinner, setOpenSpinner] = React.useState(false);
+    const handleCloseSpinner = () => {
+        setOpenSpinner(false);
+    };
+    const handleShowSpinner = () => {
+        setOpenSpinner(true);
     };
 
     const [openBackdrop, setOpenBackdrop] = React.useState(false);
@@ -161,95 +225,67 @@ function CubeNFTs(props) {
         }
     }
     let ConfirmBidding = async () => {
+        setIsSaving(true);
         await loadWeb3();
         const web3 = window.web3
         const accounts = await web3.eth.getAccounts();
         const network = await web3.eth.net.getNetworkType()
         if (network !== 'ropsten') {
             setNetwork(network);
-            // setIsSaving(false);
+            setIsSaving(false);
             handleShowNetwork();
         }
         else {
             handleShowBackdrop();
-            // const address = Addresses.CreateCubeAddress;
-            // const abi = CreateCubeContract;
+            const address = Addresses.AuctionAddress;
+            const abi = CreateAuctionContract;
+            var myContractInstance = await new web3.eth.Contract(abi, address);
+            console.log("myContractInstance", myContractInstance);
+            console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
+            await myContractInstance.methods.bid(dropData.dropId, cubeData.tokenId).send({ from: accounts[0], value: (bid * 10 ** 18).toString() }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsSaving(false);
+                }
+            })
+                .on('receipt', (receipt) => {
+                    console.log("receipt", receipt);
+                    console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
+                    handleCloseBackdrop();
+                    let BidData = {
+                        dropId: dropId,
+                        tokenId: cubeId,
+                        Bid: bid
+                    }
+                    console.log("BidData", BidData);
+                    axios.post("dropcubehistory/createhistory", BidData).then(
+                        (response) => {
 
-            // // let nftIds = [];
-            // // for (let i = 0; i < selectedNFTList.length; i++) {
-            // //     nftIds.push(selectedNFTList[i].nftId);
-            // // }
-            // let uriData = {
-            // }
-            // var myContractInstance = await new web3.eth.Contract(abi, address);
-            // console.log("myContractInstance", myContractInstance);
-            // await myContractInstance.methods.Create_cube().send({ from: accounts[0] }, (err, response) => {
-            //     console.log('get transaction', err, response);
-            //     if (err !== null) {
-            //         console.log("err", err);
-            //         let variant = "error";
-            //         enqueueSnackbar('User Canceled Transaction', { variant });
-            //         handleCloseBackdrop();
-            //         setIsSaving(false);
-            //     }
-            // })
-            //     .on('receipt', (receipt) => {
-            //         console.log("receipt", receipt);
-            //         console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
-            //         let ids = receipt.events.Transfer.returnValues.tokenId;
-            //         let nftId = [];
-            //         handleCloseBackdrop();
-            //         // for (let i = 0; i < selectedNFTList.length; i++) {
-            //         //     nftId.push(selectedNFTList[i]._id);
-            //         // }
-            //         let cubeData = {
+                            console.log('response', response);
+                            setIsSaving(false);
 
-            //         }
-            //         console.log("cubeData", cubeData);
-            //         axios.post("/token/TokenIds", cubeData).then(
-            //             (response) => {
-
-            //                 console.log('response', response);
-            //                 // setIsSaving(false);
-                            
-            //                 let variant = "success";
-            //                 enqueueSnackbar('Cube Created Successfully.', { variant });
-            //             },
-            //             (error) => {
-            //                 if (process.env.NODE_ENV === "development") {
-            //                     console.log(error);
-            //                     console.log(error.response);
-            //                 }
-            //                 // setIsSaving(false);
-            //                 let variant = "error";
-            //                 enqueueSnackbar('Unable to Create Cube.', { variant });
-            //             }
-            //         );
-            //         let TrasactionData = {
-            //             tokenId: ids,
-            //             from: receipt.events.Transfer.returnValues.from,
-            //             to: receipt.events.Transfer.returnValues.to,
-            //             transaction: receipt.transactionHash
-            //         }
-            //         axios.post("/transaction/tokenTransaction ", TrasactionData).then(
-            //             (response) => {
-            //                 console.log('response', response);
-            //                 setIsSaving(false);
-            //             },
-            //             (error) => {
-            //                 if (process.env.NODE_ENV === "development") {
-            //                     console.log(error);
-            //                     console.log(error.response);
-            //                 }
-            //                 setIsSaving(false);
-            //             }
-            //         );
-
-                // })
+                            let variant = "success";
+                            enqueueSnackbar('Bid Created Successfully.', { variant });
+                        },
+                        (error) => {
+                            if (process.env.NODE_ENV === "development") {
+                                console.log(error);
+                                console.log(error.response);
+                            }
+                            setIsSaving(false);
+                            let variant = "error";
+                            enqueueSnackbar('Unable to Create Bid.', { variant });
+                        }
+                    );
+                })
         }
     }
     let getCubeNFTs = () => {
-        handleShowBackdrop();
+        handleShowSpinner();
 
         let Data = {
             tokenId: cubeId,
@@ -262,6 +298,9 @@ function CubeNFTs(props) {
                 console.log("response", response);
                 setTokenList(response.data.nftdata);
                 setCubeData(response.data.tokensdata);
+                // setOwnerAudio(response.data.tokensdata.ownermusicfile)
+                setOwnerAudio(new Audio(response.data.tokensdata.ownermusicfile))
+                setNonOwnerAudio(new Audio(response.data.tokensdata.nonownermusicfile))
                 if (dropId !== "notdrop") {
                     setDropData(response.data.Dropdata);
                     setBid(response.data.Dropdata.MinimumBid / 10 ** 18)
@@ -270,7 +309,7 @@ function CubeNFTs(props) {
                     console.log("res", res);
                     if (res.data.success)
                         setTransactionHistory(res.data.transactions)
-                    handleCloseBackdrop();
+                    handleCloseSpinner();
                 }, (error) => {
                     if (process.env.NODE_ENV === "development") {
                         console.log(error);
@@ -283,7 +322,7 @@ function CubeNFTs(props) {
                             window.location.reload();
                         }
                     }
-                    handleCloseBackdrop();
+                    handleCloseSpinner();
                 })
 
             },
@@ -292,13 +331,7 @@ function CubeNFTs(props) {
                     console.log(error);
                     console.log(error.response);
                 }
-                if (error.response.data !== undefined) {
-                    if (error.response.data === "Unauthorized access (invalid token) !!") {
-                        Cookies.remove("Authorization");
-                        window.location.reload();
-                    }
-                }
-                handleCloseBackdrop();
+                handleCloseSpinner();
             })
         // /transaction/tokenTransaction/{tokenId}
         // for Getiing Transaction History of CUbe
@@ -313,7 +346,7 @@ function CubeNFTs(props) {
         console.log("balance", (balance / 10 ** 18).toString());
         setBalance(balance);
     }, []);
-
+    // const [playing, toggle] = useAudio(ownerAudio);
     return (
         <div className="main-wrapper">
             <div className="home-section home-full-height">
@@ -321,189 +354,222 @@ function CubeNFTs(props) {
 
                 <div className="card">
                     <div className="card-body" style={{ marginTop: '110px' }}>
-                        <form >
-                            <section className="section">
-                                <div className="container-fluid">
-                                    <div className="" style={{ paddingTop: "0px" }}>
-                                        <div className="row">
-                                            <div className="col-md-12 col-lg-6">
-                                                <Card className={classes.root}>
-                                                    <CardActionArea>
-                                                        <CardMedia
-                                                            className={classes.media1}
-                                                            title=""
-                                                            image=""
-                                                        >
-                                                            {hide ? (
-                                                                <div class="wrapper">
-                                                                    <div class="cube-box">
-                                                                        {tokenList.map((j, jindex) => (
-                                                                            <img src={j[0].artwork} key={jindex} style={{ border: j[0].type === "Mastercraft" ? '4px solid #ff0000' : j[0].type === "Legendary" ? '4px solid #FFD700' : j[0].type === "Epic" ? '4px solid #9400D3' : j[0].type === "Rare" ? '4px solid #0000FF' : j[0].type === "Uncommon" ? '4px solid #008000' : j[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
-                                                                        ))}
-                                                                        {new Array(6 - tokenList.length).fill(0).map((_, index) => (
-                                                                            < img src={r1} alt="" />
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div class="mainDiv">
-                                                                    <div className="square" onMouseEnter={() => {
-                                                                        setHide(true);
-                                                                    }}
-                                                                    ></div>
-                                                                    <div className="square2" onMouseEnter={() => {
-                                                                        setHide(true);
-                                                                    }}
-                                                                    ></div>
-                                                                    <div className="square3" onMouseEnter={() => {
-                                                                        setHide(true);
-                                                                    }}
-                                                                    ></div>
-                                                                </div>
-                                                            )}
-                                                        </CardMedia>
-                                                    </CardActionArea>
-                                                </Card>
-                                            </div>
+                        {openSpinner ? (
+                            <div align="center" className="text-center">
+                                <Spinner
+                                    animation="border"
+                                    role="status"
+                                    style={{ color: "#ff0000" }}
+                                >
 
-                                            {dropId !== "notdrop" ? (
+                                </Spinner>
+                                <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                            </div>
+                        ) : (
+                            <form >
+                                {/* <button onClick={(e) => {
+                                e.preventDefault()
+                                toggle()
+                            }}>{playing ? "Pause" : "Play"}</button> */}
+                                <section className="section">
+                                    <div className="container-fluid">
+                                        <div className="" style={{ paddingTop: "0px" }}>
+                                            <div className="row">
                                                 <div className="col-md-12 col-lg-6">
-                                                    <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
-                                                    <Typography variant="h5" gutterBottom>Minimum Bid : {dropData.MinimumBid / 10 ** 18} ETH </Typography>
-                                                    <Typography variant="h5" gutterBottom>Bid Delta : {dropData.bidDelta / 10 ** 18} ETH </Typography>
-                                                    {new Date() < new Date(dropData.AuctionStartsAt) ? (
-                                                        <Typography variant="h5" gutterBottom color="textSecondary">
-                                                            <strong>Auction Starts At:</strong>
-                                                            <span style={{ color: "#00FF00" }} >
-                                                                <Countdown daysInHours date={new Date(dropData.AuctionStartsAt)}>
-                                                                </Countdown>
-                                                            </span>
-                                                        </Typography>
+                                                    <Card className={classes.root}>
+                                                        <CardActionArea>
+                                                            <CardMedia
+                                                                className={classes.media1}
+                                                                title=""
+                                                                image=""
+                                                            >
+                                                                {hide ? (
+                                                                    <div class="wrapper">
+                                                                        <div class="cube-box">
+                                                                            {tokenList.map((j, jindex) => (
+                                                                                <img src={j[0].artwork} key={jindex} style={{ border: j[0].type === "Mastercraft" ? '4px solid #ff0000' : j[0].type === "Legendary" ? '4px solid #FFD700' : j[0].type === "Epic" ? '4px solid #9400D3' : j[0].type === "Rare" ? '4px solid #0000FF' : j[0].type === "Uncommon" ? '4px solid #008000' : j[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                                                                            ))}
+                                                                            {new Array(6 - tokenList.length).fill(0).map((_, index) => (
+                                                                                < img src={r1} alt="" />
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div class="mainDiv">
+                                                                        {cubeData.userId === jwtDecoded.userId ? (
+                                                                            <span onClick={(e) => {
+                                                                                e.preventDefault()
+                                                                                setHide(true);
+                                                                                ownerAudio.play()
+                                                                            }}>
+                                                                                <div className="square"></div>
+                                                                                <div className="square2"></div>
+                                                                                <div className="square3"></div>
+                                                                            </span>
 
-                                                    ) : new Date() > new Date(dropData.AuctionStartsAt) && new Date() < new Date(dropData.AuctionEndsAt) ? (
-                                                        <Typography variant="h5" gutterBottom color="textSecondary" component="p">
-                                                            <strong>Auction Ends At: </strong>
-                                                            <span style={{ color: "#FF0000" }}>
-                                                                <Countdown daysInHours date={new Date(dropData.AuctionEndsAt)}>
-                                                                </Countdown>
-                                                            </span>
-                                                        </Typography>
+                                                                        ) : (
+                                                                            <span onClick={(e) => {
+                                                                                e.preventDefault()
+                                                                                setHide(true);
+                                                                                nonOwnerAudio.play()
+                                                                                setTimeout(() => {
+                                                                                    setHide(false)
+                                                                                    nonOwnerAudio.pause()
+                                                                                }, 10000);
+                                                                            }}>
+                                                                                <div className="square"></div>
+                                                                                <div className="square2"></div>
+                                                                                <div className="square3"></div>
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </CardMedia>
+                                                        </CardActionArea>
+                                                    </Card>
+                                                </div>
 
-                                                    ) : (
-                                                        <Typography variant="h5" gutterBottom style={{ color: "#FF0000" }} component="p">
-                                                            <strong>Auction Ended</strong>
-                                                        </Typography>
-                                                    )}
-                                                    <h3 className="text-muted">Music Artist</h3>
-
-                                                    <CardHeader
-                                                        avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                        title={cubeData.MusicArtistName}
-                                                        subheader={cubeData.MusicArtistAbout}
-                                                    />
-                                                    <Row>
+                                                {dropId !== "notdrop" ? (
+                                                    <div className="col-md-12 col-lg-6">
+                                                        <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
+                                                        <Typography variant="h5" gutterBottom>Minimum Bid : {dropData.MinimumBid / 10 ** 18} ETH </Typography>
+                                                        <Typography variant="h5" gutterBottom>Bid Delta : {dropData.bidDelta / 10 ** 18} ETH </Typography>
                                                         {new Date() < new Date(dropData.AuctionStartsAt) ? (
-                                                            <>
-                                                                <label> Enter Bid: </label>
-                                                                <input type='number' step="0.0001" diabled min={dropData.MinimumBid / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
-                                                                    if (evt.target.value >= 0) {
-                                                                        if (evt.target.value < dropData.MinimumBid / 10 ** 18) {
-                                                                            setBid(dropData.MinimumBid / 10 ** 18)
-                                                                        }
-                                                                        if (evt.target.value > balance / 10 ** 18) {
-                                                                            setBid(balance / 10 ** 18)
-                                                                        }
-                                                                        else {
-                                                                            setBid(evt.target.value)
-                                                                        }
-                                                                    }
-                                                                    else {
-                                                                        setBid(dropData.MinimumBid / 10 ** 18)
-                                                                    }
-                                                                }} />
-                                                                <br></br>
-                                                                <Button variant="primary" block disabled>Place a bid</Button>
-                                                            </>
+                                                            <Typography variant="h5" gutterBottom color="textSecondary">
+                                                                <strong>Auction Starts At:</strong>
+                                                                <span style={{ color: "#00FF00" }} >
+                                                                    <Countdown daysInHours date={new Date(dropData.AuctionStartsAt)}>
+                                                                    </Countdown>
+                                                                </span>
+                                                            </Typography>
 
                                                         ) : new Date() > new Date(dropData.AuctionStartsAt) && new Date() < new Date(dropData.AuctionEndsAt) ? (
-                                                            <>
-                                                                <label> Enter Bid: </label>
-                                                                {dropData.MinimumBid / 10 ** 18 > balance / 10 ** 18 ? (
-                                                                    <>
-
-                                                                        <input type='number' step="0.0001" disabled className='form-control' style={{ marginBottom: '20px' }} value={bid} />
-                                                                        <br></br>
-                                                                        <Button variant="primary" block disabled>Insufficient Balance</Button>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <input type='number' step="0.0001" min={dropData.MinimumBid / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
-                                                                            if (evt.target.value >= 0) {
-                                                                                if (evt.target.value < dropData.MinimumBid / 10 ** 18) {
-                                                                                    setBid(dropData.MinimumBid / 10 ** 18)
-                                                                                } else
-                                                                                    if (evt.target.value > balance / 10 ** 18) {
-                                                                                        setBid(balance / 10 ** 18)
-                                                                                    }
-                                                                                    else {
-                                                                                        setBid(evt.target.value)
-                                                                                    }
-                                                                            }
-                                                                            else {
-                                                                                setBid(dropData.MinimumBid / 10 ** 18)
-                                                                            }
-
-                                                                        }} />
-                                                                        <br></br>
-                                                                        <Button variant="primary" block onClick={(e) => Bid(e)}>place a Bid</Button>
-                                                                    </>
-                                                                )}
-
-                                                            </>
+                                                            <Typography variant="h5" gutterBottom color="textSecondary" component="p">
+                                                                <strong>Auction Ends At: </strong>
+                                                                <span style={{ color: "#FF0000" }}>
+                                                                    <Countdown daysInHours date={new Date(dropData.AuctionEndsAt)}>
+                                                                    </Countdown>
+                                                                </span>
+                                                            </Typography>
 
                                                         ) : (
-                                                            <Button variant="primary" block disabled >Auction Ended</Button>
+                                                            <Typography variant="h5" gutterBottom style={{ color: "#FF0000" }} component="p">
+                                                                <strong>Auction Ended</strong>
+                                                            </Typography>
                                                         )}
+                                                        <h3 className="text-muted">Music Artist</h3>
+
+                                                        <CardHeader
+                                                            avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                            title={cubeData.MusicArtistName}
+                                                            subheader={cubeData.MusicArtistAbout}
+                                                        />
+                                                        <Row>
+                                                            {new Date() < new Date(dropData.AuctionStartsAt) ? (
+                                                                <>
+                                                                    <label> Enter Bid: </label>
+                                                                    <input type='number' step="0.0001" diabled min={dropData.MinimumBid / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                        if (evt.target.value >= 0) {
+                                                                            if (evt.target.value < dropData.MinimumBid / 10 ** 18) {
+                                                                                setBid(dropData.MinimumBid / 10 ** 18)
+                                                                            }
+                                                                            if (evt.target.value > balance / 10 ** 18) {
+                                                                                setBid(balance / 10 ** 18)
+                                                                            }
+                                                                            else {
+                                                                                setBid(evt.target.value)
+                                                                            }
+                                                                        }
+                                                                        else {
+                                                                            setBid(dropData.MinimumBid / 10 ** 18)
+                                                                        }
+                                                                    }} />
+                                                                    <br></br>
+                                                                    <Button variant="primary" block disabled>Place a bid</Button>
+                                                                </>
+
+                                                            ) : new Date() > new Date(dropData.AuctionStartsAt) && new Date() < new Date(dropData.AuctionEndsAt) ? (
+                                                                <>
+                                                                    <label> Enter Bid: </label>
+                                                                    {dropData.MinimumBid / 10 ** 18 > balance / 10 ** 18 ? (
+                                                                        <>
+                                                                            <input type='number' step="0.0001" disabled className='form-control' style={{ marginBottom: '20px' }} value={bid} />
+                                                                            <br></br>
+                                                                            <Button variant="primary" block disabled>Insufficient Balance</Button>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <input type='number' step="0.0001" min={dropData.MinimumBid / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                                if (evt.target.value >= 0) {
+                                                                                    if (evt.target.value < dropData.MinimumBid / 10 ** 18) {
+                                                                                        setBid(dropData.MinimumBid / 10 ** 18)
+                                                                                    } else
+                                                                                        if (evt.target.value > balance / 10 ** 18) {
+                                                                                            setBid(balance / 10 ** 18)
+                                                                                        }
+                                                                                        else {
+                                                                                            setBid(evt.target.value)
+                                                                                        }
+                                                                                }
+                                                                                else {
+                                                                                    setBid(dropData.MinimumBid / 10 ** 18)
+                                                                                }
+
+                                                                            }} />
+                                                                            <br></br>
+                                                                            {isSaving ? (
+
+                                                                                <div align="center" className="text-center">
+                                                                                    <Spinner
+                                                                                        animation="border"
+                                                                                        role="status"
+                                                                                        style={{ color: "#ff0000" }}
+                                                                                    >
+
+                                                                                    </Spinner>
+                                                                                    <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <Button variant="primary" block onClick={(e) => Bid(e)}>place a Bid</Button>
+                                                                            )}
+
+                                                                        </>
+                                                                    )}
+
+                                                                </>
+
+                                                            ) : (
+                                                                <Button variant="primary" block disabled >Auction Ended</Button>
+                                                            )}
 
 
-                                                    </Row>
-                                                </div>
-                                            ) : (
-                                                <div className="col-md-12 col-lg-6">
-                                                    <Chip clickable style={{ marginTop: '20px' }}
-                                                        color="" label="@UserName" />
-                                                    <h1> </h1>
-                                                    <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
-                                                    <Typography variant="h5" gutterBottom>Reserve Price</Typography>
-                                                    <Typography variant="h5" gutterBottom>{cubeData.SalePrice / 10 ** 18} ETH </Typography>
-                                                    <h3 className="text-muted">Music Artist</h3>
-                                                    <CardHeader
-                                                        avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                        title={cubeData.MusicArtistName}
-                                                        subheader={cubeData.MusicArtistAbout}
-                                                    />
-                                                </div>
-                                            )}
+                                                        </Row>
+                                                    </div>
+                                                ) : (
+                                                    <div className="col-md-12 col-lg-6">
+                                                        <Chip clickable style={{ marginTop: '20px' }}
+                                                            color="" label="@UserName" />
+                                                        <h1> </h1>
+                                                        <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
+                                                        <Typography variant="h5" gutterBottom>Reserve Price</Typography>
+                                                        <Typography variant="h5" gutterBottom>{cubeData.SalePrice / 10 ** 18} ETH </Typography>
+                                                        <h3 className="text-muted">Music Artist</h3>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                            title={cubeData.MusicArtistName}
+                                                            subheader={cubeData.MusicArtistAbout}
+                                                        />
+                                                    </div>
+                                                )}
 
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                            </section >
-                            <div className="form-group">
-                                <br></br>
-                                {openBackdrop ? (
-                                    <div align="center" className="text-center">
-                                        <Spinner
-                                            animation="border"
-                                            role="status"
-                                            style={{ color: "#ff0000" }}
-                                        >
+                                </section >
+                                <div className="form-group">
+                                    <br></br>
 
-                                        </Spinner>
-                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                                    </div>
-                                ) : (
                                     <div className="row">
                                         <div className="col-md-12 col-lg-6">
                                             <Grid
@@ -513,67 +579,69 @@ function CubeNFTs(props) {
                                                 justify="flex-start"
                                             // alignItems="flex-start"
                                             >
-                                                {console.log("tokenList", tokenList)}
+                                                {/* {console.log("tokenList", tokenList)} */}
+                                                {hide ? (
+                                                    tokenList.map((i, index) => (
 
-                                                {tokenList.map((i, index) => (
+                                                        <Grid item xs={12} sm={6} md={6} key={index}>
+                                                            <Card style={{ height: "100%" }} variant="outlined">
+                                                                <CardHeader className="text-center"
+                                                                    title={i[0].title}
+                                                                />
+                                                                <CardMedia
+                                                                    style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                                    className={classes.media}
+                                                                    image={i[0].artwork}
 
-                                                    <Grid item xs={12} sm={6} md={6} key={index}>
-                                                        <Card style={{ height: "100%" }} variant="outlined">
-                                                            <CardHeader className="text-center"
-                                                                title={i[0].title}
-                                                            />
-                                                            <CardMedia
-                                                                style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
-                                                                className={classes.media}
-                                                                image={i[0].artwork}
+                                                                    title="NFT Image"
+                                                                />
+                                                                <CardContent>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Artwork Description: </strong>{i[0].description}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Token Rarity: </strong>{i[0].type}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Token Supply: </strong>{i[0].tokensupply}
+                                                                    </Typography>
+                                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
+                                                                    <CardHeader
+                                                                        avatar={<Avatar src={i[0].ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                        title={i[0].ImageArtistName}
+                                                                        subheader={i[0].ImageArtistAbout}
+                                                                    />
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Website URL: </strong>{i[0].ImageArtistWebsite}
+                                                                    </Typography>
+                                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
+                                                                    <CardHeader
+                                                                        avatar={<Avatar src={i[0].ProducerProfile} aria-label="Producer" className={classes.avatar} />}
+                                                                        title={i[0].ProducerName}
+                                                                        subheader={i[0].ProducerInspiration}
+                                                                    />
+                                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
+                                                                    <CardHeader
+                                                                        avatar={<Avatar src={i[0].ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
+                                                                        title={i[0].ExecutiveProducerName}
+                                                                        subheader={i[0].ExecutiveProducerInspiration}
+                                                                    />
+                                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
+                                                                    <CardHeader
+                                                                        avatar={<Avatar src={i[0].FanProfile} aria-label="Fan" className={classes.avatar} />}
+                                                                        title={i[0].FanName}
+                                                                        subheader={i[0].FanInspiration}
+                                                                    />
 
-                                                                title="NFT Image"
-                                                            />
-                                                            <CardContent>
-                                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Artwork Description: </strong>{i[0].description}
-                                                                </Typography>
-                                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Token Rarity: </strong>{i[0].type}
-                                                                </Typography>
-                                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Token Supply: </strong>{i[0].tokensupply}
-                                                                </Typography>
-                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
-                                                                <CardHeader
-                                                                    avatar={<Avatar src={i[0].ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                                    title={i[0].ImageArtistName}
-                                                                    subheader={i[0].ImageArtistAbout}
-                                                                />
-                                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Website URL: </strong>{i[0].ImageArtistWebsite}
-                                                                </Typography>
-                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
-                                                                <CardHeader
-                                                                    avatar={<Avatar src={i[0].ProducerProfile} aria-label="Producer" className={classes.avatar} />}
-                                                                    title={i[0].ProducerName}
-                                                                    subheader={i[0].ProducerInspiration}
-                                                                />
-                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
-                                                                <CardHeader
-                                                                    avatar={<Avatar src={i[0].ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
-                                                                    title={i[0].ExecutiveProducerName}
-                                                                    subheader={i[0].ExecutiveProducerInspiration}
-                                                                />
-                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
-                                                                <CardHeader
-                                                                    avatar={<Avatar src={i[0].FanProfile} aria-label="Fan" className={classes.avatar} />}
-                                                                    title={i[0].FanName}
-                                                                    subheader={i[0].FanInspiration}
-                                                                />
-
-                                                                <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Other: </strong>{i[0].other}
-                                                                </Typography>
-                                                            </CardContent>
-                                                        </Card>
-                                                    </Grid>
-                                                ))}
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Other: </strong>{i[0].other}
+                                                                    </Typography>
+                                                                </CardContent>
+                                                            </Card>
+                                                        </Grid>
+                                                    ))) : (
+                                                    null
+                                                )}
 
                                             </Grid>
                                         </div>
@@ -651,23 +719,24 @@ function CubeNFTs(props) {
                                             </div>
                                         </div>
                                     </div>
-                                )}
-                            </div>
-                        </form>
+
+                                </div>
+                            </form>
+                        )}
                     </div >
                 </div >
 
             </div >
             <LoginErrorModal show={open} handleClose={handleClose} />
-            <ConfirmBidModal bid={bid} balance={balance} minimumBid={dropData.MinimumBid} bidDelta={dropData.bidDelta} show={openBidModal} handleClose={handleCloseBidModal} />
+            <ConfirmBidModal bid={bid} balance={balance} minimumBid={dropData.MinimumBid} bidDelta={dropData.bidDelta} show={openBidModal} handleClose={handleCloseBidModal} ConfirmBidding={ConfirmBidding} />
             <NetworkErrorModal
                 show={openNetwork}
                 handleClose={handleCloseNetwork}
                 network={network}
             />
-            {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
+            <Backdrop className={classes.backdrop} open={openBackdrop} onClick={handleCloseBackdrop}>
                 <CircularProgress color="inherit" />
-            </Backdrop> */}
+            </Backdrop>
         </div >
 
     );
