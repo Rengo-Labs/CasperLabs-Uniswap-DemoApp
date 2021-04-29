@@ -70,8 +70,8 @@ function NewDrop(props) {
     const classes = useStyles();
     const [startTime, setStartTime] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date());
-    const [startTimeStamp, setStartTimeStamp] = useState(startTime.getTime());
-    const [endTimeStamp, setEndTimeStamp] = useState(endTime.getTime());
+    const [startTimeStamp, setStartTimeStamp] = useState(startTime.getTime() / 1000);
+    const [endTimeStamp, setEndTimeStamp] = useState(endTime.getTime() / 1000);
     const [inputList, setInputList] = useState([]);
     const [imageData, setImageData] = useState([]);
     const [error, setError] = useState("");
@@ -247,10 +247,10 @@ function NewDrop(props) {
                 }
                 var myContractInstance = await new web3.eth.Contract(abi, address);
                 console.log("myContractInstance", myContractInstance);
-                const minBid=minimumBid * 10 ** 18;
+                const minBid = minimumBid * 10 ** 18;
                 // console.log("minimumBid",minimumBid );
-                // console.log("minimumBid * 10 ** 18",(minimumBid * 10 ** 18).toString());
-                var receipt = await myContractInstance.methods.newAuction(startTimeStamp, endTimeStamp, (minimumBid * 10 ** 18).toString(), tokenId).send({ from: accounts[0] }, (err, response) => {
+                console.log("minimumBid * 10 ** 18", startTimeStamp.toString(), endTimeStamp.toString());
+                var receipt = await myContractInstance.methods.newAuction(startTimeStamp.toString(), endTimeStamp.toString(), (minimumBid * 10 ** 18).toString(), tokenId).send({ from: accounts[0] }, (err, response) => {
                     console.log('get transaction', err, response);
                     if (err !== null) {
                         console.log("err", err);
@@ -273,7 +273,7 @@ function NewDrop(props) {
                     AuctionStartsAt: startTime,
                     AuctionEndsAt: endTime,
                     MinimumBid: minimumBid * 10 ** 18,
-                    bidDelta: bidDelta*10**18,
+                    bidDelta: bidDelta * 10 ** 18,
                     title: name,
                     description: description,
                     image: image
@@ -293,6 +293,8 @@ function NewDrop(props) {
                         setMinimumBid();
                         setBidDelta();
                         setImage(r1);
+                        handleCloseBackdrop();
+
                         let variant = "success";
                         enqueueSnackbar('Cube Created Successfully.', { variant });
                     },
@@ -301,6 +303,8 @@ function NewDrop(props) {
                             console.log(error);
                             console.log(error.response);
                         }
+                        handleCloseBackdrop();
+
                         setIsSaving(false);
                         let variant = "error";
                         enqueueSnackbar('Unable to Create Cube.', { variant });
@@ -470,7 +474,9 @@ function NewDrop(props) {
                                             className="form-control"
                                             onChange={(e) => {
                                                 console.log(e);
-                                                setStartTimeStamp(e.getTime());
+                                                console.log("e.getTime()", Math.round(e.getTime() / 1000));
+                                                setStartTimeStamp(Math.round(e.getTime() / 1000));
+
                                                 setStartTime(e)
                                             }}
                                             value={startTime}
@@ -482,7 +488,8 @@ function NewDrop(props) {
                                             className="form-control"
                                             onChange={(e) => {
                                                 console.log(e);
-                                                setEndTimeStamp(e.getTime());
+                                                console.log("e.getTime()", Math.round(e.getTime() / 1000));
+                                                setEndTimeStamp(Math.round(e.getTime() / 1000));
                                                 setEndTime(e)
                                             }}
                                             value={endTime}

@@ -33,7 +33,6 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
-// import { Howl } from 'howler';
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -78,18 +77,14 @@ const useStyles = makeStyles((theme) => ({
 
 }));
 
-
-// const useAudio = url => {
-
-//   , []);
-
-// return [playing, toggle];
-// };
-
 function CubeNFTs(props) {
 
+
     let jwt = Cookies.get("Authorization");
-    let jwtDecoded = jwtDecode(jwt);
+    let jwtDecoded
+    if (jwt) {
+        jwtDecoded = jwtDecode(jwt);
+    }
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
     const [nonOwnerAudio, setNonOwnerAudio] = useState(new Audio());
     // new Audio(url)
@@ -103,8 +98,6 @@ function CubeNFTs(props) {
             nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
         };
     }, []);
-
-
 
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
@@ -120,32 +113,6 @@ function CubeNFTs(props) {
     const [network, setNetwork] = useState("");
     const [transactionHistory, setTransactionHistory] = useState([]);
 
-    //MUSIC 
-    // let ownerAudio;
-    // const [ownerAudio, setOwnerAudio] = useState("");
-    // const [NonOwnerAudio, setNonOwnerAudio] = useState("");
-    const soundPlay = () => {
-
-        console.log(cubeData.ownermusicfile);
-        if (cubeData.userId === jwtDecoded.userId) {
-            // const sound = new Howl({
-            //     src: cubeData.ownermusicfile,
-            //     html5: true
-            // });
-            var sound = new Audio(cubeData.ownermusicfile)
-            sound.play();
-        }
-        else {
-            // const sound = new Howl({
-            //     src: cubeData.nonownermusicfile,
-            //     html5: true
-            // });
-
-            var sound = new Audio(cubeData.nonownermusicfile)
-            sound.play();
-        }
-    }
-
     const [open, setOpen] = React.useState(false);
     const handleClose = () => {
         setOpen(false);
@@ -153,7 +120,6 @@ function CubeNFTs(props) {
     const handleShow = () => {
         setOpen(true);
     };
-
     const [openNetwork, setOpenNetwork] = React.useState(false);
     const handleCloseNetwork = () => {
         setOpenNetwork(false);
@@ -161,7 +127,6 @@ function CubeNFTs(props) {
     const handleShowNetwork = () => {
         setOpenNetwork(true);
     };
-
     const [openBidModal, setOpenBidModal] = React.useState(false);
     const handleCloseBidModal = () => {
         setOpenBidModal(false);
@@ -169,7 +134,6 @@ function CubeNFTs(props) {
     const handleShowBidModal = () => {
         setOpenBidModal(true);
     };
-
     const [openSpinner, setOpenSpinner] = React.useState(false);
     const handleCloseSpinner = () => {
         setOpenSpinner(false);
@@ -177,7 +141,6 @@ function CubeNFTs(props) {
     const handleShowSpinner = () => {
         setOpenSpinner(true);
     };
-
     const [openBackdrop, setOpenBackdrop] = React.useState(false);
     const handleCloseBackdrop = () => {
         setOpenBackdrop(false);
@@ -396,36 +359,38 @@ function CubeNFTs(props) {
                                                                     </div>
                                                                 ) : (
                                                                     <div class="mainDiv">
-                                                                        {cubeData.userId === jwtDecoded.userId ? (
-                                                                            <span onClick={(e) => {
-                                                                                e.preventDefault()
-                                                                                setHide(true);
-                                                                                // ownerAudio.crossOrigin = 'anonymous';
-                                                                                ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                                ownerAudio.play()
-                                                                            }}>
-                                                                                <div className="square"></div>
-                                                                                <div className="square2"></div>
-                                                                                <div className="square3"></div>
-                                                                            </span>
+                                                                        {jwt ? (
+                                                                            cubeData.userId === jwtDecoded.userId ? (
+                                                                                <span onClick={(e) => {
+                                                                                    e.preventDefault()
+                                                                                    setHide(true);
+                                                                                    // ownerAudio.crossOrigin = 'anonymous';
+                                                                                    ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                    ownerAudio.play()
+                                                                                }}>
+                                                                                    <div className="square"></div>
+                                                                                    <div className="square2"></div>
+                                                                                    <div className="square3"></div>
+                                                                                </span>
 
-                                                                        ) : (
-                                                                            <span onClick={(e) => {
-                                                                                e.preventDefault()
-                                                                                setHide(true);
-                                                                                // nonOwnerAudio.crossOrigin = 'anonymous';
-                                                                                nonOwnerAudio.setAttribute('crossorigin', 'anonymous'); 
-                                                                                nonOwnerAudio.play()
-                                                                                setTimeout(() => {
-                                                                                    setHide(false)
-                                                                                    nonOwnerAudio.pause()
-                                                                                }, 10000);
-                                                                            }}>
-                                                                                <div className="square"></div>
-                                                                                <div className="square2"></div>
-                                                                                <div className="square3"></div>
-                                                                            </span>
-                                                                        )}
+                                                                            ) : (
+                                                                                <span onClick={(e) => {
+                                                                                    e.preventDefault()
+                                                                                    setHide(true);
+                                                                                    // nonOwnerAudio.crossOrigin = 'anonymous';
+                                                                                    nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                    nonOwnerAudio.play()
+                                                                                    setTimeout(() => {
+                                                                                        setHide(false)
+                                                                                        nonOwnerAudio.pause()
+                                                                                    }, 10000);
+                                                                                }}>
+                                                                                    <div className="square"></div>
+                                                                                    <div className="square2"></div>
+                                                                                    <div className="square3"></div>
+                                                                                </span>
+                                                                            )) : (null)}
+
                                                                     </div>
                                                                 )}
                                                             </CardMedia>
