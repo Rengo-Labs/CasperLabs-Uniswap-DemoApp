@@ -33,7 +33,7 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
-import { Howl } from 'howler';
+// import { Howl } from 'howler';
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
