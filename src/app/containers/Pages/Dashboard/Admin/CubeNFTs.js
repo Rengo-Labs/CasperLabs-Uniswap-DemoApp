@@ -18,6 +18,11 @@ import { Row } from "react-bootstrap";
 import r1 from '../../../../assets/img/patients/patient.jpg';
 import Countdown from 'react-countdown';
 
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
 import { useParams } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
@@ -69,7 +74,7 @@ function CubeNFTs(props) {
     const [cubeData, setCubeData] = useState({});
     const [dropData, setDropData] = useState({});
     const [transactionHistory, setTransactionHistory] = useState([]);
-
+    const [bidHistory, setBidHistory] = useState([]);
 
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
@@ -110,6 +115,24 @@ function CubeNFTs(props) {
                             Cookies.remove("Authorization");
                             window.location.reload();
                         }
+                    }
+                    handleCloseBackdrop();
+                })
+                let bidData = {
+                    dropId: dropId,
+                    tokenId: cubeId,
+                }
+                axios.post(`/dropcubehistory/history`, bidData).then((res) => {
+                    console.log("res", res);
+                    if (res.data.success)
+                        setBidHistory(res.data.Dropcubeshistorydata)
+                        
+                        handleCloseBackdrop();
+                }, (error) => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(error);
+                        console.log(error.response);
+
                     }
                     handleCloseBackdrop();
                 })
@@ -227,10 +250,10 @@ function CubeNFTs(props) {
                                                 title={cubeData.MusicArtistName}
                                                 subheader={cubeData.MusicArtistAbout}
                                             />
-                                            <Row>
+                                            {/* <Row>
                                                 <button className="btn-lg btn btn-dark btn-block" >Place a bid</button>{' '}
 
-                                            </Row>
+                                            </Row> */}
                                         </div>
                                     ) : (
                                         <div className="col-md-12 col-lg-6">
@@ -345,31 +368,92 @@ function CubeNFTs(props) {
                                 </div>
                                 <div className="col-md-12 col-lg-6">
                                     <div className="form-group">
-                                        <Typography variant="h5" gutterBottom>
-                                            History
-                                                    </Typography>
-                                        {transactionHistory.map((i, index) => (
-                                            <Card className={classes.root} key={index}>
+                                        <Accordion>
+                                            <AccordionSummary
+                                                expandIcon={<ExpandMoreIcon />}
+                                                aria-controls="panel1a-content"
+                                                id="panel1a-header"
+                                            >
 
-                                                <CardActionArea style={{ margin: '5px' }}>
+                                                <Typography variant="h6" gutterBottom>Tx History</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                {transactionHistory.length === 0 ? (
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>No Transaction History Found </strong>
+                                                    </Typography>
+                                                ) : (null)}
+                                                <Grid
+                                                    container
+                                                    spacing={2}
+                                                    direction="row"
+                                                    justify="flex-start"
+                                                // alignItems="flex-start"
+                                                >
+                                                    {transactionHistory.map((i, index) => (
+                                                        <Grid item xs={12} sm={12} md={12} key={index}>
+                                                            <Card className={classes.root}>
+                                                                <CardActionArea style={{ margin: '5px' }}>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>From : </strong>{i.from}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>To : </strong>{i.to}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Hash : </strong>
+                                                                        <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                                                                            <span style={{ cursor: 'pointer' }}>{i.transaction.substr(0, 20)}. . .</span>
+                                                                        </a>
+                                                                    </Typography>
+                                                                </CardActionArea>
+                                                            </Card>
+                                                        </Grid>
 
+                                                    ))}
+                                                </Grid>
+                                            </AccordionDetails>
+                                        </Accordion>
+                                        <Accordion>
+                                            <AccordionSummary
+                                                expandIcon={<ExpandMoreIcon />}
+                                                aria-controls="panel2a-content"
+                                                id="panel2a-header"
+                                            >
+                                                <Typography variant="h6" gutterBottom>Bidding History</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                {bidHistory.length === 0 ? (
                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>From : </strong>{i.from}
+                                                        <strong>No Bidding History Found </strong>
                                                     </Typography>
-                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>To : </strong>{i.to}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>Hash : </strong>
-                                                        <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
-                                                            <span style={{ cursor: 'pointer' }}>{i.transaction.substr(0, 20)}. . .</span>
-                                                        </a>
-                                                    </Typography>
-                                                </CardActionArea>
-                                            </Card>
-                                        ))}
+                                                ) : (null)}
+                                                <Grid
+                                                    container
+                                                    spacing={2}
+                                                    direction="row"
+                                                    justify="flex-start"
+                                                >
+                                                    {bidHistory.slice(0).reverse().map((i, index) => (
+                                                        <Grid item xs={12} sm={12} md={12} key={index}>
+                                                            <Card className={classes.root} >
+                                                                <CardActionArea style={{ margin: '5px' }}>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Address : </strong>{i.address}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18}</span>
+                                                                    </Typography>
+                                                                </CardActionArea>
+                                                            </Card>
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </AccordionDetails>
+                                        </Accordion>
                                     </div>
                                 </div>
+
                             </div>
                         )}
                     </div>
