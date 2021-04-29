@@ -259,11 +259,11 @@ function HeaderHome(props) {
               </Link>
             </li>
             <li>
-              <Link to="/" style={{ color: 'rgb(167,0,0)' }} >
+              <a href="/" style={{ color: 'rgb(167,0,0)' }} >
                 <span style={selectedNavStyle.Home}>
                   Home
                   </span>
-              </Link>
+              </a>
             </li>
             <li>
               <Link to="/marketPlace" style={{ color: 'rgb(167,0,0)' }} >

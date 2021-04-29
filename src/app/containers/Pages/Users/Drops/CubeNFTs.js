@@ -400,6 +400,8 @@ function CubeNFTs(props) {
                                                                             <span onClick={(e) => {
                                                                                 e.preventDefault()
                                                                                 setHide(true);
+                                                                                // ownerAudio.crossOrigin = 'anonymous';
+                                                                                ownerAudio.setAttribute('crossorigin', 'anonymous');
                                                                                 ownerAudio.play()
                                                                             }}>
                                                                                 <div className="square"></div>
@@ -411,6 +413,8 @@ function CubeNFTs(props) {
                                                                             <span onClick={(e) => {
                                                                                 e.preventDefault()
                                                                                 setHide(true);
+                                                                                // nonOwnerAudio.crossOrigin = 'anonymous';
+                                                                                nonOwnerAudio.setAttribute('crossorigin', 'anonymous'); 
                                                                                 nonOwnerAudio.play()
                                                                                 setTimeout(() => {
                                                                                     setHide(false)
