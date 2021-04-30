@@ -38,15 +38,15 @@ function ProfileSetting(props) {
     }
     props.setActiveTab({
       dashboard: "",
-            totalUserAccount: "",
-            pendingUserAccount: "",
-            earningsList: "",
-            tradeListOrders: "",
-            referralEarnings:"",
-            disputedOrders: "",
-            resolvedDisputedOrders: "",
-            settings: "active",
-            changePassword: "",
+      totalUserAccount: "",
+      pendingUserAccount: "",
+      earningsList: "",
+      tradeListOrders: "",
+      referralEarnings: "",
+      disputedOrders: "",
+      resolvedDisputedOrders: "",
+      settings: "active",
+      changePassword: "",
     });// eslint-disable-next-line
   }, []);
   let onSubmitHandleEvent = (event) => {
@@ -213,7 +213,7 @@ function ProfileSetting(props) {
                     disabled
                     type="text"
                     className="form-control"
-                    // defaultValue={props.userData.name}
+                  // defaultValue={props.userData.name}
                   />
                 </div>
               </div>
@@ -224,7 +224,7 @@ function ProfileSetting(props) {
                     disabled
                     type="email"
                     className="form-control"
-                    // defaultValue={props.userData.email}
+                  // defaultValue={props.userData.email}
                   />
                 </div>
               </div>

@@ -8,6 +8,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
+import { Button } from 'react-bootstrap';
+import { useSnackbar } from 'notistack';
 import Cookies from "js-cookie";
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -17,13 +19,15 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import { Row } from "react-bootstrap";
 import r1 from '../../../../assets/img/patients/patient.jpg';
 import Countdown from 'react-countdown';
-
+import Web3 from 'web3';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-
+import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
+import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
 import { useParams } from "react-router-dom";
+import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -68,6 +72,7 @@ const useStyles = makeStyles((theme) => ({
 
 function CubeNFTs(props) {
     const classes = useStyles();
+    const { enqueueSnackbar } = useSnackbar();
     const { dropId, cubeId } = useParams();
     // console.log("dropId", dropId);
     const [tokenList, setTokenList] = useState([]);
@@ -75,13 +80,21 @@ function CubeNFTs(props) {
     const [dropData, setDropData] = useState({});
     const [transactionHistory, setTransactionHistory] = useState([]);
     const [bidHistory, setBidHistory] = useState([]);
-
+    const [isClaiming, setIsClaiming] = useState(false);
+    const [network, setNetwork] = useState("");
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
         setOpen(false);
     };
     const handleShowBackdrop = () => {
         setOpen(true);
+    };
+    const [openNetwork, setOpenNetwork] = useState(false);
+    const handleCloseNetwork = () => {
+        setOpenNetwork(false);
+    };
+    const handleShowNetwork = () => {
+        setOpenNetwork(true);
     };
     let getCubeNFTs = () => {
         handleShowBackdrop();
@@ -126,8 +139,8 @@ function CubeNFTs(props) {
                     console.log("res", res);
                     if (res.data.success)
                         setBidHistory(res.data.Dropcubeshistorydata)
-                        
-                        handleCloseBackdrop();
+
+                    handleCloseBackdrop();
                 }, (error) => {
                     if (process.env.NODE_ENV === "development") {
                         console.log(error);
@@ -151,6 +164,80 @@ function CubeNFTs(props) {
                 }
                 handleCloseBackdrop();
             })
+    }
+    let loadWeb3 = async () => {
+        if (window.ethereum) {
+            window.web3 = new Web3(window.ethereum)
+            await window.ethereum.enable()
+        }
+        else if (window.web3) {
+            window.web3 = new Web3(window.web3.currentProvider)
+        }
+        else {
+            window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+        }
+    }
+    let claimFunds = async (e) => {
+        e.preventDefault();
+
+        setIsClaiming(true);
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        const network = await web3.eth.net.getNetworkType()
+        if (network !== 'ropsten') {
+            setNetwork(network);
+            setIsClaiming(false);
+            handleShowNetwork();
+        }
+        else {
+            handleShowBackdrop();
+            const address = Addresses.AuctionAddress;
+            const abi = CreateAuctionContract;
+            var myContractInstance = await new web3.eth.Contract(abi, address);
+            console.log("myContractInstance", myContractInstance);
+            console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
+            let receipt = await myContractInstance.methods.claimFunds(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsClaiming(false);
+                }
+            })
+            console.log("receipt", receipt);
+            let ClaimData = {
+                dropId: dropId,
+                tokenId: cubeId,
+                address: accounts[0],
+                claimFunds: true,
+                claimNft: false,
+                withdraw: false,
+            }
+            axios.put("dropcubehistory/claimhistory", ClaimData).then(
+                (response) => {
+                    console.log('response', response);
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+                    getCubeNFTs();
+                    let variant = "success";
+                    enqueueSnackbar('Cube transferred Successfully.', { variant });
+                },
+                (error) => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(error);
+                        console.log(error.response);
+                    }
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+
+                    let variant = "error";
+                    enqueueSnackbar('Unable to transfer Cube.', { variant });
+                }
+            );
+        }
     }
 
     useEffect(() => {
@@ -217,8 +304,23 @@ function CubeNFTs(props) {
                                         <div className="col-md-12 col-lg-6">
                                             <Chip clickable style={{ marginTop: '20px' }}
                                                 color="" label="@UserName" />
+                                            {new Date() > new Date(dropData.AuctionEndsAt) ? (
+                                                isClaiming ? (
+                                                    <div align="center" className="text-center">
+                                                        <Spinner
+                                                            animation="border"
+                                                            role="status"
+                                                            style={{ color: "#ff0000" }}
+                                                        >
+
+                                                        </Spinner>
+                                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                    </div>
+                                                ) : (
+                                                    <Button variant="primary" onClick={(e) => claimFunds(e)} style={{ float: "right" }} >Claim Funds</Button>
+                                                )) : (null)}
                                             <h1>{cubeData.title} </h1>
-                                            <h2>Minimum Bid : {dropData.MinimumBid / 10 ** 18} ETH </h2>
+                                            <h2>Minimum Bid : {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} ETH </h2>
                                             <h2>Bid Delta : {dropData.bidDelta / 10 ** 18} ETH </h2>
                                             {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                 <Typography variant="h5" gutterBottom color="textSecondary">
@@ -459,6 +561,11 @@ function CubeNFTs(props) {
                     </div>
                 </form>
             </div >
+            <NetworkErrorModal
+                show={openNetwork}
+                handleClose={handleCloseNetwork}
+                network={network}
+            />
             {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
                 <CircularProgress color="inherit" />
             </Backdrop> */}

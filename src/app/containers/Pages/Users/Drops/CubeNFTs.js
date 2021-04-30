@@ -79,7 +79,6 @@ const useStyles = makeStyles((theme) => ({
 
 function CubeNFTs(props) {
 
-
     let jwt = Cookies.get("Authorization");
     let jwtDecoded
     if (jwt) {
@@ -87,9 +86,7 @@ function CubeNFTs(props) {
     }
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
     const [nonOwnerAudio, setNonOwnerAudio] = useState(new Audio());
-    // new Audio(url)
-    // console.log("audio", ownerAudio);
-
+    const [isClaiming, setIsClaiming] = useState(false);
     useEffect(() => {
 
         (async () => {
@@ -106,7 +103,6 @@ function CubeNFTs(props) {
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
     const { dropId, cubeId } = useParams();
-    // console.log("dropId", dropId);
     const [tokenList, setTokenList] = useState([]);
     const [cubeData, setCubeData] = useState({});
     const [dropData, setDropData] = useState({});
@@ -118,36 +114,37 @@ function CubeNFTs(props) {
     const [network, setNetwork] = useState("");
     const [transactionHistory, setTransactionHistory] = useState([]);
     const [bidHistory, setBidHistory] = useState([]);
-
-    const [open, setOpen] = React.useState(false);
+    // if(bidHistory.length!==0)
+    // console.log("bidHistory.findIndex(i => i.userId === jwtDecoded.userId)",);
+    const [open, setOpen] = useState(false);
     const handleClose = () => {
         setOpen(false);
     };
     const handleShow = () => {
         setOpen(true);
     };
-    const [openNetwork, setOpenNetwork] = React.useState(false);
+    const [openNetwork, setOpenNetwork] = useState(false);
     const handleCloseNetwork = () => {
         setOpenNetwork(false);
     };
     const handleShowNetwork = () => {
         setOpenNetwork(true);
     };
-    const [openBidModal, setOpenBidModal] = React.useState(false);
+    const [openBidModal, setOpenBidModal] = useState(false);
     const handleCloseBidModal = () => {
         setOpenBidModal(false);
     };
     const handleShowBidModal = () => {
         setOpenBidModal(true);
     };
-    const [openSpinner, setOpenSpinner] = React.useState(false);
+    const [openSpinner, setOpenSpinner] = useState(false);
     const handleCloseSpinner = () => {
         setOpenSpinner(false);
     };
     const handleShowSpinner = () => {
         setOpenSpinner(true);
     };
-    const [openBackdrop, setOpenBackdrop] = React.useState(false);
+    const [openBackdrop, setOpenBackdrop] = useState(false);
     const handleCloseBackdrop = () => {
         setOpenBackdrop(false);
     };
@@ -193,11 +190,215 @@ function CubeNFTs(props) {
             handleShow();
         }
     }
+    let claimFunds = async (e) => {
+        e.preventDefault();
+
+        setIsClaiming(true);
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        const network = await web3.eth.net.getNetworkType()
+        if (network !== 'ropsten') {
+            setNetwork(network);
+            setIsClaiming(false);
+            handleShowNetwork();
+        }
+        else {
+            handleShowBackdrop();
+            const address = Addresses.AuctionAddress;
+            const abi = CreateAuctionContract;
+            var myContractInstance = await new web3.eth.Contract(abi, address);
+            console.log("myContractInstance", myContractInstance);
+            console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
+            let receipt = await myContractInstance.methods.claimFunds(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsClaiming(false);
+                }
+            })
+            console.log("receipt", receipt);
+            let ClaimData = {
+                dropId: dropId,
+                tokenId: cubeId,
+                address: accounts[0],
+                claimFunds: true,
+                claimNft: false,
+                withdraw: false,
+            }
+            axios.put("dropcubehistory/claimhistory", ClaimData).then(
+                (response) => {
+                    console.log('response', response);
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+                    getCubeNFTs();
+                    let variant = "success";
+                    enqueueSnackbar('Cube transferred Successfully.', { variant });
+                },
+                (error) => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(error);
+                        console.log(error.response);
+                    }
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+
+                    let variant = "error";
+                    enqueueSnackbar('Unable to transfer Cube.', { variant });
+                }
+            );
+        }
+    }
+    
+    let claimCube = async (e) => {
+        e.preventDefault();
+        setIsClaiming(true);
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        const network = await web3.eth.net.getNetworkType()
+        if (network !== 'ropsten') {
+            setNetwork(network);
+            setIsClaiming(false);
+            handleShowNetwork();
+        }
+        else {
+            handleShowBackdrop();
+            const address = Addresses.AuctionAddress;
+            const abi = CreateAuctionContract;
+            var myContractInstance = await new web3.eth.Contract(abi, address);
+            console.log("myContractInstance", myContractInstance);
+            console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
+            let receipt = await myContractInstance.methods.calimNFT(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsClaiming(false);
+                }
+            })
+            console.log("receipt", receipt);
+            let BuyData = {
+                dropId: dropId,
+                tokenId: cubeId,
+            }
+            console.log("BidData", BuyData);
+            axios.post("token/buytoken", BuyData).then(
+                (response) => {
+                    console.log('response', response);
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+                    getCubeNFTs();
+                    let variant = "success";
+                    enqueueSnackbar('Cube transferred Successfully.', { variant });
+                },
+                (error) => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(error);
+                        console.log(error.response);
+                    }
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+
+                    let variant = "error";
+                    enqueueSnackbar('Unable to transfer Cube.', { variant });
+                }
+            );
+            let ClaimData = {
+                dropId: dropId,
+                tokenId: cubeId,
+                address: accounts[0],
+                claimFunds: false,
+                claimNft: true,
+                withdraw: false,
+            }
+            axios.put("dropcubehistory/claimhistory", ClaimData).then(
+                (response) => {
+                    console.log('response', response);
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+                    getCubeNFTs();
+                },
+                (error) => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(error);
+                        console.log(error.response);
+                    }
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+
+                    let variant = "error";
+                    enqueueSnackbar('Unable to transfer Cube.', { variant });
+                }
+            );
+        }
+    }
+    let withdraw = async (e) => {
+        e.preventDefault();
+        setIsClaiming(true);
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        const network = await web3.eth.net.getNetworkType()
+        if (network !== 'ropsten') {
+            setNetwork(network);
+            setIsClaiming(false);
+            handleShowNetwork();
+        }
+        else {
+            handleShowBackdrop();
+            const address = Addresses.AuctionAddress;
+            const abi = CreateAuctionContract;
+            var myContractInstance = await new web3.eth.Contract(abi, address);
+            console.log("myContractInstance", myContractInstance);
+            console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
+            let receipt = await myContractInstance.methods.withdraw(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsClaiming(false);
+                }
+            })
+            console.log("receipt", receipt);
+            let ClaimData = {
+                dropId: dropId,
+                tokenId: cubeId,
+                address: accounts[0],
+                claimFunds: false,
+                claimNft: false,
+                withdraw: true,
+            }
+            axios.put("dropcubehistory/claimhistory", ClaimData).then(
+                (response) => {
+                    console.log('response', response);
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+                    getCubeNFTs();
+                },
+                (error) => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(error);
+                        console.log(error.response);
+                    }
+                    setIsClaiming(false);
+                    handleCloseBackdrop();
+                }
+            );
+        }
+    }
     let ConfirmBidding = async () => {
         handleCloseBidModal();
         setIsSaving(true);
         console.log("bid", bid);
-        if (bid <= dropData.MinimumBid / 10 ** 18 + dropData.bidDelta / 10 ** 18) {
+        if (bid <= (dropData.MinimumBid + dropData.bidDelta) / 10 ** 18) {
             let variant = "error";
             enqueueSnackbar('Bid Must be Greater than Minimum Bid', { variant });
             handleCloseBackdrop();
@@ -278,6 +479,30 @@ function CubeNFTs(props) {
             dropId: dropId !== "notdrop" ? dropId : null,
         }
         console.log("Data", Data);
+        let bidData = {
+            dropId: dropId,
+            tokenId: cubeId,
+        }
+        axios.post(`/dropcubehistory/history`, bidData).then((res) => {
+            console.log("res", res);
+            if (res.data.success) {
+                setBidHistory(res.data.Dropcubeshistorydata)
+                console.log("jwtDecoded.userId", jwtDecoded.userId);
+                for (let i = 0; i < res.data.Dropcubeshistorydata.length; i++) {
+                    console.log("res.data.Dropcubeshistorydata", res.data.Dropcubeshistorydata[i].userId);
+                }
+                let index = res.data.Dropcubeshistorydata.findIndex(i => i.userId === jwtDecoded.userId);
+                console.log(index, "index");
+            }
+            handleCloseSpinner();
+        }, (error) => {
+            if (process.env.NODE_ENV === "development") {
+                console.log(error);
+                console.log(error.response);
+
+            }
+            handleCloseSpinner();
+        })
         axios.post("/token/SingleTokenId", Data).then(
             (response) => {
                 console.log("response", response);
@@ -288,8 +513,8 @@ function CubeNFTs(props) {
                 setNonOwnerAudio(new Audio(response.data.tokensdata.nonownermusicfile))
                 if (dropId !== "notdrop") {
                     setDropData(response.data.Dropdata);
-                    // dropData.MinimumBid / 10 ** 18 + dropData.bidDelta / 10 ** 18
-                    setBid(response.data.Dropdata.MinimumBid / 10 ** 18 + response.data.Dropdata.bidDelta / 10 ** 18)
+                    // (dropData.MinimumBid + dropData.bidDelta) / 10 ** 18
+                    setBid((response.data.Dropdata.MinimumBid + response.data.Dropdata.bidDelta) / 10 ** 18)
                 }
                 axios.get(`/transaction/tokenTransaction/${response.data.tokensdata.tokenId}`).then((res) => {
                     console.log("res", res);
@@ -310,23 +535,7 @@ function CubeNFTs(props) {
                     }
                     handleCloseSpinner();
                 })
-                let bidData = {
-                    dropId: dropId,
-                    tokenId: cubeId,
-                }
-                axios.post(`/dropcubehistory/history`, bidData).then((res) => {
-                    console.log("res", res);
-                    if (res.data.success)
-                        setBidHistory(res.data.Dropcubeshistorydata)
-                    handleCloseSpinner();
-                }, (error) => {
-                    if (process.env.NODE_ENV === "development") {
-                        console.log(error);
-                        console.log(error.response);
 
-                    }
-                    handleCloseSpinner();
-                })
 
             },
             (error) => {
@@ -339,7 +548,6 @@ function CubeNFTs(props) {
         // /transaction/tokenTransaction/{tokenId}
         // for Getiing Transaction History of CUbe
     }
-
     useEffect(() => {
         (async () => {
             getCubeNFTs();
@@ -352,7 +560,6 @@ function CubeNFTs(props) {
         })();
 
     }, []);
-    // const [playing, toggle] = useAudio(ownerAudio);
     return (
         <div className="main-wrapper">
             <div className="home-section home-full-height">
@@ -373,10 +580,6 @@ function CubeNFTs(props) {
                             </div>
                         ) : (
                             <form >
-                                {/* <button onClick={(e) => {
-                                e.preventDefault()
-                                toggle()
-                            }}>{playing ? "Pause" : "Play"}</button> */}
                                 <section className="section">
                                     <div className="container-fluid">
                                         <div className="" style={{ paddingTop: "0px" }}>
@@ -449,14 +652,63 @@ function CubeNFTs(props) {
                                                         {new Date() > new Date(dropData.AuctionEndsAt) ? (
                                                             jwt ? (
                                                                 <>
-                                                                    {dropData.userId === jwtDecoded.userId ? (
-                                                                        <Button variant="primary" block >Claim Funds</Button>
+                                                                    {cubeData.userId === jwtDecoded.userId ? (
+                                                                        isClaiming ? (
+                                                                            <div align="center" className="text-center">
+                                                                                <Spinner
+                                                                                    animation="border"
+                                                                                    role="status"
+                                                                                    style={{ color: "#ff0000" }}
+                                                                                >
+
+                                                                                </Spinner>
+                                                                                <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Button variant="primary" onClick={(e) => claimFunds(e)} style={{ float: "right" }} >Claim Funds</Button>
+                                                                        )
                                                                     ) : (
                                                                         bidHistory[bidHistory.length - 1].userId === jwtDecoded.userId ? (
-                                                                            <Button variant="primary" block >Claim Cube</Button>
+                                                                            isClaiming ? (
+                                                                                <div align="center" className="text-center">
+                                                                                    <Spinner
+                                                                                        animation="border"
+                                                                                        role="status"
+                                                                                        style={{ color: "#ff0000" }}
+                                                                                    >
+
+                                                                                    </Spinner>
+                                                                                    <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                bidHistory[bidHistory.length - 1].claimNft ? (
+                                                                                    <Button variant="primary" disabled style={{ float: "right" }} >Claim Cube</Button>
+                                                                                ) : (
+                                                                                    <Button variant="primary" onClick={(e) => claimCube(e)} style={{ float: "right" }} >Claim Cube</Button>
+                                                                                )
+
+                                                                            )
                                                                         ) : (
+
                                                                             bidHistory.findIndex(i => i.userId === jwtDecoded.userId) !== -1 ? (
-                                                                                <Button variant="primary" block >Withdraw your bid</Button>
+                                                                                isClaiming ? (
+                                                                                    <div align="center" className="text-center">
+                                                                                        <Spinner
+                                                                                            animation="border"
+                                                                                            role="status"
+                                                                                            style={{ color: "#ff0000" }}
+                                                                                        >
+
+                                                                                        </Spinner>
+                                                                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    bidHistory[bidHistory.findIndex(i => i.userId === jwtDecoded.userId)].withdraw ? (
+                                                                                        <Button variant="primary" disabled style={{ float: "right" }}  >Withdraw your bid</Button>
+                                                                                    ) : (
+                                                                                        <Button variant="primary" onClick={(e) => withdraw(e)} style={{ float: "right" }}  >Withdraw your bid</Button>)
+
+                                                                                )
                                                                             ) : (null)
                                                                         ))}
                                                                 </>
@@ -465,7 +717,7 @@ function CubeNFTs(props) {
                                                             null
                                                         )}
                                                         <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
-                                                        <Typography variant="h5" gutterBottom>Minimum Bid : {dropData.MinimumBid / 10 ** 18 + dropData.bidDelta / 10 ** 18} ETH </Typography>
+                                                        <Typography variant="h5" gutterBottom>Minimum Bid : {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} ETH </Typography>
                                                         <Typography variant="h5" gutterBottom>Bid Delta : {dropData.bidDelta / 10 ** 18} ETH </Typography>
                                                         {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                             <Typography variant="h5" gutterBottom color="textSecondary">
@@ -501,7 +753,7 @@ function CubeNFTs(props) {
                                                             {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                                 <>
                                                                     <label> Enter Bid: </label>
-                                                                    <input type='number' step="0.0001" diabled min={dropData.MinimumBid / 10 ** 18 + dropData.bidDelta / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                    <input type='number' step="0.0001" diabled min={(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
 
                                                                     }} />
                                                                     <br></br>
@@ -511,7 +763,7 @@ function CubeNFTs(props) {
                                                             ) : new Date() > new Date(dropData.AuctionStartsAt) && new Date() < new Date(dropData.AuctionEndsAt) ? (
                                                                 <>
                                                                     <label> Enter Bid: </label>
-                                                                    {dropData.MinimumBid / 10 ** 18 + dropData.bidDelta / 10 ** 18 > balance / 10 ** 18 ? (
+                                                                    {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18 > balance / 10 ** 18 ? (
                                                                         <>
                                                                             <input type='number' step="0.0001" disabled className='form-control' style={{ marginBottom: '20px' }} value={bid} />
                                                                             <br></br>
@@ -519,10 +771,10 @@ function CubeNFTs(props) {
                                                                         </>
                                                                     ) : (
                                                                         <>
-                                                                            <input type='number' step="0.0001" min={dropData.MinimumBid / 10 ** 18 + dropData.bidDelta / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                            <input type='number' step="0.0001" min={(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
                                                                                 if (evt.target.value >= 0) {
-                                                                                    if (evt.target.value < dropData.MinimumBid / 10 ** 18 + dropData.bidDelta / 10 ** 18) {
-                                                                                        setBid(dropData.MinimumBid / 10 ** 18 + dropData.bidDelta / 10 ** 18)
+                                                                                    if (evt.target.value < (dropData.MinimumBid + dropData.bidDelta) / 10 ** 18) {
+                                                                                        setBid((dropData.MinimumBid + dropData.bidDelta) / 10 ** 18)
                                                                                     } else
                                                                                         if (evt.target.value > balance / 10 ** 18) {
                                                                                             setBid(balance / 10 ** 18)
@@ -532,7 +784,7 @@ function CubeNFTs(props) {
                                                                                         }
                                                                                 }
                                                                                 else {
-                                                                                    setBid(dropData.MinimumBid / 10 ** 18 + dropData.bidDelta / 10 ** 18)
+                                                                                    setBid((dropData.MinimumBid + dropData.bidDelta) / 10 ** 18)
                                                                                 }
 
                                                                             }} />
