@@ -354,7 +354,7 @@ function NewSeason(props) {
                                                                     <strong>Drop Description: </strong>{i.description}
                                                                 </Typography>
                                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Minimum Bid: </strong>{i.MinimumBid}
+                                                                    <strong>Minimum Bid: </strong>{i.MinimumBid} ETH
                                                                 </Typography>
                                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
                                                                     {new Date() < new Date(i.AuctionStartsAt) ? (

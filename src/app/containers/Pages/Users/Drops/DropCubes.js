@@ -105,7 +105,7 @@ function DropCubes(props) {
                                 <strong>Drop Description: </strong>{tokenList.description}
                             </Typography>
                             <Typography variant="body2" color="textSecondary" component="p">
-                                <strong>Minimum Bid: </strong>{(tokenList.MinimumBid+tokenList.bidDelta) / 10 ** 18}
+                                <strong>Minimum Bid: </strong>{(tokenList.MinimumBid) / 10 ** 18} ETH
                             </Typography>
                             <Typography variant="h6" gutterBottom color="textSecondary" className="text-left">
                                 {new Date() < new Date(tokenList.AuctionStartsAt) ? (

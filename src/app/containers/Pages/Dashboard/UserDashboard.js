@@ -168,9 +168,9 @@ function UserDashboard(props) {
               <MyCubes setActiveTab={setActiveTab} />
             </Route>
 
-            <Route exact path={`${path}/myCubes/Nfts/:cubeId`}>
-              <CubeNFTs setActiveTab={setActiveTab} />
-            </Route>
+            <Route exact path={`${path}/myCubes/Nfts/:dropId/:cubeId`}>
+                <CubeNFTs setActiveTab={setActiveTab} />
+              </Route>
             <Route exact path={`${path}/profilesettings`}>
               <ProfileSetting
                 setActiveTab={setActiveTab}

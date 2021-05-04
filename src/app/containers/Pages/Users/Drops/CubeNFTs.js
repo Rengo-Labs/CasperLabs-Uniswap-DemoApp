@@ -32,7 +32,9 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
+import WethContract from '../../../../components/blockchain/Abis/WethContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import WethModal from '../../../../components/Modals/WethModal';
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -87,6 +89,11 @@ function CubeNFTs(props) {
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
     const [nonOwnerAudio, setNonOwnerAudio] = useState(new Audio());
     const [isClaiming, setIsClaiming] = useState(false);
+    const [isClaimingWeth, setIsClaimingWeth] = useState(false);
+    const [weth, setWeth] = useState(0);
+    const [enableWethButton, setEnableWethButton] = useState(false);
+    const [isConfirmingWeth, setIsConfirmingWeth] = useState(false);
+
     useEffect(() => {
 
         (async () => {
@@ -116,6 +123,14 @@ function CubeNFTs(props) {
     const [bidHistory, setBidHistory] = useState([]);
     // if(bidHistory.length!==0)
     // console.log("bidHistory.findIndex(i => i.userId === jwtDecoded.userId)",);
+    const [openWeth, setOpenWeth] = useState(false);
+    const handleCloseWeth = () => {
+        setOpenWeth(false);
+    };
+    const handleShowWeth = () => {
+        setOpenWeth(true);
+    };
+
     const [open, setOpen] = useState(false);
     const handleClose = () => {
         setOpen(false);
@@ -226,8 +241,8 @@ function CubeNFTs(props) {
                 tokenId: cubeId,
                 address: accounts[0],
                 claimFunds: true,
-                claimNft: false,
-                withdraw: false,
+                claimNft: true,
+                withdraw: true,
             }
             axios.put("dropcubehistory/claimhistory", ClaimData).then(
                 (response) => {
@@ -267,12 +282,13 @@ function CubeNFTs(props) {
         }
         else {
             handleShowBackdrop();
+
             const address = Addresses.AuctionAddress;
             const abi = CreateAuctionContract;
             var myContractInstance = await new web3.eth.Contract(abi, address);
             console.log("myContractInstance", myContractInstance);
             console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
-            let receipt = await myContractInstance.methods.calimNFT(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
+            let receipt = await myContractInstance.methods.claimNFT(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
                 console.log('get transaction', err, response);
                 if (err !== null) {
                     console.log("err", err);
@@ -313,9 +329,9 @@ function CubeNFTs(props) {
                 dropId: dropId,
                 tokenId: cubeId,
                 address: accounts[0],
-                claimFunds: false,
+                claimFunds: true,
                 claimNft: true,
-                withdraw: false,
+                withdraw: true,
             }
             axios.put("dropcubehistory/claimhistory", ClaimData).then(
                 (response) => {
@@ -339,9 +355,10 @@ function CubeNFTs(props) {
             let TrasactionData = {
                 tokenId: cubeData.tokenId,
                 from: receipt.events.Transfer.returnValues.from,
-                to: receipt.events.Transfer.returnValues.to,
+                to: accounts[0],
                 transaction: receipt.transactionHash
             }
+            
             axios.post("/transaction/tokenTransaction ", TrasactionData).then(
                 (response) => {
                     console.log('response', response);
@@ -392,8 +409,8 @@ function CubeNFTs(props) {
                 dropId: dropId,
                 tokenId: cubeId,
                 address: accounts[0],
-                claimFunds: false,
-                claimNft: false,
+                claimFunds: true,
+                claimNft: true,
                 withdraw: true,
             }
             axios.put("dropcubehistory/claimhistory", ClaimData).then(
@@ -418,7 +435,7 @@ function CubeNFTs(props) {
         handleCloseBidModal();
         setIsSaving(true);
         console.log("bid", bid);
-        if (bid < (dropData.MinimumBid ) / 10 ** 18) {
+        if (bid < (dropData.MinimumBid) / 10 ** 18) {
             let variant = "error";
             enqueueSnackbar('Bid Must be Greater than Minimum Bid', { variant });
             handleCloseBackdrop();
@@ -436,52 +453,82 @@ function CubeNFTs(props) {
             }
             else {
                 handleShowBackdrop();
-                const address = Addresses.AuctionAddress;
-                const abi = CreateAuctionContract;
-                var myContractInstance = await new web3.eth.Contract(abi, address);
-                console.log("myContractInstance", myContractInstance);
-                console.log("accounts[0]",accounts[0]);
-                console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
-                let receipt = await myContractInstance.methods.bid(dropData.dropId, cubeData.tokenId).send({ from: accounts[0], value: (bid * 10 ** 18).toString() }, (err, response) => {
-                    console.log('get transaction', err, response);
-                    if (err !== null) {
-                        console.log("err", err);
-                        let variant = "error";
-                        enqueueSnackbar('User Canceled Transaction', { variant });
-                        handleCloseBackdrop();
-                        setIsSaving(false);
-                    }
-                })
-                console.log("receipt", receipt);
-                let BidData = {
-                    dropId: dropId,
-                    tokenId: cubeId,
-                    Bid: bid * 10 ** 18,
-                    address: accounts[0],
+                const wethAddress = Addresses.WethAddress;
+                const wethAbi = WethContract;
+                // const address = Addresses.AuctionAddress;
+                var myWethContractInstance = await new web3.eth.Contract(wethAbi, wethAddress);
+                let wethReceipt = await myWethContractInstance.methods.balanceOf(accounts[0]).call();
+                console.log("wethReceipt", wethReceipt);
+
+                if (wethReceipt < (bid * 10 ** 18).toString()) {
+                    let variant = "error";
+                    enqueueSnackbar('You have insufficient Weth', { variant });
+                    setEnableWethButton(true);
+                    setIsSaving(false);
+
+                    handleCloseBackdrop();
                 }
-                console.log("BidData", BidData);
-                axios.post("dropcubehistory/createhistory", BidData).then(
-                    (response) => {
-
-                        console.log('response', response);
-                        setIsSaving(false);
-                        handleCloseBackdrop();
-                        getCubeNFTs();
-                        let variant = "success";
-                        enqueueSnackbar('Bid Created Successfully.', { variant });
-                    },
-                    (error) => {
-                        if (process.env.NODE_ENV === "development") {
-                            console.log(error);
-                            console.log(error.response);
+                else {
+                    setEnableWethButton(false);
+                    const address = Addresses.AuctionAddress;
+                    const abi = CreateAuctionContract;
+                    let wethReceipt = await myWethContractInstance.methods.approve(address, (bid * 10 ** 18).toString()).send({ from: accounts[0] }, (err, response) => {
+                        console.log('get transaction', err, response);
+                        if (err !== null) {
+                            console.log("err", err);
+                            let variant = "error";
+                            enqueueSnackbar('User Canceled Transaction', { variant });
+                            handleCloseBackdrop();
+                            setIsClaiming(false);
                         }
-                        setIsSaving(false);
-                        handleCloseBackdrop();
+                    })
 
-                        let variant = "error";
-                        enqueueSnackbar('Unable to Create Bid.', { variant });
+                    var myContractInstance = await new web3.eth.Contract(abi, address);
+                    console.log("myContractInstance", myContractInstance);
+                    console.log("accounts[0]", accounts[0]);
+                    console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
+                    let receipt = await myContractInstance.methods.bid(dropData.dropId, cubeData.tokenId, (bid * 10 ** 18).toString()).send({ from: accounts[0] }, (err, response) => {
+                        console.log('get transaction', err, response);
+                        if (err !== null) {
+                            console.log("err", err);
+                            let variant = "error";
+                            enqueueSnackbar('User Canceled Transaction', { variant });
+                            handleCloseBackdrop();
+                            setIsSaving(false);
+                        }
+                    })
+                    console.log("receipt", receipt);
+                    let BidData = {
+                        dropId: dropId,
+                        tokenId: cubeId,
+                        Bid: bid * 10 ** 18,
+                        address: accounts[0],
                     }
-                );
+                    console.log("BidData", BidData);
+                    axios.post("dropcubehistory/createhistory", BidData).then(
+                        (response) => {
+
+                            console.log('response', response);
+                            setIsSaving(false);
+                            handleCloseBackdrop();
+                            getCubeNFTs();
+                            let variant = "success";
+                            enqueueSnackbar('Bid Created Successfully.', { variant });
+                        },
+                        (error) => {
+                            if (process.env.NODE_ENV === "development") {
+                                console.log(error);
+                                console.log(error.response);
+                            }
+                            setIsSaving(false);
+                            handleCloseBackdrop();
+
+                            let variant = "error";
+                            enqueueSnackbar('Unable to Create Bid.', { variant });
+                        }
+                    );
+                }
+
                 // .on('receipt', (receipt) => {
                 //     console.log("receipt", receipt);
                 //     console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.Transfer.returnValues.tokenId);
@@ -576,16 +623,73 @@ function CubeNFTs(props) {
             const web3 = window.web3
             const accounts = await web3.eth.getAccounts();
             const balance = await web3.eth.getBalance(accounts[0]);
+            // let TrasactionData = {
+            //     tokenId: 2,
+            //     from: "0xf363D646C2767dB90Af945ebD6F71367166159A2",
+            //     to: accounts[0],
+            //     transaction: "0xbe29d7a2ad4ee12732c5a9d38b0b539e514e01b9686d5af3be4d08d769ccfa17"
+            // }
+            
+            // axios.post("/transaction/tokenTransaction ", TrasactionData).then(
+            //     (response) => {
+            //         console.log('response', response);
+            //         setIsSaving(false);
+            //     },
+            //     (error) => {
+            //         if (process.env.NODE_ENV === "development") {
+            //             console.log(error);
+            //             console.log(error.response);
+            //         }
+            //         setIsSaving(false);
+            //     }
+            // );
+            // const address = Addresses.AuctionAddress;
+            // const abi = CreateAuctionContract;
+            // var myContractInstance = await new web3.eth.Contract(abi, address);
+            // let receipt = await myContractInstance.methods.getHighestBid(cubeData.tokenId).call();
+            // console.log("receipt",receipt);
             console.log("balance", (balance / 10 ** 18).toString());
             setBalance(balance);
         })();
 
     }, []);
+    let getWeth = () => {
+        // console.log("GET");
+        handleShowWeth();
+    }
+    let confirmGetWeth = async () => {
+        await loadWeb3();
+        handleShowBackdrop();
+        setIsConfirmingWeth(true);
+        const web3 = window.web3
+        const wethAddress = Addresses.WethAddress;
+        const wethAbi = WethContract;
+        const address = Addresses.AuctionAddress;
+        const accounts = await web3.eth.getAccounts();
+        var myWethContractInstance = await new web3.eth.Contract(wethAbi, wethAddress);
+        let wethReceipt = await myWethContractInstance.methods.deposit().send({ from: accounts[0], value: weth * 10 ** 18 }, (err, response) => {
+            console.log('get transaction', err, response);
+            if (err !== null) {
+                console.log("err", err);
+                let variant = "error";
+                enqueueSnackbar('User Canceled Transaction', { variant });
+                handleCloseBackdrop();
+                setIsConfirmingWeth(false)
+            }
+        })
+        handleCloseBackdrop();
+        handleCloseWeth();
+
+        setIsConfirmingWeth(false)
+        console.log("wethReceipt", wethReceipt);
+        let variant = "Success";
+        enqueueSnackbar('Successfully transferred Weth to your account', { variant });
+
+    }
     return (
         <div className="main-wrapper">
             <div className="home-section home-full-height">
                 <HeaderHome selectedNav={"Drops"} />
-
                 <div className="card">
                     <div className="card-body" style={{ marginTop: '110px' }}>
                         {openSpinner ? (
@@ -670,6 +774,21 @@ function CubeNFTs(props) {
                                                 {dropId !== "notdrop" ? (
                                                     <div className="col-md-12 col-lg-6">
                                                         {/* {console.log()} */}
+                                                        {enableWethButton ? (
+                                                            isClaimingWeth ? (
+                                                                <div align="center" className="text-center">
+                                                                    <Spinner
+                                                                        animation="border"
+                                                                        role="status"
+                                                                        style={{ color: "#ff0000" }}
+                                                                    >
+
+                                                                    </Spinner>
+                                                                    <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                                </div>
+                                                            ) : (
+                                                                <Button variant="primary" onClick={(e) => getWeth(e)} style={{ float: "right" }} >Get More Weth</Button>
+                                                            )) : (null)}
                                                         {new Date() > new Date(dropData.AuctionEndsAt) ? (
                                                             jwt ? (
                                                                 <>
@@ -686,10 +805,10 @@ function CubeNFTs(props) {
                                                                                 <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                                                             </div>
                                                                         ) : (
-                                                                            <Button variant="primary" onClick={(e) => claimFunds(e)} style={{ float: "right" }} >Claim Funds</Button>
+                                                                            null
                                                                         )
                                                                     ) : (
-                                                                        bidHistory[bidHistory.length - 1].userId === jwtDecoded.userId ? (
+                                                                        bidHistory.length != 0 ? (bidHistory[bidHistory.length - 1].userId === jwtDecoded.userId ? (
                                                                             isClaiming ? (
                                                                                 <div align="center" className="text-center">
                                                                                     <Spinner
@@ -709,6 +828,7 @@ function CubeNFTs(props) {
                                                                                 )
 
                                                                             )
+
                                                                         ) : (
 
                                                                             bidHistory.findIndex(i => i.userId === jwtDecoded.userId) !== -1 ? (
@@ -731,14 +851,14 @@ function CubeNFTs(props) {
 
                                                                                 )
                                                                             ) : (null)
-                                                                        ))}
+                                                                        )) : (null))}
                                                                 </>
                                                             ) : (null)
                                                         ) : (
                                                             null
                                                         )}
                                                         <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
-                                                        <Typography variant="h5" gutterBottom>Minimum Bid : {(dropData.MinimumBid ) / 10 ** 18} ETH </Typography>
+                                                        <Typography variant="h5" gutterBottom>Minimum Bid : {(dropData.MinimumBid) / 10 ** 18} ETH </Typography>
                                                         <Typography variant="h5" gutterBottom>Bid Delta : {dropData.bidDelta / 10 ** 18} ETH </Typography>
                                                         {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                             <Typography variant="h5" gutterBottom color="textSecondary">
@@ -773,8 +893,8 @@ function CubeNFTs(props) {
                                                         <Row>
                                                             {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                                 <>
-                                                                    <label> Enter Bid: </label>
-                                                                    <input type='number' step="0.0001" diabled min={(dropData.MinimumBid ) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                    <label> Enter Bid: (ETH)</label>
+                                                                    <input type='number' step="0.0001" diabled min={(dropData.MinimumBid) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
 
                                                                     }} />
                                                                     <br></br>
@@ -783,8 +903,8 @@ function CubeNFTs(props) {
 
                                                             ) : new Date() > new Date(dropData.AuctionStartsAt) && new Date() < new Date(dropData.AuctionEndsAt) ? (
                                                                 <>
-                                                                    <label> Enter Bid: </label>
-                                                                    {(dropData.MinimumBid ) / 10 ** 18 > balance / 10 ** 18 ? (
+                                                                    <label> Enter Bid:(ETH) </label>
+                                                                    {(dropData.MinimumBid) / 10 ** 18 > balance / 10 ** 18 ? (
                                                                         <>
                                                                             <input type='number' step="0.0001" disabled className='form-control' style={{ marginBottom: '20px' }} value={bid} />
                                                                             <br></br>
@@ -792,10 +912,10 @@ function CubeNFTs(props) {
                                                                         </>
                                                                     ) : (
                                                                         <>
-                                                                            <input type='number' step="0.0001" min={(dropData.MinimumBid ) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                            <input type='number' step="0.0001" min={(dropData.MinimumBid) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
                                                                                 if (evt.target.value >= 0) {
-                                                                                    if (evt.target.value < (dropData.MinimumBid ) / 10 ** 18) {
-                                                                                        setBid((dropData.MinimumBid ) / 10 ** 18)
+                                                                                    if (evt.target.value < (dropData.MinimumBid) / 10 ** 18) {
+                                                                                        setBid((dropData.MinimumBid) / 10 ** 18)
                                                                                     } else
                                                                                         if (evt.target.value > balance / 10 ** 18) {
                                                                                             setBid(balance / 10 ** 18)
@@ -805,7 +925,7 @@ function CubeNFTs(props) {
                                                                                         }
                                                                                 }
                                                                                 else {
-                                                                                    setBid((dropData.MinimumBid ) / 10 ** 18)
+                                                                                    setBid((dropData.MinimumBid) / 10 ** 18)
                                                                                 }
 
                                                                             }} />
@@ -962,7 +1082,7 @@ function CubeNFTs(props) {
                                                             justify="flex-start"
                                                         // alignItems="flex-start"
                                                         >
-                                                            {transactionHistory.map((i, index) => (
+                                                            {transactionHistory.slice(0).reverse().map((i, index) => (
                                                                 <Grid item xs={12} sm={12} md={12} key={index}>
                                                                     <Card className={classes.root}>
                                                                         <CardActionArea style={{ margin: '5px' }}>
@@ -1014,7 +1134,7 @@ function CubeNFTs(props) {
                                                                                 <strong>Address : </strong>{i.address}
                                                                             </Typography>
                                                                             <Typography variant="body2" color="textSecondary" component="p">
-                                                                                <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18}</span>
+                                                                                <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} ETH</span>
                                                                             </Typography>
                                                                         </CardActionArea>
                                                                     </Card>
@@ -1036,7 +1156,8 @@ function CubeNFTs(props) {
 
             </div >
             <LoginErrorModal show={open} handleClose={handleClose} />
-            <ConfirmBidModal bid={bid} balance={balance} minimumBid={dropData.MinimumBid } bidDelta={dropData.bidDelta} show={openBidModal} handleClose={handleCloseBidModal} ConfirmBidding={ConfirmBidding} />
+            <ConfirmBidModal bid={bid} balance={balance} minimumBid={dropData.MinimumBid} bidDelta={dropData.bidDelta} show={openBidModal} handleClose={handleCloseBidModal} ConfirmBidding={ConfirmBidding} />
+            <WethModal isConfirmingWeth={isConfirmingWeth} weth={weth} balance={balance} setWeth={setWeth} show={openWeth} handleClose={handleCloseWeth} confirmGetWeth={confirmGetWeth} />
             <NetworkErrorModal
                 show={openNetwork}
                 handleClose={handleCloseNetwork}

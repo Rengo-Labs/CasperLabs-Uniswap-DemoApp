@@ -10,33 +10,14 @@
 				"internalType": "uint256",
 				"name": "_cubeid",
 				"type": "uint256"
-			}
-		],
-		"name": "bid",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_dropId",
-				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
-				"name": "_cubeid",
+				"name": "_amount",
 				"type": "uint256"
 			}
 		],
-		"name": "calimNFT",
+		"name": "bid",
 		"outputs": [
 			{
 				"internalType": "bool",
@@ -74,8 +55,37 @@
 	{
 		"inputs": [
 			{
+				"internalType": "uint256",
+				"name": "_dropId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_cubeid",
+				"type": "uint256"
+			}
+		],
+		"name": "claimNFT",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "contract SUPER_NFT",
 				"name": "_superNft",
+				"type": "address"
+			},
+			{
+				"internalType": "contract WETH",
+				"name": "_wethAddress",
 				"type": "address"
 			}
 		],

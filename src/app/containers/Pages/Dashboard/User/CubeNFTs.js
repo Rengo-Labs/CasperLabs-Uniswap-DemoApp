@@ -8,7 +8,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
-import { Button } from 'react-bootstrap';
+import { Button, Col } from 'react-bootstrap';
 import { useSnackbar } from 'notistack';
 import Cookies from "js-cookie";
 import Backdrop from '@material-ui/core/Backdrop';
@@ -83,6 +83,7 @@ function CubeNFTs(props) {
     const [isClaiming, setIsClaiming] = useState(false);
     const [network, setNetwork] = useState("");
     const [open, setOpen] = React.useState(false);
+    const [isClaimFunds, setIsClaimFunds] = useState(null);
     const handleCloseBackdrop = () => {
         setOpen(false);
     };
@@ -208,41 +209,63 @@ function CubeNFTs(props) {
                 }
             })
             console.log("receipt", receipt);
-            let ClaimData = {
+            let Data = {
+                address: accounts[0],
                 dropId: dropId,
                 tokenId: cubeId,
-                address: accounts[0],
-                claimFunds: true,
-                claimNft: false,
-                withdraw: false,
             }
-            axios.put("dropcubehistory/claimhistory", ClaimData).then(
-                (response) => {
-                    console.log('response', response);
-                    setIsClaiming(false);
-                    handleCloseBackdrop();
-                    getCubeNFTs();
-                    let variant = "success";
-                    enqueueSnackbar('Cube transferred Successfully.', { variant });
-                },
-                (error) => {
-                    if (process.env.NODE_ENV === "development") {
-                        console.log(error);
-                        console.log(error.response);
-                    }
-                    setIsClaiming(false);
-                    handleCloseBackdrop();
+            axios.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${Cookies.get("Authorization")}`;
+            axios.post(`/adminclaimfunds/claimfunds`, Data).then((res) => {
+                console.log("res", res);
+                setIsClaiming(false);
+                handleCloseBackdrop();
+                getCubeNFTs();
+                getClaimFunds()
+                let variant = "success";
+                enqueueSnackbar('Cube transferred Successfully.', { variant });
+            }, (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
 
-                    let variant = "error";
-                    enqueueSnackbar('Unable to transfer Cube.', { variant });
                 }
-            );
+                setIsClaiming(false);
+                handleCloseBackdrop();
+                let variant = "error";
+                enqueueSnackbar('Unable to transfer Cube.', { variant });
+            })
         }
     }
+    let getClaimFunds = async () => {
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        let Data = {
+            address: accounts[0],
+            dropId: dropId,
+            tokenId: cubeId,
+        }
 
+        axios.post(`/adminclaimfunds/getclaimfunds`, Data).then((res) => {
+            console.log("res", res);
+            if (res.data.success)
+                setIsClaimFunds(res.data.Adminclaimfundsresult)
+
+            // handleCloseBackdrop();
+        }, (error) => {
+            if (process.env.NODE_ENV === "development") {
+                console.log(error);
+                console.log(error.response);
+
+            }
+            // handleCloseBackdrop();
+        })
+    }
     useEffect(() => {
         getCubeNFTs();
-        // getCollections();?
+        getClaimFunds();
 
         props.setActiveTab({
             dashboard: "",
@@ -317,7 +340,10 @@ function CubeNFTs(props) {
                                                         <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                                     </div>
                                                 ) : (
-                                                    <Button variant="primary" onClick={(e) => claimFunds(e)} style={{ float: "right" }} >Claim Funds</Button>
+                                                    isClaimFunds === null ? (
+                                                        <Button variant="primary" onClick={(e) => claimFunds(e)} style={{ float: "right" }} >Claim Funds</Button>
+                                                    ) : (<Button variant="primary" disabled style={{ float: "right" }} >Claim Funds</Button>)
+
                                                 )) : (null)}
                                             <h1>{cubeData.title} </h1>
                                             <h2>Minimum Bid : {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} ETH </h2>
@@ -370,6 +396,16 @@ function CubeNFTs(props) {
                                                 title={cubeData.MusicArtistName}
                                                 subheader={cubeData.MusicArtistAbout}
                                             />
+                                            <h4>Choose Action</h4>
+                                            <Row>
+                                                <button className="btn-lg btn btn-dark btn-block">Allow Exchange to Sale</button>{' '}
+                                            </Row>
+                                            <h5>Or</h5>
+                                            <Row>
+                                                <button className="btn-lg btn btn-dark btn-block" >Put on Auction</button>{' '}
+
+                                            </Row>
+
                                         </div>
                                     )}
 
@@ -492,7 +528,7 @@ function CubeNFTs(props) {
                                                     justify="flex-start"
                                                 // alignItems="flex-start"
                                                 >
-                                                    {transactionHistory.map((i, index) => (
+                                                    {transactionHistory.slice(0).reverse().map((i, index) => (
                                                         <Grid item xs={12} sm={12} md={12} key={index}>
                                                             <Card className={classes.root}>
                                                                 <CardActionArea style={{ margin: '5px' }}>
@@ -544,7 +580,7 @@ function CubeNFTs(props) {
                                                                         <strong>Address : </strong>{i.address}
                                                                     </Typography>
                                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18}</span>
+                                                                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} ETH</span>
                                                                     </Typography>
                                                                 </CardActionArea>
                                                             </Card>
