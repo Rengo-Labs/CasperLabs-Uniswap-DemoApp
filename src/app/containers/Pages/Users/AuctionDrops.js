@@ -116,7 +116,7 @@ function AuctionDrops() {
                 <div className="home-section home-full-height">
                     <HeaderHome selectedNav={"Drops"} />
                     <div className="card-body">
-                        <div className="form-group"  style={{minHeight:'500px',marginTop:'120px'}}>
+                        <div className="form-group" style={{ minHeight: '500px', marginTop: '120px' }}>
 
                             {open ? (
                                 <div align="center" className="text-center">
@@ -157,7 +157,7 @@ function AuctionDrops() {
                                                                 <strong>Drop Description: </strong>{i.description}
                                                             </Typography>
                                                             <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Minimum Bid: </strong>{i.MinimumBid / 10 ** 18}
+                                                                <strong>Minimum Bid: </strong>{(i.MinimumBid + i.bidDelta) / 10 ** 18}
                                                             </Typography>
                                                             <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
                                                                 {new Date() < new Date(i.AuctionStartsAt) ? (
@@ -198,7 +198,7 @@ function AuctionDrops() {
                         </div>
                     </div >
                     <TablePagination
-                        rowsPerPageOptions={[12,24,48]}
+                        rowsPerPageOptions={[12, 24, 48]}
                         component="div"
                         count={totalDrops}
                         rowsPerPage={rowsPerPage}

@@ -153,7 +153,7 @@ function MyCubes(props) {
                                 {tokenList.map((i, index) => (
 
                                     <Grid item xs={12} sm={6} md={3}>
-                                        <Link to={"/dashboard/myCubes/Nfts/" + i._id}>
+                                        <Link to={"/dashboard/myCubes/Nfts/notdrop/" + i._id}>
                                             <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                 {/* style={{ height: "100%" }} variant="outlined" */}
                                                 <CardActionArea>
@@ -169,7 +169,7 @@ function MyCubes(props) {
                                                             <div class="cube-box">
                                                                 {imageData[index].map((j, jindex) => (
                                                                     <>
-                                                                        {console.log(j)}
+                                                                        {/* {console.log(j)} */}
                                                                         <img src={j.artwork} style={{ border: j.type === "Mastercraft" ? '4px solid #ff0000' : j.type === "Legendary" ? '4px solid #FFD700' : j.type === "Epic" ? '4px solid #9400D3' : j.type === "Rare" ? '4px solid #0000FF' : j.type === "Uncommon" ? '4px solid #008000' : j.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
                                                                     </>
                                                                 ))}
@@ -184,11 +184,15 @@ function MyCubes(props) {
                                                     </CardMedia>
                                                     <CardContent>
                                                         <Typography variant="body2" color="textSecondary" component="p">
+                                                            <strong>Cube Title: </strong>{i.title}
+                                                        </Typography>
+
+                                                        <Typography variant="body2" color="textSecondary" component="p">
                                                             <strong>Cube Description: </strong>{i.description}
                                                         </Typography>
 
                                                         <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Sale Price: </strong>{i.SalePrice/ 10 ** 18}
+                                                            <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18}
                                                         </Typography>
                                                         <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
                                                         <CardHeader

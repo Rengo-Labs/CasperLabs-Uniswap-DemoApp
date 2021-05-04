@@ -534,7 +534,7 @@ function NewDrop(props) {
 
                     <div className="col-md-12 col-lg-6">
                         {types.length > 0 ? (
-                            <Scrollbars style={{ height: 650 }}>
+                            <Scrollbars style={{ height: 900 }}>
                                 {/* <!-- Change Password Form --> */}
                                 <div className="form-group">
                                     <div >

@@ -20,6 +20,7 @@ import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import Cookies from "js-cookie";
 import jwtDecode from "jwt-decode";
+import { Scrollbars } from 'react-custom-scrollbars';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
@@ -743,94 +744,97 @@ function NewCube(props) {
                             </div>
                         </div>
                         <form >
-                            <div className="form-group">
-                                <div >
-                                    <Grid
-                                        container
-                                        spacing={2}
-                                        direction="row"
-                                        justify="flex-start"
-                                    // alignItems="flex-start"
-                                    >
-                                        {selectedNFTList.map((i, index) => (
-                                            <Grid item xs={12} sm={6} md={6} key={index}>
-                                                <Card style={{ height: "100%" }} variant="outlined">
-                                                    <CardHeader className="text-center"
-                                                        title={i.title}
-                                                    />
-                                                    <CardMedia
-                                                        style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
-                                                        className={classes.media}
-                                                        // image={i.artwork}
+                            <Scrollbars style={{ height: 650 }}>
+                                <div className="form-group">
+                                    <div >
 
-                                                        title="NFT Image"
-                                                    />
-                                                    <CardContent>
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Artwork Description: </strong>{i.description}
-                                                        </Typography>
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Token Rarity: </strong>{i.type}
-                                                        </Typography>
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Token Supply: </strong>{i.tokensupply}
-                                                        </Typography>
-                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={i.ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                            title={i.ImageArtistName}
-                                                            subheader={i.ImageArtistAbout}
+                                        <Grid
+                                            container
+                                            spacing={2}
+                                            direction="row"
+                                            justify="flex-start"
+                                        // alignItems="flex-start"
+                                        >
+                                            {selectedNFTList.map((i, index) => (
+                                                <Grid item xs={12} sm={6} md={6} key={index}>
+                                                    <Card style={{ height: "100%" }} variant="outlined">
+                                                        <CardHeader className="text-center"
+                                                            title={i.title}
                                                         />
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Website URL: </strong>{i.ImageArtistWebsite}
-                                                        </Typography>
-                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={i.ProducerProfile} aria-label="Producer" className={classes.avatar} />}
-                                                            title={i.ProducerName}
-                                                            subheader={i.ProducerInspiration}
-                                                        />
-                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={i.ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
-                                                            title={i.ExecutiveProducerName}
-                                                            subheader={i.ExecutiveProducerInspiration}
-                                                        />
-                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={i.FanProfile} aria-label="Fan" className={classes.avatar} />}
-                                                            title={i.FanName}
-                                                            subheader={i.FanInspiration}
-                                                        />
+                                                        <CardMedia
+                                                            style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                            className={classes.media}
+                                                            // image={i.artwork}
 
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Other: </strong>{i.other}
-                                                        </Typography>
-                                                        {/* <Typography variant="body2" color="textSecondary" component="p">
+                                                            title="NFT Image"
+                                                        />
+                                                        <CardContent>
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Artwork Description: </strong>{i.description}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Token Rarity: </strong>{i.type}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Token Supply: </strong>{i.tokensupply}
+                                                            </Typography>
+                                                            <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
+                                                            <CardHeader
+                                                                avatar={<Avatar src={i.ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                title={i.ImageArtistName}
+                                                                subheader={i.ImageArtistAbout}
+                                                            />
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Website URL: </strong>{i.ImageArtistWebsite}
+                                                            </Typography>
+                                                            <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
+                                                            <CardHeader
+                                                                avatar={<Avatar src={i.ProducerProfile} aria-label="Producer" className={classes.avatar} />}
+                                                                title={i.ProducerName}
+                                                                subheader={i.ProducerInspiration}
+                                                            />
+                                                            <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
+                                                            <CardHeader
+                                                                avatar={<Avatar src={i.ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
+                                                                title={i.ExecutiveProducerName}
+                                                                subheader={i.ExecutiveProducerInspiration}
+                                                            />
+                                                            <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
+                                                            <CardHeader
+                                                                avatar={<Avatar src={i.FanProfile} aria-label="Fan" className={classes.avatar} />}
+                                                                title={i.FanName}
+                                                                subheader={i.FanInspiration}
+                                                            />
+
+                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Other: </strong>{i.other}
+                                                            </Typography>
+                                                            {/* <Typography variant="body2" color="textSecondary" component="p">
                                                             <strong>Collection: </strong>{i.collectiontitle}
                                                         </Typography> */}
-                                                    </CardContent>
+                                                        </CardContent>
 
-                                                    <CardActions>
+                                                        <CardActions>
 
-                                                        <Button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                handleRemoveClick(index, i);
-                                                            }}
-                                                            className="btn btn-sm bg-danger-light btn-block"
+                                                            <Button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    handleRemoveClick(index, i);
+                                                                }}
+                                                                className="btn btn-sm bg-danger-light btn-block"
 
-                                                        >
-                                                            Remove NFT
+                                                            >
+                                                                Remove NFT
     </Button>
-                                                    </CardActions>
-                                                </Card>
-                                            </Grid>
+                                                        </CardActions>
+                                                    </Card>
+                                                </Grid>
 
-                                        ))}
-                                    </Grid>
+                                            ))}
+                                        </Grid>
+                                    </div>
                                 </div>
-                            </div>
+                            </Scrollbars>
                         </form>
                     </div>
 

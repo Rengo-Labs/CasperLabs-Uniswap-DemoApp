@@ -10,6 +10,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import Web3 from 'web3';
+import { Scrollbars } from 'react-custom-scrollbars';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
@@ -1360,6 +1361,8 @@ function NewNFT(props) {
                     <div className="col-md-12 col-lg-6">
                         {/* <!-- Change Password Form --> */}
                         <form >
+                        <Scrollbars style={{ height: 1500 }}>
+                        
                             <div className="form-group">
                                 <div >
                                     <Grid
@@ -1448,6 +1451,7 @@ function NewNFT(props) {
                                     </Grid>
                                 </div>
                             </div>
+                            </Scrollbars>
                         </form>
                     </div>
                 </div>

@@ -239,10 +239,31 @@ function CubeNFTs(props) {
             );
         }
     }
+    let getClaimFunds = async () => {
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        let getClaimFundsData={
+            address:accounts[0],
+            dropId:dropId,
+            tokenId:cubeId,
+        }
+        axios.post(`/adminclaimfunds/getclaimfunds/​​​​​​​`,getClaimFundsData).then(
+            (response) => {
+                console.log('respooooooonse', response);
 
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+            }
+        );
+    }
     useEffect(() => {
         getCubeNFTs();
-        // getCollections();?
+        getClaimFunds();
 
         props.setActiveTab({
             dashboard: "",
