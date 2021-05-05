@@ -63,7 +63,7 @@ function MyCubes(props) {
     };
     let getMyCubes = (start, end) => {
         handleShowBackdrop();
-        axios.get(`/token/TokenIds/${start}/${end}`).then(
+        axios.get(`/token/userTokenIds/${start}/${end}`).then(
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.tokensdata);

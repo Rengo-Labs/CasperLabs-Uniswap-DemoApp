@@ -355,7 +355,7 @@ function CubeNFTs(props) {
                 );
                 let TrasactionData = {
                     tokenId: cubeData.tokenId,
-                    from: "0xf363D646C2767dB90Af945ebD6F71367166159A2",
+                    from: cubeData.address,
                     to: accounts[0],
                     transaction: receipt.transactionHash
                 }
