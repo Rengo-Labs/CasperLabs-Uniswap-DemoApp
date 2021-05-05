@@ -358,7 +358,7 @@ function CubeNFTs(props) {
                 to: accounts[0],
                 transaction: receipt.transactionHash
             }
-            
+
             axios.post("/transaction/tokenTransaction ", TrasactionData).then(
                 (response) => {
                     console.log('response', response);
@@ -418,6 +418,8 @@ function CubeNFTs(props) {
                     console.log('response', response);
                     setIsClaiming(false);
                     handleCloseBackdrop();
+                    let variant = "success";
+                    enqueueSnackbar('Funds withdrawn Successfully', { variant });
                     getCubeNFTs();
                 },
                 (error) => {
@@ -425,6 +427,8 @@ function CubeNFTs(props) {
                         console.log(error);
                         console.log(error.response);
                     }
+                    let variant = "success";
+                    enqueueSnackbar('Unable to withdraw funds', { variant });
                     setIsClaiming(false);
                     handleCloseBackdrop();
                 }
@@ -629,7 +633,7 @@ function CubeNFTs(props) {
             //     to: accounts[0],
             //     transaction: "0xbe29d7a2ad4ee12732c5a9d38b0b539e514e01b9686d5af3be4d08d769ccfa17"
             // }
-            
+
             // axios.post("/transaction/tokenTransaction ", TrasactionData).then(
             //     (response) => {
             //         console.log('response', response);
@@ -858,8 +862,8 @@ function CubeNFTs(props) {
                                                             null
                                                         )}
                                                         <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
-                                                        <Typography variant="h5" gutterBottom>Minimum Bid : {(dropData.MinimumBid) / 10 ** 18} ETH </Typography>
-                                                        <Typography variant="h5" gutterBottom>Bid Delta : {dropData.bidDelta / 10 ** 18} ETH </Typography>
+                                                        <Typography variant="h5" gutterBottom>Minimum Bid : {(dropData.MinimumBid) / 10 ** 18} WETH </Typography>
+                                                        <Typography variant="h5" gutterBottom>Bid Delta : {dropData.bidDelta / 10 ** 18} WETH </Typography>
                                                         {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                             <Typography variant="h5" gutterBottom color="textSecondary">
                                                                 <strong>Auction Starts At:</strong>
@@ -893,7 +897,7 @@ function CubeNFTs(props) {
                                                         <Row>
                                                             {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                                 <>
-                                                                    <label> Enter Bid: (ETH)</label>
+                                                                    <label> Enter Bid: (WETH)</label>
                                                                     <input type='number' step="0.0001" diabled min={(dropData.MinimumBid) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
 
                                                                     }} />
@@ -903,7 +907,7 @@ function CubeNFTs(props) {
 
                                                             ) : new Date() > new Date(dropData.AuctionStartsAt) && new Date() < new Date(dropData.AuctionEndsAt) ? (
                                                                 <>
-                                                                    <label> Enter Bid:(ETH) </label>
+                                                                    <label> Enter Bid:(WETH) </label>
                                                                     {(dropData.MinimumBid) / 10 ** 18 > balance / 10 ** 18 ? (
                                                                         <>
                                                                             <input type='number' step="0.0001" disabled className='form-control' style={{ marginBottom: '20px' }} value={bid} />

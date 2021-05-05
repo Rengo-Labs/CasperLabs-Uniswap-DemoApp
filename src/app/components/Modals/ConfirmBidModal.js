@@ -28,7 +28,7 @@ function ConfirmBidModal(props) {
                 </Row>
                 <Row>
                     <Col>
-                        <Typography variant="h6" gutterBottom  >Minimum Bid:</Typography>
+                        <Typography variant="h6" gutterBottom  >Minimum Bid (WETH):</Typography>
                     </Col>
                     <Col className="text-right">
                         <Typography variant="h6" gutterBottom color="textSecondary" >{props.minimumBid / 10 ** 18}</Typography>
@@ -36,7 +36,7 @@ function ConfirmBidModal(props) {
                 </Row>
                 <Row>
                     <Col>
-                        <Typography variant="h6" gutterBottom  >Bid Delta:</Typography>
+                        <Typography variant="h6" gutterBottom  >Bid Delta (WETH):</Typography>
                     </Col>
                     <Col className="text-right">
                         <Typography variant="h6" gutterBottom color="textSecondary" >{props.bidDelta / 10 ** 18}</Typography>

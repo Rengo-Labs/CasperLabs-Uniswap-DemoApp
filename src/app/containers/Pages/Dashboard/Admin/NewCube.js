@@ -543,7 +543,7 @@ function NewCube(props) {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label>Sale Price</label>
+                                        <label>Sale Price (ETH)</label>
                                         <div className="filter-widget">
                                             <input
                                                 type="number"

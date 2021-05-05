@@ -89,9 +89,10 @@ function CubeNFTs(props) {
     const [open, setOpen] = React.useState(false);
     const [isPuttingOnSale, setIsPuttingOnSale] = useState(false);
     const [isClaimFunds, setIsClaimFunds] = useState(null);
-    const [time, setTime] = useState(new Date());
-    const [timeStamp, setTimeStamp] = useState(time.getTime() / 1000);
-    const [price, setPrice] = useState(0);
+    const [ownerAudio, setOwnerAudio] = useState(new Audio());
+    // const [time, setTime] = useState(new Date());
+    // const [timeStamp, setTimeStamp] = useState(time.getTime() / 1000);
+    // const [price, setPrice] = useState(0);
     const [isConfirmingSale, setIsConfirmingSale] = useState(false);
     const [openModal, setOpenModal] = useState(false);
     const handleClose = () => {
@@ -113,6 +114,16 @@ function CubeNFTs(props) {
     const handleShowNetwork = () => {
         setOpenNetwork(true);
     };
+    useEffect(() => {
+
+        (async () => {
+            ownerAudio.addEventListener('ended', () => ownerAudio.pause());
+            return () => {
+                ownerAudio.removeEventListener('ended', () => ownerAudio.pause());
+            };
+        })();
+
+    }, []);
     let getCubeNFTs = () => {
         handleShowBackdrop();
 
@@ -127,6 +138,7 @@ function CubeNFTs(props) {
                 console.log("response", response);
                 setTokenList(response.data.nftdata);
                 setCubeData(response.data.tokensdata);
+                setOwnerAudio(new Audio(response.data.tokensdata.ownermusicfile))
                 if (dropId !== "notdrop") {
                     setDropData(response.data.Dropdata);
                 }
@@ -279,9 +291,9 @@ function CubeNFTs(props) {
             // handleCloseBackdrop();
         })
     }
-    let putOnSale = async () => {
+    let putOnSale = async (price, time, timeStamp) => {
         // e.preventDefault();
-
+console.log("price",price);
         setIsPuttingOnSale(true);
         await loadWeb3();
         const web3 = window.web3
@@ -348,6 +360,10 @@ function CubeNFTs(props) {
                                                     className={classes.media1}
                                                     title=""
                                                     image=""
+                                                    onClick={() => {
+                                                        ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                        ownerAudio.play();
+                                                    }}
                                                 >
                                                     <div class="wrapper">
                                                         <div class="cube-box">
@@ -387,8 +403,8 @@ function CubeNFTs(props) {
 
                                                 )) : (null)}
                                             <h1>{cubeData.title} </h1>
-                                            <h2>Minimum Bid : {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} ETH </h2>
-                                            <h2>Bid Delta : {dropData.bidDelta / 10 ** 18} ETH </h2>
+                                            <h2>Minimum Bid : {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} WETH </h2>
+                                            <h2>Bid Delta : {dropData.bidDelta / 10 ** 18} WETH </h2>
                                             {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                 <Typography variant="h5" gutterBottom color="textSecondary">
                                                     <strong>Auction Starts At:</strong>
@@ -660,7 +676,7 @@ function CubeNFTs(props) {
                 handleClose={handleCloseNetwork}
                 network={network}
             />
-            <SaleCubeModal isConfirmingSale={isConfirmingSale} price={price} setPrice={setPrice} time={time} setTime={setTime} timeStamp={timeStamp} setTimeStamp={setTimeStamp} show={openModal} handleClose={handleClose} putOnSale={putOnSale} />
+            <SaleCubeModal isConfirmingSale={isConfirmingSale} show={openModal} handleClose={handleClose} putOnSale={putOnSale} />
             {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
                 <CircularProgress color="inherit" />
             </Backdrop> */}

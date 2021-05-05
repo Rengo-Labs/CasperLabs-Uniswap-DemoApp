@@ -495,7 +495,7 @@ function NewDrop(props) {
                                             value={endTime}
                                         />
                                     </div>
-                                    <label>Minimum Bid</label>
+                                    <label>Minimum Bid (WETH)</label>
                                     <div className="form-group">
                                         <div className="filter-widget">
                                             <input
@@ -511,7 +511,7 @@ function NewDrop(props) {
                                             />
                                         </div>
                                     </div>
-                                    <label>Bid Delta</label>
+                                    <label>Bid Delta (WETH)</label>
                                     <div className="form-group">
                                         <div className="filter-widget">
                                             <input
@@ -580,7 +580,7 @@ function NewDrop(props) {
                                                                 </Typography>
 
                                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18}
+                                                                    <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                                 </Typography>
                                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
                                                                 <CardHeader

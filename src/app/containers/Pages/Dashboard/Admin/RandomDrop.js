@@ -180,7 +180,7 @@ function RandomDrop(props) {
                                 </div>
  */}
                                 <div className="form-group">
-                                    <label>Sale Price</label>
+                                    <label>Sale Price (ETH)</label>
                                     <div className="filter-widget">
                                         <input
                                             type="number"
@@ -239,7 +239,7 @@ function RandomDrop(props) {
                                             value={endTime}
                                         />
                                     </div>
-                                    <label>Minimum Bid</label>
+                                    <label>Minimum Bid (WETH)</label>
                                     <div className="form-group">
                                         <div className="filter-widget">
                                             <input

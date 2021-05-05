@@ -239,7 +239,7 @@ function CubeNFTs(props) {
                 getCubeNFTs();
                 getClaimFunds()
                 let variant = "success";
-                enqueueSnackbar('Cube transferred Successfully.', { variant });
+                enqueueSnackbar('Funds transferred Successfully.', { variant });
             }, (error) => {
                 if (process.env.NODE_ENV === "development") {
                     console.log(error);
@@ -249,7 +249,7 @@ function CubeNFTs(props) {
                 setIsClaiming(false);
                 handleCloseBackdrop();
                 let variant = "error";
-                enqueueSnackbar('Unable to transfer Cube.', { variant });
+                enqueueSnackbar('Unable to transfer Funds.', { variant });
             })
         }
     }
@@ -365,8 +365,8 @@ function CubeNFTs(props) {
 
                                                 )) : (null)}
                                             <h1>{cubeData.title} </h1>
-                                            <h2>Minimum Bid : {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} ETH </h2>
-                                            <h2>Bid Delta : {dropData.bidDelta / 10 ** 18} ETH </h2>
+                                            <h2>Minimum Bid : {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} WETH </h2>
+                                            <h2>Bid Delta : {dropData.bidDelta / 10 ** 18} WETH </h2>
                                             {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                 <Typography variant="h5" gutterBottom color="textSecondary">
                                                     <strong>Auction Starts At:</strong>

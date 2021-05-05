@@ -122,7 +122,7 @@ function Market() {
                                                               <strong>Cube Description: </strong>{i.description}
                                                           </Typography>
                                                           <Typography variant="body2" color="textSecondary" component="p">
-                                                              <strong>Minimum Bid: </strong>{i.MinimumBid / 10 ** 18} ETH
+                                                              <strong>Minimum Bid: </strong>{i.MinimumBid / 10 ** 18} WETH
                                                           </Typography>
                                                           <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
                                                               {new Date() < new Date(i.AuctionStartsAt) ? (

@@ -1,5 +1,5 @@
 import { Typography } from "@material-ui/core";
-import React from "react";
+import React, { useState } from "react";
 import { Col } from "react-bootstrap";
 import { Row } from "react-bootstrap";
 import { Modal, Spinner, Button } from "react-bootstrap";
@@ -10,6 +10,9 @@ import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 
 function SaleCubeModal(props) {
+    const [time, setTime] = useState(new Date());
+    const [timeStamp, setTimeStamp] = useState(time.getTime() / 1000);
+    const [price, setPrice] = useState();
     return (
         <Modal show={props.show} onHide={props.handleClose}>
             <Modal.Header closeButton>
@@ -20,29 +23,28 @@ function SaleCubeModal(props) {
                 <div className="container">
                     <div className="form-group">
                         <Row>
-                            <Typography variant="h6" gutterBottom  >Sale Price</Typography>
-                            <input type='number' step="0.0001" min={0} className='form-control' style={{ marginBottom: '20px' }} value={props.price} onChange={(evt) => {
+                            <Typography variant="h6" gutterBottom  >Sale Price (ETH)</Typography>
+                            <input type='number' step="0.0001" min={0} className='form-control' style={{ marginBottom: '20px' }} value={price} onChange={(evt) => {
                                 if (evt.target.value >= 0) {
-                                    props.setPrice(evt.target.value)
+                                    setPrice(evt.target.value)
                                 }
                                 else {
-                                    props.setPrice(0)
+                                    setPrice(0)
                                 }
 
                             }} />
                         </Row>
                         <Row>
-
                             <Typography variant="h6" gutterBottom  >Expires in:</Typography>
                             <DateTimePicker
                                 className="form-control"
                                 onChange={(e) => {
                                     console.log(e);
                                     console.log("e.getTime()", Math.round(e.getTime() / 1000));
-                                    props.setTimeStamp(Math.round(e.getTime() / 1000));
-                                    props.setTime(e)
+                                    setTimeStamp(Math.round(e.getTime() / 1000));
+                                    setTime(e)
                                 }}
-                                value={props.time}
+                                value={time}
                             />
                         </Row>
                     </div>
@@ -65,7 +67,7 @@ function SaleCubeModal(props) {
                         <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                     </div>
                 ) : (
-                    <Button variant="primary" onClick={() => props.putOnSale()}>
+                    <Button variant="primary" onClick={() => props.putOnSale(price,time,timeStamp)}>
                         Yes, Proceed!
                     </Button>
                 )}
