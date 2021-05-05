@@ -3,6 +3,7 @@ import Avatar from '@material-ui/core/Avatar';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
+
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -25,9 +26,12 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
+import MarketPlaceContract from '../../../../components/blockchain/Abis/MarketPlaceContract.json';
+
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
 import { useParams } from "react-router-dom";
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
+import SaleCubeModal from '../../../../components/Modals/SaleCubeModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -83,7 +87,19 @@ function CubeNFTs(props) {
     const [isClaiming, setIsClaiming] = useState(false);
     const [network, setNetwork] = useState("");
     const [open, setOpen] = React.useState(false);
+    const [isPuttingOnSale, setIsPuttingOnSale] = useState(false);
     const [isClaimFunds, setIsClaimFunds] = useState(null);
+    const [time, setTime] = useState(new Date());
+    const [timeStamp, setTimeStamp] = useState(time.getTime() / 1000);
+    const [price, setPrice] = useState(0);
+    const [isConfirmingSale, setIsConfirmingSale] = useState(false);
+    const [openModal, setOpenModal] = useState(false);
+    const handleClose = () => {
+        setOpenModal(false);
+    };
+    const handleShow = () => {
+        setOpenModal(true);
+    };
     const handleCloseBackdrop = () => {
         setOpen(false);
     };
@@ -263,9 +279,34 @@ function CubeNFTs(props) {
             // handleCloseBackdrop();
         })
     }
+    let putOnSale = async () => {
+        // e.preventDefault();
+
+        setIsPuttingOnSale(true);
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        const address = Addresses.MarketPlaceAddress;
+        const CubeAddress = Addresses.CreateCubeAddress;
+        const abi = MarketPlaceContract;
+        var myContractInstance = await new web3.eth.Contract(abi, address);
+        console.log("myContractInstance", myContractInstance);
+        let receipt = await myContractInstance.methods.createOrder(CubeAddress, cubeData.tokenId, (price * 10 ** 18).toString, timeStamp).send({ from: accounts[0] }, (err, response) => {
+            console.log('get transaction', err, response);
+            if (err !== null) {
+                console.log("err", err);
+                let variant = "error";
+                enqueueSnackbar('User Canceled Transaction', { variant });
+                handleCloseBackdrop();
+                setIsClaiming(false);
+            }
+        })
+
+        setIsPuttingOnSale(false);
+    }
     useEffect(() => {
         getCubeNFTs();
-        getClaimFunds();
+        // getClaimFunds();
 
         props.setActiveTab({
             dashboard: "",
@@ -396,15 +437,32 @@ function CubeNFTs(props) {
                                                 title={cubeData.MusicArtistName}
                                                 subheader={cubeData.MusicArtistAbout}
                                             />
-                                            <h4>Choose Action</h4>
+                                            {/* <h4>Choose Action</h4> */}
                                             <Row>
-                                                <button className="btn-lg btn btn-dark btn-block">Allow Exchange to Sale</button>{' '}
+                                                {isPuttingOnSale ? (
+                                                    <div align="center" className="text-center">
+                                                        <Spinner
+                                                            animation="border"
+                                                            role="status"
+                                                            style={{ color: "#ff0000" }}
+                                                        >
+
+                                                        </Spinner>
+                                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                    </div>
+                                                ) : (
+                                                    <button className="btn-lg btn btn-block" onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleShow()
+                                                    }}>Allow Exchange to Sale</button>
+                                                )}
+
                                             </Row>
-                                            <h5>Or</h5>
+                                            {/* <h5>Or</h5>
                                             <Row>
                                                 <button className="btn-lg btn btn-dark btn-block" >Put on Auction</button>{' '}
 
-                                            </Row>
+                                            </Row> */}
 
                                         </div>
                                     )}
@@ -602,6 +660,7 @@ function CubeNFTs(props) {
                 handleClose={handleCloseNetwork}
                 network={network}
             />
+            <SaleCubeModal isConfirmingSale={isConfirmingSale} price={price} setPrice={setPrice} time={time} setTime={setTime} timeStamp={timeStamp} setTimeStamp={setTimeStamp} show={openModal} handleClose={handleClose} putOnSale={putOnSale} />
             {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
                 <CircularProgress color="inherit" />
             </Backdrop> */}

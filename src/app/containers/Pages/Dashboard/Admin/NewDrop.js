@@ -296,7 +296,7 @@ function NewDrop(props) {
                         handleCloseBackdrop();
 
                         let variant = "success";
-                        enqueueSnackbar('Cube Created Successfully.', { variant });
+                        enqueueSnackbar('Drop Created Successfully.', { variant });
                     },
                     (error) => {
                         if (process.env.NODE_ENV === "development") {
@@ -307,7 +307,7 @@ function NewDrop(props) {
 
                         setIsSaving(false);
                         let variant = "error";
-                        enqueueSnackbar('Unable to Create Cube.', { variant });
+                        enqueueSnackbar('Unable to Create Drop.', { variant });
                     }
                 );
                 // })

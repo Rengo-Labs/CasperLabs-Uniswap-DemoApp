@@ -84,6 +84,7 @@ function CubeNFTs(props) {
     const [network, setNetwork] = useState("");
     const [open, setOpen] = React.useState(false);
     const [isClaimFunds, setIsClaimFunds] = useState(null);
+    const [ownerAudio, setOwnerAudio] = useState(new Audio());
     const handleCloseBackdrop = () => {
         setOpen(false);
     };
@@ -97,6 +98,17 @@ function CubeNFTs(props) {
     const handleShowNetwork = () => {
         setOpenNetwork(true);
     };
+    useEffect(() => {
+
+        (async () => {
+            ownerAudio.addEventListener('ended', () => ownerAudio.pause());
+            return () => {
+                ownerAudio.removeEventListener('ended', () => ownerAudio.pause());
+            };
+        })();
+
+    }, []);
+
     let getCubeNFTs = () => {
         handleShowBackdrop();
 
@@ -111,6 +123,9 @@ function CubeNFTs(props) {
                 console.log("response", response);
                 setTokenList(response.data.nftdata);
                 setCubeData(response.data.tokensdata);
+                setOwnerAudio(new Audio(response.data.tokensdata.ownermusicfile))
+                // ownerAudio.setAttribute('crossorigin', 'anonymous');
+                // ownerAudio.play();
                 if (dropId !== "notdrop") {
                     setDropData(response.data.Dropdata);
                 }
@@ -216,7 +231,7 @@ function CubeNFTs(props) {
             }
             axios.defaults.headers.common[
                 "Authorization"
-              ] = `Bearer ${Cookies.get("Authorization")}`;
+            ] = `Bearer ${Cookies.get("Authorization")}`;
             axios.post(`/adminclaimfunds/claimfunds`, Data).then((res) => {
                 console.log("res", res);
                 setIsClaiming(false);
@@ -247,7 +262,7 @@ function CubeNFTs(props) {
             dropId: dropId,
             tokenId: cubeId,
         }
-        
+
         axios.post(`/adminclaimfunds/getclaimfunds`, Data).then((res) => {
             console.log("res", res);
             if (res.data.success)
@@ -307,6 +322,10 @@ function CubeNFTs(props) {
                                                     className={classes.media1}
                                                     title=""
                                                     image=""
+                                                    onClick={() => {
+                                                        ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                        ownerAudio.play();
+                                                    }}
                                                 >
                                                     <div class="wrapper">
                                                         <div class="cube-box">
