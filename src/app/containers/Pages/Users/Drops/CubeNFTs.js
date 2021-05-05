@@ -269,110 +269,117 @@ function CubeNFTs(props) {
     }
 
     let claimCube = async (e) => {
-        e.preventDefault();
-        setIsClaiming(true);
-        await loadWeb3();
-        const web3 = window.web3
-        const accounts = await web3.eth.getAccounts();
-        const network = await web3.eth.net.getNetworkType()
-        if (network !== 'ropsten') {
-            setNetwork(network);
+        if (cubeData.adminclaimfunds) {
+            e.preventDefault();
+            setIsClaiming(true);
+            await loadWeb3();
+            const web3 = window.web3
+            const accounts = await web3.eth.getAccounts();
+            const network = await web3.eth.net.getNetworkType()
+            if (network !== 'ropsten') {
+                setNetwork(network);
+                setIsClaiming(false);
+                handleShowNetwork();
+            }
+            else {
+                handleShowBackdrop();
+
+                const address = Addresses.AuctionAddress;
+                const abi = CreateAuctionContract;
+                var myContractInstance = await new web3.eth.Contract(abi, address);
+                console.log("myContractInstance", myContractInstance);
+                console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
+                let receipt = await myContractInstance.methods.claimNFT(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
+                    console.log('get transaction', err, response);
+                    if (err !== null) {
+                        console.log("err", err);
+                        let variant = "error";
+                        enqueueSnackbar('User Canceled Transaction', { variant });
+                        handleCloseBackdrop();
+                        setIsClaiming(false);
+                    }
+                })
+                console.log("receipt", receipt);
+                let BuyData = {
+                    dropId: dropId,
+                    tokenId: cubeId,
+                }
+                console.log("BidData", BuyData);
+                axios.post("token/buytoken", BuyData).then(
+                    (response) => {
+                        console.log('response', response);
+                        setIsClaiming(false);
+                        handleCloseBackdrop();
+                        getCubeNFTs();
+                        let variant = "success";
+                        enqueueSnackbar('Cube transferred Successfully.', { variant });
+                    },
+                    (error) => {
+                        if (process.env.NODE_ENV === "development") {
+                            console.log(error);
+                            console.log(error.response);
+                        }
+                        setIsClaiming(false);
+                        handleCloseBackdrop();
+
+                        let variant = "error";
+                        enqueueSnackbar('Unable to transfer Cube.', { variant });
+                    }
+                );
+                let ClaimData = {
+                    dropId: dropId,
+                    tokenId: cubeId,
+                    address: accounts[0],
+                    claimFunds: true,
+                    claimNft: true,
+                    withdraw: true,
+                }
+                axios.put("dropcubehistory/claimhistory", ClaimData).then(
+                    (response) => {
+                        console.log('response', response);
+                        setIsClaiming(false);
+                        handleCloseBackdrop();
+                        getCubeNFTs();
+                    },
+                    (error) => {
+                        if (process.env.NODE_ENV === "development") {
+                            console.log(error);
+                            console.log(error.response);
+                        }
+                        setIsClaiming(false);
+                        handleCloseBackdrop();
+
+                        let variant = "error";
+                        enqueueSnackbar('Unable to transfer Cube.', { variant });
+                    }
+                );
+                let TrasactionData = {
+                    tokenId: cubeData.tokenId,
+                    from: "0xf363D646C2767dB90Af945ebD6F71367166159A2",
+                    to: accounts[0],
+                    transaction: receipt.transactionHash
+                }
+
+                axios.post("/transaction/tokenTransaction ", TrasactionData).then(
+                    (response) => {
+                        console.log('response', response);
+                        setIsSaving(false);
+                    },
+                    (error) => {
+                        if (process.env.NODE_ENV === "development") {
+                            console.log(error);
+                            console.log(error.response);
+                        }
+                        setIsSaving(false);
+                    }
+                );
+            }
+        } else {
             setIsClaiming(false);
-            handleShowNetwork();
-        }
-        else {
-            handleShowBackdrop();
+            handleCloseBackdrop();
 
-            const address = Addresses.AuctionAddress;
-            const abi = CreateAuctionContract;
-            var myContractInstance = await new web3.eth.Contract(abi, address);
-            console.log("myContractInstance", myContractInstance);
-            console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
-            let receipt = await myContractInstance.methods.claimNFT(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
-                console.log('get transaction', err, response);
-                if (err !== null) {
-                    console.log("err", err);
-                    let variant = "error";
-                    enqueueSnackbar('User Canceled Transaction', { variant });
-                    handleCloseBackdrop();
-                    setIsClaiming(false);
-                }
-            })
-            console.log("receipt", receipt);
-            let BuyData = {
-                dropId: dropId,
-                tokenId: cubeId,
-            }
-            console.log("BidData", BuyData);
-            axios.post("token/buytoken", BuyData).then(
-                (response) => {
-                    console.log('response', response);
-                    setIsClaiming(false);
-                    handleCloseBackdrop();
-                    getCubeNFTs();
-                    let variant = "success";
-                    enqueueSnackbar('Cube transferred Successfully.', { variant });
-                },
-                (error) => {
-                    if (process.env.NODE_ENV === "development") {
-                        console.log(error);
-                        console.log(error.response);
-                    }
-                    setIsClaiming(false);
-                    handleCloseBackdrop();
-
-                    let variant = "error";
-                    enqueueSnackbar('Unable to transfer Cube.', { variant });
-                }
-            );
-            let ClaimData = {
-                dropId: dropId,
-                tokenId: cubeId,
-                address: accounts[0],
-                claimFunds: true,
-                claimNft: true,
-                withdraw: true,
-            }
-            axios.put("dropcubehistory/claimhistory", ClaimData).then(
-                (response) => {
-                    console.log('response', response);
-                    setIsClaiming(false);
-                    handleCloseBackdrop();
-                    getCubeNFTs();
-                },
-                (error) => {
-                    if (process.env.NODE_ENV === "development") {
-                        console.log(error);
-                        console.log(error.response);
-                    }
-                    setIsClaiming(false);
-                    handleCloseBackdrop();
-
-                    let variant = "error";
-                    enqueueSnackbar('Unable to transfer Cube.', { variant });
-                }
-            );
-            let TrasactionData = {
-                tokenId: cubeData.tokenId,
-                from: "0xf363D646C2767dB90Af945ebD6F71367166159A2",
-                to: accounts[0],
-                transaction: receipt.transactionHash
-            }
-
-            axios.post("/transaction/tokenTransaction ", TrasactionData).then(
-                (response) => {
-                    console.log('response', response);
-                    setIsSaving(false);
-                },
-                (error) => {
-                    if (process.env.NODE_ENV === "development") {
-                        console.log(error);
-                        console.log(error.response);
-                    }
-                    setIsSaving(false);
-                }
-            );
-
+            let variant = "info";
+            enqueueSnackbar('Please wait for admin to claim Funds first.', { variant });
         }
     }
     let withdraw = async (e) => {
@@ -464,7 +471,7 @@ function CubeNFTs(props) {
                 let wethReceipt = await myWethContractInstance.methods.balanceOf(accounts[0]).call();
                 console.log("wethReceipt", wethReceipt);
 
-                if (wethReceipt < (bid * 10 ** 18).toString()) {
+                if (wethReceipt < (bid * 10 ** 18)) {
                     let variant = "error";
                     enqueueSnackbar('You have insufficient Weth', { variant });
                     setEnableWethButton(true);
@@ -786,7 +793,6 @@ function CubeNFTs(props) {
                                                                         role="status"
                                                                         style={{ color: "#ff0000" }}
                                                                     >
-
                                                                     </Spinner>
                                                                     <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                                                 </div>
@@ -804,7 +810,6 @@ function CubeNFTs(props) {
                                                                                     role="status"
                                                                                     style={{ color: "#ff0000" }}
                                                                                 >
-
                                                                                 </Spinner>
                                                                                 <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                                                             </div>
@@ -820,7 +825,6 @@ function CubeNFTs(props) {
                                                                                         role="status"
                                                                                         style={{ color: "#ff0000" }}
                                                                                     >
-
                                                                                     </Spinner>
                                                                                     <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                                                                 </div>
@@ -829,10 +833,9 @@ function CubeNFTs(props) {
                                                                                     <Button variant="primary" disabled style={{ float: "right" }} >Claim Cube</Button>
                                                                                 ) : (
                                                                                     <Button variant="primary" onClick={(e) => claimCube(e)} style={{ float: "right" }} >Claim Cube</Button>
+
                                                                                 )
-
                                                                             )
-
                                                                         ) : (
 
                                                                             bidHistory.findIndex(i => i.userId === jwtDecoded.userId) !== -1 ? (
@@ -964,9 +967,9 @@ function CubeNFTs(props) {
                                                     </div>
                                                 ) : (
                                                     <div className="col-md-12 col-lg-6">
-                                                        <Chip clickable style={{ marginTop: '20px' }}
+                                                        {/* <Chip clickable style={{ marginTop: '20px' }}
                                                             color="" label="@UserName" />
-                                                        <h1> </h1>
+                                                        <h1> </h1> */}
                                                         <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
                                                         <Typography variant="h5" gutterBottom>Reserve Price</Typography>
                                                         <Typography variant="h5" gutterBottom>{cubeData.SalePrice / 10 ** 18} ETH </Typography>

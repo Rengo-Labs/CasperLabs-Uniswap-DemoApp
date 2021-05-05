@@ -99,6 +99,8 @@ function App() {
     checkLoginStatus();
     if (jwtDecoded && isLoggedIn && jwtDecoded.roles === "admin") {
       return <Redirect to="/dashboard" />;
+    } else if (path === "/admin-login") {
+      return <Route component={LoginScreen} />;
     } else if (path === "/marketPlace") {
       return <Route component={MarketPlace} />;
     } else if (path === "/auctionDrops") {
@@ -117,9 +119,11 @@ function App() {
       <BrowserRouter>
         <Switch>
           <LoginRegisterRedirectCheck exact path="/" />
-          <LoginRegisterRedirectCheck exact path="/login" />
+          {/* <LoginRegisterRedirectCheck exact path="/login" /> */}
           <LoginRegisterRedirectCheck exact path="/register" />
           <LoginRegisterRedirectCheck exact path="/marketPlace" />
+
+          <LoginRegisterRedirectCheck exact path="/admin-login" />
           <LoginRegisterRedirectCheck exact path="/auctionDrops" />
           <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/:dropId" component={DropCubes} />
           <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs} />
@@ -128,7 +132,7 @@ function App() {
             path="/emailverification/:email/:token"
             render={(routeProps) => <EmailVerification {...routeProps} />}
           />
-
+          {/* <Route exact path="/admin-login"component={LoginScreen} /> */}
           <Route path="/termsandconditions" component={TermsAndConditions} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           {/* {jwtDecoded.roles === "user" ? (

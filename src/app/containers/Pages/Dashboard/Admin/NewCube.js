@@ -362,6 +362,7 @@ function NewCube(props) {
                                     MusicArtistProfile: artistImage,
                                     musicartisttype: artistType,
                                     SalePrice: salePrice * 10 ** 18,
+                                    address: accounts[0]
                                 }
                                 console.log("cubeData", cubeData);
                                 axios.post("/token/TokenIds", cubeData).then(
@@ -553,7 +554,12 @@ function NewCube(props) {
                                                 placeholder=""
                                                 className="form-control"
                                                 onChange={(e) => {
-                                                    setSalePrice(e.target.value);
+                                                    if (e.target.value >= 0) {
+                                                        setSalePrice(e.target.value);
+                                                    }
+                                                    else {
+                                                        setSalePrice(0);
+                                                    }
                                                 }}
                                             />
                                         </div>
