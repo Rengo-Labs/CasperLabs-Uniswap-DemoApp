@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-function AuctionDrops() {
+function MarketPlace() {
     const classes = useStyles();
     const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
@@ -79,7 +79,7 @@ function AuctionDrops() {
         handleShowBackdrop();
         axios.get(`/marketplace/tokenIds/${start}/${end}`).then(
             (response) => {
-                console.log("response", response);
+                console.log("responseeeee", response);
                 // setTokenList(response.data.Dropdata);
                 // setTotalDrops(response.data.Dropscount);
                 handleCloseBackdrop();
@@ -102,7 +102,6 @@ function AuctionDrops() {
         console.log("End", newPage * rowsPerPage + rowsPerPage);
         getMyDrops(newPage * rowsPerPage, newPage * rowsPerPage + rowsPerPage);
     };
-
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         getMyDrops(0, parseInt(event.target.value, 10));
@@ -123,7 +122,6 @@ function AuctionDrops() {
                                         role="status"
                                         style={{ color: "#ff0000" }}
                                     >
-
                                     </Spinner>
                                     <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                 </div>
@@ -160,7 +158,6 @@ function AuctionDrops() {
                                                             <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
                                                                 {new Date() < new Date(i.AuctionStartsAt) ? (
                                                                     <div style={{ color: "#00FF00" }} >
-
                                                                         <Typography variant="body2" color="textSecondary" component="p">
                                                                             <strong>Auction Starts At:</strong>
                                                                         </Typography>
@@ -184,9 +181,6 @@ function AuctionDrops() {
                                                             </Typography>
                                                         </CardContent>
                                                     </CardActionArea>
-                                                    <CardActions>
-
-                                                    </CardActions>
                                                 </Card>
                                             </Link>
                                         </Grid >
@@ -212,4 +206,4 @@ function AuctionDrops() {
     );
 }
 
-export default AuctionDrops;
+export default MarketPlace;

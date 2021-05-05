@@ -27,6 +27,7 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import MarketPlaceContract from '../../../../components/blockchain/Abis/MarketPlaceContract.json';
+import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
 
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
 import { useParams } from "react-router-dom";
@@ -293,17 +294,19 @@ function CubeNFTs(props) {
     }
     let putOnSale = async (price, time, timeStamp) => {
         // e.preventDefault();
-console.log("price",price);
+        handleClose();
+        console.log("price", price);
         setIsPuttingOnSale(true);
         await loadWeb3();
         const web3 = window.web3
         const accounts = await web3.eth.getAccounts();
         const address = Addresses.MarketPlaceAddress;
-        const CubeAddress = Addresses.CreateCubeAddress;
         const abi = MarketPlaceContract;
-        var myContractInstance = await new web3.eth.Contract(abi, address);
-        console.log("myContractInstance", myContractInstance);
-        let receipt = await myContractInstance.methods.createOrder(CubeAddress, cubeData.tokenId, (price * 10 ** 18).toString, timeStamp).send({ from: accounts[0] }, (err, response) => {
+        const CubeAddress = Addresses.CreateCubeAddress;
+        const cubeAbi = CreateCubeContract;
+
+        var myCubeContractInstance = await new web3.eth.Contract(cubeAbi, CubeAddress);
+        let receipt = await myCubeContractInstance.methods.approve(address, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
             console.log('get transaction', err, response);
             if (err !== null) {
                 console.log("err", err);
@@ -312,6 +315,41 @@ console.log("price",price);
                 handleCloseBackdrop();
                 setIsClaiming(false);
             }
+        })
+        console.log("receipt", receipt);
+        var myContractInstance = await new web3.eth.Contract(abi, address);
+        console.log("myContractInstance", myContractInstance);
+        console.log("cubeData.tokenId", cubeData.tokenId);
+        let receipt1 = await myContractInstance.methods.createOrder(CubeAddress, cubeData.tokenId, (price * 10 ** 18).toString(), timeStamp.toString()).send({ from: accounts[0] }, (err, response) => {
+            console.log('get transaction', err, response);
+            if (err !== null) {
+                console.log("err", err);
+                let variant = "error";
+                enqueueSnackbar('User Canceled Transaction', { variant });
+                handleCloseBackdrop();
+                setIsClaiming(false);
+            }
+        })
+        let SaleData = {
+            tokenId: cubeId,
+            salePrice: price * 10 ** 18
+        }
+        axios.post(`auction/createsale`, SaleData).then((res) => {
+            console.log("res", res);
+            
+            handleCloseBackdrop();
+            setIsClaiming(false);
+            let variant = "success";
+            enqueueSnackbar('Successfully Allowed Exchange to Sale.', { variant });
+        }, (error) => {
+            if (process.env.NODE_ENV === "development") {
+                console.log(error);
+                console.log(error.response);
+            }
+            let variant = "error";
+                enqueueSnackbar('Unable to Allow Exchange to Sale.', { variant });
+            handleCloseBackdrop();
+            setIsClaiming(false);
         })
 
         setIsPuttingOnSale(false);

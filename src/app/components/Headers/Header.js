@@ -75,6 +75,8 @@ function HeaderHome(props) {
     console.log("Account test: ", accounts[0], network);
     if (network !== 'ropsten') {
       setNetwork(network);
+    setIsLoading(false);
+
       handleShow();
     }
     else {
@@ -125,6 +127,7 @@ function HeaderHome(props) {
     console.log("Account test: ", accounts[0], network);
     if (network !== 'ropsten') {
       setNetwork(network);
+      setIsLoading(false);
       handleShow();
     }
     else {

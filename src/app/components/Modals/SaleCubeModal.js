@@ -26,6 +26,7 @@ function SaleCubeModal(props) {
                             <Typography variant="h6" gutterBottom  >Sale Price (ETH)</Typography>
                             <input type='number' step="0.0001" min={0} className='form-control' style={{ marginBottom: '20px' }} value={price} onChange={(evt) => {
                                 if (evt.target.value >= 0) {
+                                    console.log("evt.target.value",evt.target.value);
                                     setPrice(evt.target.value)
                                 }
                                 else {
