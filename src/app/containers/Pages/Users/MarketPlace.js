@@ -232,11 +232,12 @@ function MarketPlace(props) {
     const classes = useStyles();
     const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
-    const [imageData, setImageData] = useState([]);
+    const [userSaleData, setUserSaledata] = useState([]);
     const [cubeData, setCubeData] = useState([]);
 
-    const [rowsPerPage, setRowsPerPage] = React.useState(12);
-    const [totalDrops, setTotalDrops] = React.useState(0);
+
+    const [rowsPerPage, setRowsPerPage] = React.useState(4);
+    const [totalSaleCube, setTotalSaleCube] = React.useState(0);
     const [page, setPage] = React.useState(0);
 
     const [open, setOpen] = React.useState(false);
@@ -254,6 +255,9 @@ function MarketPlace(props) {
         axios.get(`/marketplace/tokenIds/${start}/${end}`).then(
             (response) => {
                 console.log("responseeeee", response);
+                setCubeData(response.data.Saletokendata);
+                setUserSaledata(response.data.Usersaledata)
+                setTotalSaleCube(response.data.Salecount)
                 // setTokenList(response.data.Dropdata);
                 // setTotalDrops(response.data.Dropscount);
                 handleCloseBackdrop();
@@ -300,21 +304,12 @@ function MarketPlace(props) {
     return (
         <div className="main-wrapper">
             <div className="home-section home-full-height">
-                <HeaderHome selectedNav={"Drops"} />
+                <HeaderHome selectedNav={"Market"} />
                 <div className="card">
 
                     <div className="card-body" style={{ marginTop: '110px' }}>
                         <div className="form-group">
-                            <Typography variant="body2" color="textSecondary" component="p">
-                                <strong>Cube Name: </strong>{tokenList.title}
-                            </Typography>
-                            <Typography variant="body2" color="textSecondary" component="p">
-                                <strong>Cube Description: </strong>{tokenList.description}
-                            </Typography>
-                            <Typography variant="body2" color="textSecondary" component="p">
-                                <strong>Sale Price: </strong>{(tokenList.MinimumBid) / 10 ** 18} WETH
-                            </Typography>
-                            
+
                             {open ? (
                                 <div align="center" className="text-center">
                                     <Spinner
@@ -326,25 +321,34 @@ function MarketPlace(props) {
                                     <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                 </div>
                             ) : (
-                                <Grid
-                                    container
-                                    spacing={2}
-                                    direction="row"
-                                    justify="flex-start"
-                                // alignItems="flex-start"
-                                >
-                                    {cubeData.map((i, index) => (
-                                        <Grid item xs={12} sm={6} md={3}>
-                                            <Link to={"/auctionDrops/DropCubes/Nfts/" + dropId + "/" + i._id}>
-                                                <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
-                                                    {/* style={{ height: "100%" }} variant="outlined" */}
-                                                    <CardActionArea>
-                                                        <CardMedia
-                                                            className={classes.media}
-                                                            // image={img}
-                                                            title=""
-                                                        >
-                                                            {/* <div class="wrapper">
+                                <>
+                                    {cubeData.length !== 0 ? (
+                                        <Typography variant="h5" style={{ marginTop: '20px', marginBottom: '20px' }} >
+                                            <strong>On Sale </strong>
+                                        </Typography>) : (
+                                        null
+                                    )}
+
+                                    <Grid
+                                        container
+                                        spacing={2}
+                                        direction="row"
+                                        justify="flex-start"
+                                    // alignItems="flex-start"
+                                    >
+
+                                        {cubeData.map((i, index) => (
+                                            <Grid item xs={12} sm={6} md={3} key={index}>
+                                                <Link to={"/marketPlace/Cubes/Nfts/notdrop/" + i._id + "/" + userSaleData[index]._id}>
+                                                    <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
+                                                        {/* style={{ height: "100%" }} variant="outlined" */}
+                                                        <CardActionArea>
+                                                            <CardMedia
+                                                                className={classes.media}
+                                                                // image={img}
+                                                                title=""
+                                                            >
+                                                                {/* <div class="wrapper">
                                                                 <div class="cube-box">
                                                                     {console.log("imageData", imageData)}
                                                                     {imageData[index].map((j, jindex) => (
@@ -358,54 +362,111 @@ function MarketPlace(props) {
                                                                     ))}
                                                                 </div>
                                                             </div> */}
-                                                            <div class="mainDiv">
+                                                                <div class="mainDiv">
 
-                                                                <div className="square"></div>
-                                                                <div className="square2"></div>
-                                                                <div className="square3"></div>
-                                                            </div>
+                                                                    <div className="square"></div>
+                                                                    <div className="square2"></div>
+                                                                    <div className="square3"></div>
+                                                                </div>
 
+                                                            </CardMedia>
+                                                            <CardContent>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Cube Description: </strong>{i.description}
+                                                                </Typography>
 
-
-                                                        </CardMedia>
-                                                        <CardContent>
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Cube Description: </strong>{i.description}
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                             </Typography>
+                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
+                                                                <CardHeader
+                                                                    avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                    title={i.MusicArtistName}
+                                                                    subheader={i.MusicArtistAbout}
+                                                                />
+                                                            </CardContent>
+                                                        </CardActionArea>
+                                                        <CardActions>
 
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
+                                                        </CardActions>
+                                                    </Card>
+                                                </Link>
+                                            </Grid >
+                                        ))}
+                                    </Grid>
+                                    {/* {cubeData.length !== 0 ? (
+                                        <Typography variant="h5" style={{ marginTop: '20px', marginBottom: '20px' }} >
+                                            <strong >On Auction </strong>
+                                        </Typography>) : (
+                                        null
+                                    )}
+
+                                    <Grid
+                                        container
+                                        spacing={2}
+                                        direction="row"
+                                        justify="flex-start"
+                                    // alignItems="flex-start"
+                                    >
+
+                                        {cubeData.map((i, index) => (
+                                            <Grid item xs={12} sm={6} md={3}>
+                                                <Link to={"/marketPlace/Cubes/Nfts/notdrop/" + i._id}>
+                                                    <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
+                                                        <CardActionArea>
+                                                            <CardMedia
+                                                                className={classes.media}
+                                                                // image={img}
+                                                                title=""
+                                                            >
+                                                                <div class="mainDiv">
+
+                                                                    <div className="square"></div>
+                                                                    <div className="square2"></div>
+                                                                    <div className="square3"></div>
+                                                                </div>
+
+                                                            </CardMedia>
+                                                            <CardContent>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Cube Description: </strong>{i.description}
+                                                                </Typography>
+
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                             </Typography>
-                                                            <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                            <CardHeader
-                                                                avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                                title={i.MusicArtistName}
-                                                                subheader={i.MusicArtistAbout}
-                                                            />
-                                                        </CardContent>
-                                                    </CardActionArea>
-                                                    <CardActions>
+                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
+                                                                <CardHeader
+                                                                    avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                    title={i.MusicArtistName}
+                                                                    subheader={i.MusicArtistAbout}
+                                                                />
+                                                            </CardContent>
+                                                        </CardActionArea>
+                                                        <CardActions>
 
-                                                    </CardActions>
-                                                </Card>
-                                            </Link>
-                                        </Grid >
-                                    ))}
-                                </Grid>
+                                                        </CardActions>
+                                                    </Card>
+                                                </Link>
+                                            </Grid >
+                                        ))}
+                                    </Grid> */}
+                                </>
                             )}
+                            <TablePagination
+                                rowsPerPageOptions={[4, 8]}
+                                component="div"
+                                count={totalSaleCube}
+                                rowsPerPage={rowsPerPage}
+                                page={page}
+                                onChangePage={handleChangePage}
+                                onChangeRowsPerPage={handleChangeRowsPerPage}
+                            />
                         </div>
                     </div >
                 </div >
 
-                <TablePagination
-                    rowsPerPageOptions={[12, 24, 48]}
-                    component="div"
-                    count={totalDrops}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onChangePage={handleChangePage}
-                    onChangeRowsPerPage={handleChangeRowsPerPage}
-                />
+
             </div >
 
             <Footer position={"relative"} />
