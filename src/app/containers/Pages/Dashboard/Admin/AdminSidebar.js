@@ -7,6 +7,7 @@ import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
 function AdminSidebar(props) {
   let handleLogout = (e) => {
     Cookies.remove("Authorization");
+    localStorage.removeItem("Address")
     // setTimeout(() => { }, 1);
   };
 

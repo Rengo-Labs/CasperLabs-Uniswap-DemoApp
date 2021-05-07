@@ -80,6 +80,7 @@ function NewSeason(props) {
                 if (error.response.data !== undefined) {
                     if (error.response.data === "Unauthorized access (invalid token) !!") {
                         Cookies.remove("Authorization");
+                        localStorage.removeItem("Address")
                         window.location.reload();
                     }
                 }

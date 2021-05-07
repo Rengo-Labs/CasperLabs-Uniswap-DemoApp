@@ -133,6 +133,7 @@ function UserDashboard(props) {
                   <Link
                     onClick={() => {
                       Cookies.remove("Authorization");
+                      localStorage.removeItem("Address")
                       Cookies.remove("PNT");
                     }}
                     to="/"

@@ -8,6 +8,7 @@ function AdminSidebar(props) {
   let handleLogout = (e) => {
     localStorage.removeItem("Address");
     Cookies.remove("Authorization");
+    
     // setTimeout(() => { }, 1);
   };
 

@@ -33,6 +33,7 @@ import * as Addresses from '../../../../components/blockchain/Addresses/Addresse
 import { useParams } from "react-router-dom";
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 import SaleCubeModal from '../../../../components/Modals/SaleCubeModal';
+import AuctionCubeModal from '../../../../components/Modals/AuctionCubeModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -89,6 +90,7 @@ function CubeNFTs(props) {
     const [network, setNetwork] = useState("");
     const [open, setOpen] = React.useState(false);
     const [isPuttingOnSale, setIsPuttingOnSale] = useState(false);
+    const [isPuttingOnAuction, setIsPuttingOnAuction] = useState(false);
     const [isClaimFunds, setIsClaimFunds] = useState(null);
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
     // const [time, setTime] = useState(new Date());
@@ -101,6 +103,13 @@ function CubeNFTs(props) {
     };
     const handleShow = () => {
         setOpenModal(true);
+    };
+    const [openAuctionModal, setOpenAuctionModal] = useState(false);
+    const handleCloseAuction = () => {
+        setOpenAuctionModal(false);
+    };
+    const handleShowAuction = () => {
+        setOpenAuctionModal(true);
     };
     const handleCloseBackdrop = () => {
         setOpen(false);
@@ -156,6 +165,7 @@ function CubeNFTs(props) {
                     if (error.response.data !== undefined) {
                         if (error.response.data === "Unauthorized access (invalid token) !!") {
                             Cookies.remove("Authorization");
+                            localStorage.removeItem("Address")
                             window.location.reload();
                         }
                     }
@@ -189,6 +199,7 @@ function CubeNFTs(props) {
                 if (error.response.data !== undefined) {
                     if (error.response.data === "Unauthorized access (invalid token) !!") {
                         Cookies.remove("Authorization");
+                        localStorage.removeItem("Address")
                         window.location.reload();
                     }
                 }
@@ -336,7 +347,7 @@ function CubeNFTs(props) {
         }
         axios.post(`auction/createsale`, SaleData).then((res) => {
             console.log("res", res);
-            
+
             handleCloseBackdrop();
             setIsClaiming(false);
             let variant = "success";
@@ -347,13 +358,77 @@ function CubeNFTs(props) {
                 console.log(error.response);
             }
             let variant = "error";
-                enqueueSnackbar('Unable to Allow Exchange to Sale.', { variant });
+            enqueueSnackbar('Unable to Allow Exchange to Sale.', { variant });
             handleCloseBackdrop();
             setIsClaiming(false);
         })
 
         setIsPuttingOnSale(false);
     }
+    let putOnAuction = async (minimumBid, bidDelta, startTime, endTime, startTimeStamp, endTimeStamp) => {
+        // e.preventDefault();
+        handleCloseAuction();
+        // console.log("price", price);
+        setIsPuttingOnAuction(true);
+        await loadWeb3();
+        const web3 = window.web3
+        const accounts = await web3.eth.getAccounts();
+        const address = Addresses.AuctionAddress;
+        const abi = CreateAuctionContract;
+        let tokenId = [];
+        // for (let i = 0; i < types.length; i++) {
+        tokenId.push(cubeData.tokenId);
+        // }
+        var myContractInstance = await new web3.eth.Contract(abi, address);
+        console.log("myContractInstance", myContractInstance);
+        const minBid = minimumBid * 10 ** 18;
+        // console.log("minimumBid",minimumBid );
+        console.log("minimumBid * 10 ** 18", startTimeStamp.toString(), endTimeStamp.toString());
+        var receipt = await myContractInstance.methods.newAuction(startTimeStamp.toString(), endTimeStamp.toString(), (minimumBid * 10 ** 18).toString(), tokenId).send({ from: accounts[0] }, (err, response) => {
+            console.log('get transaction', err, response);
+            if (err !== null) {
+                console.log("err", err);
+                let variant = "error";
+                enqueueSnackbar('User Canceled Transaction', { variant });
+                handleCloseBackdrop();
+                setIsPuttingOnAuction(false);
+                return;
+            }
+
+        })
+        console.log("receipt", receipt);
+
+        let AuctionData = {
+            tokenId: cubeData._id,
+            auctionStartsAt: startTime,
+            auctionEndsAt: endTime,
+            minimumBid: minimumBid * 10 ** 18,
+            bidDelta: bidDelta * 10 ** 18,
+        }
+        console.log("AuctionData", AuctionData);
+        axios.post("/auction/createauction", AuctionData).then(
+            (response) => {
+                console.log('response', response);
+                handleCloseBackdrop();
+                setIsPuttingOnAuction(false);
+                let variant = "success";
+                enqueueSnackbar('Auction Created Successfully.', { variant });
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                handleCloseBackdrop();
+
+                setIsPuttingOnSale(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Put on Auction.', { variant });
+            }
+        );
+
+    }
+
     useEffect(() => {
         getCubeNFTs();
         // getClaimFunds();
@@ -491,7 +566,7 @@ function CubeNFTs(props) {
                                                 title={cubeData.MusicArtistName}
                                                 subheader={cubeData.MusicArtistAbout}
                                             />
-                                            {/* <h4>Choose Action</h4> */}
+                                            <h4>Choose Action</h4>
                                             <Row>
                                                 {isPuttingOnSale ? (
                                                     <div align="center" className="text-center">
@@ -512,11 +587,28 @@ function CubeNFTs(props) {
                                                 )}
 
                                             </Row>
-                                            {/* <h5>Or</h5>
+                                            <h4 style={{ marginTop: '10px', marginBottom: '10px' }} align="center" className="text-center">Or</h4>
                                             <Row>
-                                                <button className="btn-lg btn btn-dark btn-block" >Put on Auction</button>{' '}
+                                                {isPuttingOnAuction ? (
+                                                    <div align="center" className="text-center">
+                                                        <Spinner
+                                                            animation="border"
+                                                            role="status"
+                                                            style={{ color: "#ff0000" }}
+                                                        >
 
-                                            </Row> */}
+                                                        </Spinner>
+                                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                    </div>
+                                                ) : (
+                                                    <button className="btn-lg btn btn-block" onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleShowAuction()
+                                                    }}>Put on Auction</button>
+                                                )}
+                                                {' '}
+
+                                            </Row>
 
                                         </div>
                                     )}
@@ -664,7 +756,7 @@ function CubeNFTs(props) {
                                                 </Grid>
                                             </AccordionDetails>
                                         </Accordion>
-                                        <Accordion>
+                                        {/* <Accordion>
                                             <AccordionSummary
                                                 expandIcon={<ExpandMoreIcon />}
                                                 aria-controls="panel2a-content"
@@ -692,7 +784,7 @@ function CubeNFTs(props) {
                                                                         <strong>Address : </strong>{i.address}
                                                                     </Typography>
                                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} ETH</span>
+                                                                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} WETH</span>
                                                                     </Typography>
                                                                 </CardActionArea>
                                                             </Card>
@@ -701,6 +793,7 @@ function CubeNFTs(props) {
                                                 </Grid>
                                             </AccordionDetails>
                                         </Accordion>
+                                     */}
                                     </div>
                                 </div>
 
@@ -715,6 +808,7 @@ function CubeNFTs(props) {
                 network={network}
             />
             <SaleCubeModal isConfirmingSale={isConfirmingSale} show={openModal} handleClose={handleClose} putOnSale={putOnSale} />
+            <AuctionCubeModal isConfirmingSale={isConfirmingSale} show={openAuctionModal} handleClose={handleCloseAuction} putOnAuction={putOnAuction} />
             {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
                 <CircularProgress color="inherit" />
             </Backdrop> */}

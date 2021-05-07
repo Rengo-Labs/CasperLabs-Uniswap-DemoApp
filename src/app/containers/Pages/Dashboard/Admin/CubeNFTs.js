@@ -142,6 +142,7 @@ function CubeNFTs(props) {
                     if (error.response.data !== undefined) {
                         if (error.response.data === "Unauthorized access (invalid token) !!") {
                             Cookies.remove("Authorization");
+                            localStorage.removeItem("Address")
                             window.location.reload();
                         }
                     }
@@ -175,6 +176,7 @@ function CubeNFTs(props) {
                 if (error.response.data !== undefined) {
                     if (error.response.data === "Unauthorized access (invalid token) !!") {
                         Cookies.remove("Authorization");
+                        localStorage.removeItem("Address")
                         window.location.reload();
                     }
                 }
@@ -589,7 +591,7 @@ function CubeNFTs(props) {
                                                                         <strong>Address : </strong>{i.address}
                                                                     </Typography>
                                                                     <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} ETH</span>
+                                                                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} WETH</span>
                                                                     </Typography>
                                                                 </CardActionArea>
                                                             </Card>

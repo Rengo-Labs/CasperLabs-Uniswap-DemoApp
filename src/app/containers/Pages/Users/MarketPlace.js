@@ -235,6 +235,8 @@ function MarketPlace(props) {
     const [userSaleData, setUserSaledata] = useState([]);
     const [cubeData, setCubeData] = useState([]);
 
+    const [userAuctionData, setUserAuctiondata] = useState([]);
+    const [cubeAuctionData, setCubeAuctionData] = useState([]);
 
     const [rowsPerPage, setRowsPerPage] = React.useState(4);
     const [totalSaleCube, setTotalSaleCube] = React.useState(0);
@@ -258,6 +260,8 @@ function MarketPlace(props) {
                 setCubeData(response.data.Saletokendata);
                 setUserSaledata(response.data.Usersaledata)
                 setTotalSaleCube(response.data.Salecount)
+                setCubeAuctionData(response.data.Auctiontokendata)
+                setUserAuctiondata(response.data.Userauctiondata)
                 // setTokenList(response.data.Dropdata);
                 // setTotalDrops(response.data.Dropscount);
                 handleCloseBackdrop();
@@ -394,7 +398,7 @@ function MarketPlace(props) {
                                             </Grid >
                                         ))}
                                     </Grid>
-                                    {/* {cubeData.length !== 0 ? (
+                                    {cubeData.length !== 0 ? (
                                         <Typography variant="h5" style={{ marginTop: '20px', marginBottom: '20px' }} >
                                             <strong >On Auction </strong>
                                         </Typography>) : (
@@ -409,7 +413,7 @@ function MarketPlace(props) {
                                     // alignItems="flex-start"
                                     >
 
-                                        {cubeData.map((i, index) => (
+                                        {cubeAuctionData.map((i, index) => (
                                             <Grid item xs={12} sm={6} md={3}>
                                                 <Link to={"/marketPlace/Cubes/Nfts/notdrop/" + i._id}>
                                                     <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
@@ -433,14 +437,33 @@ function MarketPlace(props) {
                                                                 </Typography>
 
                                                                 <Typography variant="body2" color="textSecondary" component="p">
-                                                                    <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
+                                                                    <strong>Minimum Bid: </strong>{(userAuctionData[index].minimumBid) / 10 ** 18}  WETH
                                                             </Typography>
-                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                                <CardHeader
-                                                                    avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                                    title={i.MusicArtistName}
-                                                                    subheader={i.MusicArtistAbout}
-                                                                />
+                                                                <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
+                                                                    {new Date() < new Date(userAuctionData[index].auctionStartsAt) ? (
+                                                                        <div style={{ color: "#00FF00" }} >
+
+                                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                                <strong>Auction Starts At:</strong>
+                                                                            </Typography>
+                                                                            {/* {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionStartsAt))} */}
+                                                                            <Countdown daysInHours date={new Date(userAuctionData[index].auctionStartsAt)}>
+                                                                            </Countdown>
+                                                                        </div>
+                                                                    ) : new Date() > new Date(userAuctionData[index].auctionStartsAt) && new Date() < new Date(userAuctionData[index].auctionEndsAt) ? (
+                                                                        <div style={{ color: "#FF0000" }}>
+                                                                            {/* {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionEndsAt.toLoca))} */}
+                                                                            <Typography variant="body2" color="textSecondary" component="p">
+                                                                                <strong>Auction Ends At:</strong>
+                                                                            </Typography>
+                                                                            <Countdown daysInHours date={new Date(userAuctionData[index].auctionEndsAt)}>
+                                                                            </Countdown>
+                                                                        </div>) : (
+                                                                        <Typography variant="body2" style={{ color: "#FF0000" }} component="p">
+                                                                            <strong>Auction Ended</strong>
+                                                                        </Typography>
+                                                                    )}
+                                                                </Typography>
                                                             </CardContent>
                                                         </CardActionArea>
                                                         <CardActions>
@@ -450,7 +473,7 @@ function MarketPlace(props) {
                                                 </Link>
                                             </Grid >
                                         ))}
-                                    </Grid> */}
+                                    </Grid>
                                 </>
                             )}
                             <TablePagination

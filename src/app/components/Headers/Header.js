@@ -75,7 +75,7 @@ function HeaderHome(props) {
     console.log("Account test: ", accounts[0], network);
     if (network !== 'ropsten') {
       setNetwork(network);
-    setIsLoading(false);
+      setIsLoading(false);
 
       handleShow();
     }
@@ -107,7 +107,16 @@ function HeaderHome(props) {
     }
 
   }
- 
+  let Logout = (e) => {
+    console.log("akjdf");
+    Cookies.remove("Authorization");
+    localStorage.removeItem("Address")
+    window.location.reload();
+
+
+    // setTimeout(() => { }, 1);
+  };
+
   return (
     <header className={`header ${menuOpenedClass}`}>
       <nav
@@ -250,9 +259,17 @@ function HeaderHome(props) {
               <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
                 Dashboard
               </Link>
+
             ) : (
               <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
             )}
+          </li>
+          <li>
+            {localStorage.getItem("Address") ? (
+              <span style={{ cursor: 'pointer' }} onClick={() => Logout()}>
+                Logout
+              </span>
+            ) : (null)}
           </li>
         </ul>
         <NetworkErrorModal
