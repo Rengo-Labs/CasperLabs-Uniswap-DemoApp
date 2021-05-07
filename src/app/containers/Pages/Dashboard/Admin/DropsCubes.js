@@ -199,15 +199,14 @@ function DropCubes(props) {
                                                             ))}
                                                         </div>
                                                     </div>
-
-
-
                                                 </CardMedia>
                                                 <CardContent>
                                                     <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Cube Title: </strong>{i.title}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
                                                         <strong>Cube Description: </strong>{i.description}
                                                     </Typography>
-
                                                     <Typography variant="body2" color="textSecondary" component="p">
                                                         <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                     </Typography>

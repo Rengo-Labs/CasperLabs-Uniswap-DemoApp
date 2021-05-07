@@ -23,7 +23,7 @@ function HomeScreen() {
           <HomeBanner />
 
           {/* <TrendingCollections /> */}
-          {/* <Market /> */}
+          <Market />
           <Drops /> 
 
         </div>

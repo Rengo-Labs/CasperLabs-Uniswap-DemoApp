@@ -197,6 +197,7 @@ function CubeNFTs(props) {
     }
     let claimFunds = async (e) => {
         e.preventDefault();
+        handleShowBackdrop();
 
         setIsClaiming(true);
         await loadWeb3();
@@ -206,6 +207,7 @@ function CubeNFTs(props) {
         if (network !== 'ropsten') {
             setNetwork(network);
             setIsClaiming(false);
+            handleCloseBackdrop();
             handleShowNetwork();
         }
         else {
@@ -256,6 +258,7 @@ function CubeNFTs(props) {
         }
     }
     let getClaimFunds = async () => {
+        
         await loadWeb3();
         const web3 = window.web3
         const accounts = await web3.eth.getAccounts();
@@ -613,9 +616,9 @@ function CubeNFTs(props) {
                 handleClose={handleCloseNetwork}
                 network={network}
             />
-            {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
+            <Backdrop className={classes.backdrop} open={open} >
                 <CircularProgress color="inherit" />
-            </Backdrop> */}
+            </Backdrop>
         </div >
 
     );

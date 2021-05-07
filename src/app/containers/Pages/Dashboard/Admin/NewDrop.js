@@ -287,12 +287,13 @@ function NewDrop(props) {
                         setStartTime(new Date());
                         setEndTime(new Date());
                         setName("");
+                        setMinimumBid();
                         setDescription("");
                         setTypes([]);
                         setTypesImages([])
                         setType("");
-                        setMinimumBid();
-                        setBidDelta();
+                        setMinimumBid(0);
+                        setBidDelta(0);
                         setImage(r1);
                         handleCloseBackdrop();
 
@@ -641,7 +642,7 @@ function NewDrop(props) {
                 network={network}
             >
             </NetworkErrorModal>
-            <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
+            <Backdrop className={classes.backdrop} open={open} >
                 <CircularProgress color="inherit" />
             </Backdrop>
         </div>

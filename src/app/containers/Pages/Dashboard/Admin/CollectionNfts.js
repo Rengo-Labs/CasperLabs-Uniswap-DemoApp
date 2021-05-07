@@ -205,7 +205,7 @@ function CollectionNfts(props) {
                     </div>
                 </form>
             </div >
-            {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
+            {/* <Backdrop className={classes.backdrop} open={open} >
                 <CircularProgress color="inherit" />
             </Backdrop> */}
         </div >

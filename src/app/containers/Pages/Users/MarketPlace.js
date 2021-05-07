@@ -311,7 +311,7 @@ function MarketPlace(props) {
                 <HeaderHome selectedNav={"Market"} />
                 <div className="card">
 
-                    <div className="card-body" style={{ marginTop: '110px' }}>
+                <div className="form-group" style={{ minHeight: '500px', marginTop: '120px' }}>
                         <div className="form-group">
 
                             {open ? (
@@ -376,6 +376,9 @@ function MarketPlace(props) {
                                                             </CardMedia>
                                                             <CardContent>
                                                                 <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Cube Title: </strong>{i.title}
+                                                                </Typography>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
                                                                     <strong>Cube Description: </strong>{i.description}
                                                                 </Typography>
 
@@ -415,7 +418,7 @@ function MarketPlace(props) {
 
                                         {cubeAuctionData.map((i, index) => (
                                             <Grid item xs={12} sm={6} md={3}>
-                                                <Link to={"/marketPlace/Cubes/Nfts/notdrop/" + i._id}>
+                                                <Link to={"/marketPlace/Cubes/Nfts/userauction/" + i._id + "/" + userAuctionData[index]._id}>
                                                     <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                         <CardActionArea>
                                                             <CardMedia
@@ -432,6 +435,9 @@ function MarketPlace(props) {
 
                                                             </CardMedia>
                                                             <CardContent>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Cube Title: </strong>{i.title}
+                                                                </Typography>
                                                                 <Typography variant="body2" color="textSecondary" component="p">
                                                                     <strong>Cube Description: </strong>{i.description}
                                                                 </Typography>

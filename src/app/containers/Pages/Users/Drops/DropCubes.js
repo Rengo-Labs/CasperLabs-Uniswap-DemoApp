@@ -187,6 +187,9 @@ function DropCubes(props) {
                                                         </CardMedia>
                                                         <CardContent>
                                                             <Typography variant="body2" color="textSecondary" component="p">
+                                                                <strong>Cube Title: </strong>{i.title}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="textSecondary" component="p">
                                                                 <strong>Cube Description: </strong>{i.description}
                                                             </Typography>
 

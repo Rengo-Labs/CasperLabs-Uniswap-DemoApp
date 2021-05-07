@@ -79,7 +79,7 @@ const useStyles = makeStyles((theme) => ({
 function CubeNFTs(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
-    const { dropId, cubeId } = useParams();
+    const { dropId, cubeId, } = useParams();
     // console.log("dropId", dropId);
     const [tokenList, setTokenList] = useState([]);
     const [cubeData, setCubeData] = useState({});
@@ -139,8 +139,7 @@ function CubeNFTs(props) {
 
         let Data = {
             tokenId: cubeId,
-            check: dropId === "notdrop" ? dropId : "drop",
-            dropId: dropId !== "notdrop" ? dropId : null,
+            check: "notdrop"
         }
         console.log("Data", Data);
         axios.post("/token/SingleTokenId", Data).then(
@@ -171,24 +170,7 @@ function CubeNFTs(props) {
                     }
                     handleCloseBackdrop();
                 })
-                let bidData = {
-                    dropId: dropId,
-                    tokenId: cubeId,
-                }
-                axios.post(`/dropcubehistory/history`, bidData).then((res) => {
-                    console.log("res", res);
-                    if (res.data.success)
-                        setBidHistory(res.data.Dropcubeshistorydata)
-
-                    handleCloseBackdrop();
-                }, (error) => {
-                    if (process.env.NODE_ENV === "development") {
-                        console.log(error);
-                        console.log(error.response);
-
-                    }
-                    handleCloseBackdrop();
-                })
+               
                 // handleCloseBackdrop();
             },
             (error) => {
@@ -305,128 +287,155 @@ function CubeNFTs(props) {
     }
     let putOnSale = async (price, time, timeStamp) => {
         // e.preventDefault();
+        handleShowBackdrop();
         handleClose();
         console.log("price", price);
         setIsPuttingOnSale(true);
         await loadWeb3();
         const web3 = window.web3
         const accounts = await web3.eth.getAccounts();
-        const address = Addresses.MarketPlaceAddress;
-        const abi = MarketPlaceContract;
-        const CubeAddress = Addresses.CreateCubeAddress;
-        const cubeAbi = CreateCubeContract;
-
-        var myCubeContractInstance = await new web3.eth.Contract(cubeAbi, CubeAddress);
-        let receipt = await myCubeContractInstance.methods.approve(address, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
-            console.log('get transaction', err, response);
-            if (err !== null) {
-                console.log("err", err);
-                let variant = "error";
-                enqueueSnackbar('User Canceled Transaction', { variant });
-                handleCloseBackdrop();
-                setIsClaiming(false);
-            }
-        })
-        console.log("receipt", receipt);
-        var myContractInstance = await new web3.eth.Contract(abi, address);
-        console.log("myContractInstance", myContractInstance);
-        console.log("cubeData.tokenId", cubeData.tokenId);
-        let receipt1 = await myContractInstance.methods.createOrder(CubeAddress, cubeData.tokenId, (price * 10 ** 18).toString(), timeStamp.toString()).send({ from: accounts[0] }, (err, response) => {
-            console.log('get transaction', err, response);
-            if (err !== null) {
-                console.log("err", err);
-                let variant = "error";
-                enqueueSnackbar('User Canceled Transaction', { variant });
-                handleCloseBackdrop();
-                setIsClaiming(false);
-            }
-        })
-        let SaleData = {
-            tokenId: cubeId,
-            salePrice: price * 10 ** 18
+        const network = await web3.eth.net.getNetworkType()
+        if (network !== 'ropsten') {
+            setNetwork(network);
+            setIsPuttingOnSale(false);
+            handleShowNetwork();
         }
-        axios.post(`auction/createsale`, SaleData).then((res) => {
-            console.log("res", res);
+        else {
+            // const web3 = window.web3
+            // const accounts = await web3.eth.getAccounts();
+            const address = Addresses.MarketPlaceAddress;
+            const abi = MarketPlaceContract;
+            const CubeAddress = Addresses.CreateCubeAddress;
+            const cubeAbi = CreateCubeContract;
 
-            handleCloseBackdrop();
-            setIsClaiming(false);
-            let variant = "success";
-            enqueueSnackbar('Successfully Allowed Exchange to Sale.', { variant });
-        }, (error) => {
-            if (process.env.NODE_ENV === "development") {
-                console.log(error);
-                console.log(error.response);
+            var myCubeContractInstance = await new web3.eth.Contract(cubeAbi, CubeAddress);
+            let receipt = await myCubeContractInstance.methods.approve(address, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsClaiming(false);
+                }
+            })
+            console.log("receipt", receipt);
+            var myContractInstance = await new web3.eth.Contract(abi, address);
+            console.log("myContractInstance", myContractInstance);
+            console.log("cubeData.tokenId", cubeData.tokenId);
+            let receipt1 = await myContractInstance.methods.createOrder(CubeAddress, cubeData.tokenId, (price * 10 ** 18).toString(), timeStamp.toString()).send({ from: accounts[0] }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsClaiming(false);
+                }
+            })
+            let SaleData = {
+                tokenId: cubeId,
+                salePrice: price * 10 ** 18
             }
-            let variant = "error";
-            enqueueSnackbar('Unable to Allow Exchange to Sale.', { variant });
-            handleCloseBackdrop();
-            setIsClaiming(false);
-        })
+            axios.post(`auction/createsale`, SaleData).then((res) => {
+                console.log("res", res);
 
-        setIsPuttingOnSale(false);
+                handleCloseBackdrop();
+                setIsClaiming(false);
+                let variant = "success";
+                enqueueSnackbar('Successfully Allowed Exchange to Sale.', { variant });
+                getCubeNFTs();
+            }, (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                let variant = "error";
+                enqueueSnackbar('Unable to Allow Exchange to Sale.', { variant });
+                handleCloseBackdrop();
+                setIsClaiming(false);
+            })
+
+            setIsPuttingOnSale(false);
+        }
     }
     let putOnAuction = async (minimumBid, bidDelta, startTime, endTime, startTimeStamp, endTimeStamp) => {
         // e.preventDefault();
         handleCloseAuction();
+        handleShowBackdrop();
         // console.log("price", price);
         setIsPuttingOnAuction(true);
         await loadWeb3();
         const web3 = window.web3
         const accounts = await web3.eth.getAccounts();
-        const address = Addresses.AuctionAddress;
-        const abi = CreateAuctionContract;
-        let tokenId = [];
-        // for (let i = 0; i < types.length; i++) {
-        tokenId.push(cubeData.tokenId);
-        // }
-        var myContractInstance = await new web3.eth.Contract(abi, address);
-        console.log("myContractInstance", myContractInstance);
-        const minBid = minimumBid * 10 ** 18;
-        // console.log("minimumBid",minimumBid );
-        console.log("minimumBid * 10 ** 18", startTimeStamp.toString(), endTimeStamp.toString());
-        var receipt = await myContractInstance.methods.newAuction(startTimeStamp.toString(), endTimeStamp.toString(), (minimumBid * 10 ** 18).toString(), tokenId).send({ from: accounts[0] }, (err, response) => {
-            console.log('get transaction', err, response);
-            if (err !== null) {
-                console.log("err", err);
-                let variant = "error";
-                enqueueSnackbar('User Canceled Transaction', { variant });
-                handleCloseBackdrop();
-                setIsPuttingOnAuction(false);
-                return;
-            }
-
-        })
-        console.log("receipt", receipt);
-
-        let AuctionData = {
-            tokenId: cubeData._id,
-            auctionStartsAt: startTime,
-            auctionEndsAt: endTime,
-            minimumBid: minimumBid * 10 ** 18,
-            bidDelta: bidDelta * 10 ** 18,
+        const network = await web3.eth.net.getNetworkType()
+        if (network !== 'ropsten') {
+            setNetwork(network);
+            setIsPuttingOnSale(false);
+            handleShowNetwork();
         }
-        console.log("AuctionData", AuctionData);
-        axios.post("/auction/createauction", AuctionData).then(
-            (response) => {
-                console.log('response', response);
-                handleCloseBackdrop();
-                setIsPuttingOnAuction(false);
-                let variant = "success";
-                enqueueSnackbar('Auction Created Successfully.', { variant });
-            },
-            (error) => {
-                if (process.env.NODE_ENV === "development") {
-                    console.log(error);
-                    console.log(error.response);
+        else {
+            // await loadWeb3();
+            // const web3 = window.web3
+            // const accounts = await web3.eth.getAccounts();
+            const address = Addresses.AuctionAddress;
+            const abi = CreateAuctionContract;
+            let tokenId = [];
+            // for (let i = 0; i < types.length; i++) {
+            tokenId.push(cubeData.tokenId);
+            // }
+            var myContractInstance = await new web3.eth.Contract(abi, address);
+            console.log("myContractInstance", myContractInstance);
+            const minBid = minimumBid * 10 ** 18;
+            // console.log("minimumBid",minimumBid );
+            console.log("minimumBid * 10 ** 18", startTimeStamp.toString(), endTimeStamp.toString());
+            var receipt = await myContractInstance.methods.newAuction(startTimeStamp.toString(), endTimeStamp.toString(), (minimumBid * 10 ** 18).toString(), tokenId).send({ from: accounts[0] }, (err, response) => {
+                console.log('get transaction', err, response);
+                if (err !== null) {
+                    console.log("err", err);
+                    let variant = "error";
+                    enqueueSnackbar('User Canceled Transaction', { variant });
+                    handleCloseBackdrop();
+                    setIsPuttingOnAuction(false);
+                    return;
                 }
-                handleCloseBackdrop();
 
-                setIsPuttingOnSale(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Put on Auction.', { variant });
+            })
+
+            console.log("receipt", receipt);
+            console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.New_Auction.returnValues.dropId);
+            let auctionId = receipt.events.New_Auction.returnValues.dropId;
+            let AuctionData = {
+                auctionId:auctionId,
+                tokenId: cubeData._id,
+                auctionStartsAt: startTime,
+                auctionEndsAt: endTime,
+                minimumBid: minimumBid * 10 ** 18,
+                bidDelta: bidDelta * 10 ** 18,
             }
-        );
+            console.log("AuctionData", AuctionData);
+            axios.post("/auction/createauction", AuctionData).then(
+                (response) => {
+                    console.log('response', response);
+                    handleCloseBackdrop();
+                    setIsPuttingOnAuction(false);
+                    let variant = "success";
+                    enqueueSnackbar('Auction Created Successfully.', { variant });
+                },
+                (error) => {
+                    if (process.env.NODE_ENV === "development") {
+                        console.log(error);
+                        console.log(error.response);
+                    }
+                    handleCloseBackdrop();
 
+                    setIsPuttingOnSale(false);
+                    let variant = "error";
+                    enqueueSnackbar('Unable to Put on Auction.', { variant });
+                }
+            );
+
+        }
     }
 
     useEffect(() => {
@@ -567,48 +576,61 @@ function CubeNFTs(props) {
                                                 subheader={cubeData.MusicArtistAbout}
                                             />
                                             <h4>Choose Action</h4>
-                                            <Row>
-                                                {isPuttingOnSale ? (
-                                                    <div align="center" className="text-center">
-                                                        <Spinner
-                                                            animation="border"
-                                                            role="status"
-                                                            style={{ color: "#ff0000" }}
-                                                        >
+                                            {cubeData.salestatus ? (
+                                                <>
+                                                    <Row>
+                                                        <button className="btn-lg btn btn-block" disabled>Allow Exchange to Sale</button>
+                                                    </Row>
+                                                    <h4 style={{ marginTop: '10px', marginBottom: '10px' }} align="center" className="text-center">Or</h4>
+                                                    <Row>
+                                                        <button className="btn-lg btn btn-block" disabled>Put on Auction</button>
+                                                    </Row>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Row>
+                                                        {isPuttingOnSale ? (
+                                                            <div align="center" className="text-center">
+                                                                <Spinner
+                                                                    animation="border"
+                                                                    role="status"
+                                                                    style={{ color: "#ff0000" }}
+                                                                >
 
-                                                        </Spinner>
-                                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                                                    </div>
-                                                ) : (
-                                                    <button className="btn-lg btn btn-block" onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleShow()
-                                                    }}>Allow Exchange to Sale</button>
-                                                )}
+                                                                </Spinner>
+                                                                <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                            </div>
+                                                        ) : (
+                                                            <button className="btn-lg btn btn-block" onClick={(e) => {
+                                                                e.preventDefault();
+                                                                handleShow()
+                                                            }}>Allow Exchange to Sale</button>
+                                                        )}
+                                                    </Row>
+                                                    <h4 style={{ marginTop: '10px', marginBottom: '10px' }} align="center" className="text-center">Or</h4>
+                                                    <Row>
+                                                        {isPuttingOnAuction ? (
+                                                            <div align="center" className="text-center">
+                                                                <Spinner
+                                                                    animation="border"
+                                                                    role="status"
+                                                                    style={{ color: "#ff0000" }}
+                                                                >
+                                                                </Spinner>
+                                                                <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                            </div>
+                                                        ) : (
+                                                            <button className="btn-lg btn btn-block" onClick={(e) => {
+                                                                e.preventDefault();
+                                                                handleShowAuction()
+                                                            }}>Put on Auction</button>
+                                                        )}
 
-                                            </Row>
-                                            <h4 style={{ marginTop: '10px', marginBottom: '10px' }} align="center" className="text-center">Or</h4>
-                                            <Row>
-                                                {isPuttingOnAuction ? (
-                                                    <div align="center" className="text-center">
-                                                        <Spinner
-                                                            animation="border"
-                                                            role="status"
-                                                            style={{ color: "#ff0000" }}
-                                                        >
 
-                                                        </Spinner>
-                                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                                                    </div>
-                                                ) : (
-                                                    <button className="btn-lg btn btn-block" onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleShowAuction()
-                                                    }}>Put on Auction</button>
-                                                )}
-                                                {' '}
+                                                    </Row>
+                                                </>
+                                            )}
 
-                                            </Row>
 
                                         </div>
                                     )}
@@ -618,7 +640,7 @@ function CubeNFTs(props) {
                         </div>
 
                     </section >
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginTop: '20px', marginBottom: '20px' }}>
 
                         {open ? (
                             <div align="center" className="text-center">
@@ -809,9 +831,9 @@ function CubeNFTs(props) {
             />
             <SaleCubeModal isConfirmingSale={isConfirmingSale} show={openModal} handleClose={handleClose} putOnSale={putOnSale} />
             <AuctionCubeModal isConfirmingSale={isConfirmingSale} show={openAuctionModal} handleClose={handleCloseAuction} putOnAuction={putOnAuction} />
-            {/* <Backdrop className={classes.backdrop} open={open} onClick={handleCloseBackdrop}>
+            <Backdrop className={classes.backdrop} open={open} >
                 <CircularProgress color="inherit" />
-            </Backdrop> */}
+            </Backdrop>
         </div >
 
     );

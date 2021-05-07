@@ -20,6 +20,7 @@ import PrivacyPolicy from "../Pages/Users/PrivacyPolicy";
 import RegisterScreen from "../Pages/Users/RegisterScreen";
 import TermsAndConditions from "../Pages/Users/TermsAndConditions";
 import SaleCubeNFTs from "../Pages/Users/MarketPlace/SaleCubeNFT";
+import AuctionCubeNFTs from "../Pages/Users/MarketPlace/AuctionCubeNFT";
 
 function App() {
   let isLoggedIn;
@@ -110,10 +111,11 @@ function App() {
       return <Route exact path="/auctionDrops/DropCubes/:dropId" render={(routeProps) => <DropCubes {...routeProps} />} />
     } else if (path === "/auctionDrops/DropCubes/Nfts/:dropId/:cubeId") {
       return <Route exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs} />;
-    }else if (path === "/marketPlace/Cubes/Nfts/notdrop/:cubeId") {
+    } else if (path === "/marketPlace/Cubes/Nfts/notdrop/:cubeId/:auctionId") {
       return <Route exact path="/marketPlace/Cubes/Nfts/notdrop/:cubeId/:auctionId" component={SaleCubeNFTs} />;
-    } 
-    else {
+    } else if (path === "/marketPlace/Cubes/Nfts/userauction/:cubeId/:auctionId") {
+      return <Route exact path="/marketPlace/Cubes/Nfts/userauction/:cubeId/:auctionId" component={AuctionCubeNFTs} />;
+    } else {
       return <Route component={HomeScreen} />;
     }
   };
@@ -131,7 +133,8 @@ function App() {
           <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/:dropId" component={DropCubes} />
           <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs} />
           <LoginRegisterRedirectCheck exact path="/marketPlace/Cubes/Nfts/notdrop/:cubeId/:auctionId" component={SaleCubeNFTs} />
-          
+          <LoginRegisterRedirectCheck exact path="/marketPlace/Cubes/Nfts/userauction/:cubeId/:auctionId" component={AuctionCubeNFTs} />
+
           <Route path="/forgotpassword" component={ForgotPassword} />
           <Route
             path="/emailverification/:email/:token"
