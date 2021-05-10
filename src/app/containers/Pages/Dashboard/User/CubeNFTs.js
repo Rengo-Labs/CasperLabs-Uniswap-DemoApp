@@ -170,7 +170,7 @@ function CubeNFTs(props) {
                     }
                     handleCloseBackdrop();
                 })
-               
+
                 // handleCloseBackdrop();
             },
             (error) => {
@@ -316,7 +316,7 @@ function CubeNFTs(props) {
                     let variant = "error";
                     enqueueSnackbar('User Canceled Transaction', { variant });
                     handleCloseBackdrop();
-                    setIsClaiming(false);
+                    setIsPuttingOnSale(false);
                 }
             })
             console.log("receipt", receipt);
@@ -330,18 +330,21 @@ function CubeNFTs(props) {
                     let variant = "error";
                     enqueueSnackbar('User Canceled Transaction', { variant });
                     handleCloseBackdrop();
-                    setIsClaiming(false);
+                    // setIsClaiming(false);
+                    setIsPuttingOnSale(false);
                 }
             })
             let SaleData = {
                 tokenId: cubeId,
-                salePrice: price * 10 ** 18
+                salePrice: price * 10 ** 18,
+                expiresAt: time,
             }
             axios.post(`auction/createsale`, SaleData).then((res) => {
                 console.log("res", res);
 
                 handleCloseBackdrop();
-                setIsClaiming(false);
+                // setIsClaiming(false);
+                setIsPuttingOnSale(false);
                 let variant = "success";
                 enqueueSnackbar('Successfully Allowed Exchange to Sale.', { variant });
                 getCubeNFTs();
@@ -353,10 +356,11 @@ function CubeNFTs(props) {
                 let variant = "error";
                 enqueueSnackbar('Unable to Allow Exchange to Sale.', { variant });
                 handleCloseBackdrop();
-                setIsClaiming(false);
+                // setIsClaiming(false);
+                setIsPuttingOnSale(false);
             })
 
-            setIsPuttingOnSale(false);
+            // setIsPuttingOnSale(false);
         }
     }
     let putOnAuction = async (minimumBid, bidDelta, startTime, endTime, startTimeStamp, endTimeStamp) => {
@@ -381,13 +385,11 @@ function CubeNFTs(props) {
             const address = Addresses.AuctionAddress;
             const abi = CreateAuctionContract;
             let tokenId = [];
-            // for (let i = 0; i < types.length; i++) {
             tokenId.push(cubeData.tokenId);
             // }
             var myContractInstance = await new web3.eth.Contract(abi, address);
             console.log("myContractInstance", myContractInstance);
             const minBid = minimumBid * 10 ** 18;
-            // console.log("minimumBid",minimumBid );
             console.log("minimumBid * 10 ** 18", startTimeStamp.toString(), endTimeStamp.toString());
             var receipt = await myContractInstance.methods.newAuction(startTimeStamp.toString(), endTimeStamp.toString(), (minimumBid * 10 ** 18).toString(), tokenId).send({ from: accounts[0] }, (err, response) => {
                 console.log('get transaction', err, response);
@@ -406,7 +408,7 @@ function CubeNFTs(props) {
             console.log("receipt.events.Transfer.returnValues.tokenId", receipt.events.New_Auction.returnValues.dropId);
             let auctionId = receipt.events.New_Auction.returnValues.dropId;
             let AuctionData = {
-                auctionId:auctionId,
+                auctionId: auctionId,
                 tokenId: cubeData._id,
                 auctionStartsAt: startTime,
                 auctionEndsAt: endTime,

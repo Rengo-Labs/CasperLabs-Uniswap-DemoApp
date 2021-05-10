@@ -79,6 +79,7 @@ function CubeNFTs(props) {
     const [cubeData, setCubeData] = useState({});
     const [dropData, setDropData] = useState({});
     const [transactionHistory, setTransactionHistory] = useState([]);
+    const [highestBid, setHighestBid] = useEffect(0);
     const [bidHistory, setBidHistory] = useState([]);
     const [isClaiming, setIsClaiming] = useState(false);
     const [network, setNetwork] = useState("");
@@ -119,7 +120,7 @@ function CubeNFTs(props) {
         }
         console.log("Data", Data);
         axios.post("/token/SingleTokenId", Data).then(
-            (response) => {
+            async (response) => {
                 console.log("response", response);
                 setTokenList(response.data.nftdata);
                 setCubeData(response.data.tokensdata);
@@ -128,6 +129,17 @@ function CubeNFTs(props) {
                 // ownerAudio.play();
                 if (dropId !== "notdrop") {
                     setDropData(response.data.Dropdata);
+                    await loadWeb3();
+                    const web3 = window.web3
+                    const accounts = await web3.eth.getAccounts();
+                    const address = Addresses.AuctionAddress;
+                    const abi = CreateAuctionContract;
+                    var myContractInstance = await new web3.eth.Contract(abi, address);
+                    console.log("cubeId", response.data.tokensdata.tokenId);
+                    console.log("accounts[0]", accounts[0]);
+                    let highestBid = await myContractInstance.methods.getHighestBid(response.data.tokensdata.tokenId).call();
+                    console.log("highestBid", highestBid);
+                    setHighestBid(highestBid);
                 }
                 axios.get(`/transaction/tokenTransaction/${response.data.tokensdata.tokenId}`).then((res) => {
                     console.log("res", res);
@@ -258,7 +270,7 @@ function CubeNFTs(props) {
         }
     }
     let getClaimFunds = async () => {
-        
+
         await loadWeb3();
         const web3 = window.web3
         const accounts = await web3.eth.getAccounts();
@@ -370,7 +382,9 @@ function CubeNFTs(props) {
 
                                                 )) : (null)}
                                             <h1>{cubeData.title} </h1>
-                                            <h2>Minimum Bid : {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} WETH </h2>
+                                            <h2>Minimum Bid : {(dropData.MinimumBid) / 10 ** 18} WETH </h2>
+                                            <h2>Highest Bid : {(highestBid) / 10 ** 18} WETH </h2>
+
                                             <h2>Bid Delta : {dropData.bidDelta / 10 ** 18} WETH </h2>
                                             {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                 <Typography variant="h5" gutterBottom color="textSecondary">
@@ -428,7 +442,7 @@ function CubeNFTs(props) {
                         </div>
 
                     </section >
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginTop: '20px', marginBottom: '20ox' }}>
 
                         {open ? (
                             <div align="center" className="text-center">
