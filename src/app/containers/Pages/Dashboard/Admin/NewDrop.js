@@ -208,40 +208,43 @@ function NewDrop(props) {
                 let variant = "error";
                 enqueueSnackbar('Please Select Cubes to create drop', { variant });
                 setIsSaving(false);
-
+                handleCloseBackdrop();
             } else if (name === "") {
                 let variant = "error";
                 enqueueSnackbar("Name of the Drop Cannot be Empty.", { variant });
                 setIsSaving(false);
+                handleCloseBackdrop();
             } else if (description === "") {
                 let variant = "error";
                 enqueueSnackbar("Description of the Drop Cannot be Empty.", { variant });
                 setIsSaving(false);
+                handleCloseBackdrop();
             } else if (image === r1) {
                 let variant = "error";
                 enqueueSnackbar("Please Select title image for Drop to continue.", { variant });
                 setIsSaving(false);
+                handleCloseBackdrop();
             } else if (new Date(startTime) === new Date(endTime)) {
                 let variant = "error";
                 enqueueSnackbar("Auction cannot be Start and End on same time.", { variant });
                 setIsSaving(false);
+                handleCloseBackdrop();
             } else if (new Date(startTime) > new Date(endTime)) {
                 let variant = "error";
                 enqueueSnackbar("Auction End time must be greater than Start time.", { variant });
                 setIsSaving(false);
-            }
-            else if (minimumBid === undefined || minimumBid === null) {
-                // console.log(startTime, endTime);
+                handleCloseBackdrop();
+            } else if (minimumBid === undefined || minimumBid === null) {
                 let variant = "error";
                 enqueueSnackbar("Please Enter minimum bid.", { variant });
                 setIsSaving(false);
-            }
-            else if (bidDelta === undefined || bidDelta === null) {
+                handleCloseBackdrop();
+            } else if (bidDelta === undefined || bidDelta === null) {
                 let variant = "error";
                 enqueueSnackbar("Please Enter Bid Delta.", { variant });
                 setIsSaving(false);
-            }
-            else {
+                handleCloseBackdrop();
+            } else {
                 let tokenId = [];
                 for (let i = 0; i < types.length; i++) {
                     tokenId.push(types[i].tokenId);
@@ -261,7 +264,6 @@ function NewDrop(props) {
                         setIsSaving(false);
                         return;
                     }
-
                 })
                 // .on('receipt', (receipt) => {
                 console.log("receipt", receipt);
