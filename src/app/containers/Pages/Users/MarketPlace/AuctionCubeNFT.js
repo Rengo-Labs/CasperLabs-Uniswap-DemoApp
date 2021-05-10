@@ -114,6 +114,9 @@ function AuctionCubeNFTs(props) {
     const [cubeData, setCubeData] = useState({});
     const [auctionData, setAuctionData] = useState({});
     const [minBid, setMinBid] = useState(0);
+
+    const [bidByUser, setBidByUser] = useState(0);
+    const [highestBid, setHighestBid] = useState(0);
     const [bid, setBid] = useState();
     const [balance, setBalance] = useState();
     const [hide, setHide] = useState(false);
@@ -446,7 +449,7 @@ function AuctionCubeNFTs(props) {
         handleCloseBidModal();
         setIsSaving(true);
         console.log("bid", bid);
-        if (bid < (auctionData.minimumBid) / 10 ** 18) {
+        if (bid < (highestBid - bidByUser + auctionData.bidData) / 10 ** 18) {
             let variant = "error";
             enqueueSnackbar('Bid Must be Greater than Minimum Bid', { variant });
             handleCloseBackdrop();
@@ -576,7 +579,7 @@ function AuctionCubeNFTs(props) {
             handleCloseSpinner();
         })
         axios.post("/token/SingleTokenId", Data).then(
-            (response) => {
+            async (response) => {
                 console.log("response", response);
                 setTokenList(response.data.nftdata);
                 setCubeData(response.data.tokensdata);
@@ -584,7 +587,23 @@ function AuctionCubeNFTs(props) {
                 setOwnerAudio(new Audio(response.data.tokensdata.ownermusicfile))
                 setNonOwnerAudio(new Audio(response.data.tokensdata.nonownermusicfile))
                 setAuctionData(response.data.UserAuctiondata);
-                setBid((response.data.UserAuctiondata.minimumBid) / 10 ** 18)
+
+                await loadWeb3();
+                const web3 = window.web3
+                const accounts = await web3.eth.getAccounts();
+                const address = Addresses.AuctionAddress;
+                const abi = CreateAuctionContract;
+                var myContractInstance = await new web3.eth.Contract(abi, address);
+                console.log("cubeId", response.data.tokensdata.tokenId);
+                console.log("accounts[0]", accounts[0]);
+                let highestBid = await myContractInstance.methods.getHighestBid(response.data.tokensdata.tokenId).call();
+                console.log("highestBid", highestBid);
+                setHighestBid(highestBid);
+                let bidByUser = await myContractInstance.methods.getBidByUser(accounts[0], response.data.tokensdata.tokenId).call();
+                console.log("bidByUser", bidByUser);
+                setBidByUser(bidByUser);
+                setBid((highestBid - bidByUser + response.data.UserAuctiondata.bidDelta) / 10 ** 18)
+                // setBid((response.data.UserAuctiondata.minimumBid) / 10 ** 18)
 
                 axios.get(`/transaction/tokenTransaction/${response.data.tokensdata.tokenId}`).then((res) => {
                     console.log("res", res);
@@ -836,8 +855,13 @@ function AuctionCubeNFTs(props) {
                                                             null
                                                         )}
                                                         <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
-                                                        <Typography variant="h5" gutterBottom>Minimum Bid : {(auctionData.minimumBid) / 10 ** 18} WETH </Typography>
+                                                        {highestBid !== '0' ? (
+                                                            <Typography variant="h5" gutterBottom>Highest Bid : {(highestBid) / 10 ** 18} WETH </Typography>
+                                                        ) : (null)}
+                                                        <Typography variant="h5" gutterBottom>Current Bid : {(auctionData.minimumBid) / 10 ** 18} WETH </Typography>
+                                                        {/* <Typography variant="h5" gutterBottom>Current Bid : {(highestBid - bidByUser) / 10 ** 18} WETH </Typography> */}
                                                         <Typography variant="h5" gutterBottom>Bid Delta : {auctionData.bidDelta / 10 ** 18} WETH </Typography>
+                                                        <Typography variant="h5" gutterBottom>your bid : {(bidByUser) / 10 ** 18} WETH </Typography>
                                                         {new Date() < new Date(auctionData.auctionStartsAt) ? (
                                                             <Typography variant="h5" gutterBottom color="textSecondary">
                                                                 <strong>Auction Starts At:</strong>
@@ -890,10 +914,10 @@ function AuctionCubeNFTs(props) {
                                                                         </>
                                                                     ) : (
                                                                         <>
-                                                                            <input type='number' step="0.0001" min={(auctionData.minimumBid) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                            <input type='number' step={auctionData.bidDelta / 10 ** 18} min={(highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
                                                                                 if (evt.target.value >= 0) {
-                                                                                    if (evt.target.value < (auctionData.minimumBid) / 10 ** 18) {
-                                                                                        setBid((auctionData.minimumBid) / 10 ** 18)
+                                                                                    if (evt.target.value < (highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18) {
+                                                                                        setBid((highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18)
                                                                                     } else
                                                                                         if (evt.target.value > balance / 10 ** 18) {
                                                                                             setBid(balance / 10 ** 18)
@@ -903,7 +927,7 @@ function AuctionCubeNFTs(props) {
                                                                                         }
                                                                                 }
                                                                                 else {
-                                                                                    setBid((auctionData.minimumBid) / 10 ** 18)
+                                                                                    setBid((highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18)
                                                                                 }
 
                                                                             }} />

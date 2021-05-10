@@ -517,7 +517,7 @@ function CubeNFTs(props) {
                     let BidData = {
                         dropId: dropId,
                         tokenId: cubeId,
-                        Bid: bidByUser + bid * 10 ** 18,
+                        Bid: bid * 10 ** 18,
                         address: accounts[0],
                     }
                     console.log("BidData", BidData);
@@ -658,32 +658,6 @@ function CubeNFTs(props) {
             const accounts = await web3.eth.getAccounts();
             const balance = await web3.eth.getBalance(accounts[0]);
 
-
-            // let TrasactionData = {
-            //     tokenId: 2,
-            //     from: "0xf363D646C2767dB90Af945ebD6F71367166159A2",
-            //     to: accounts[0],
-            //     transaction: "0xbe29d7a2ad4ee12732c5a9d38b0b539e514e01b9686d5af3be4d08d769ccfa17"
-            // }
-
-            // axios.post("/transaction/tokenTransaction ", TrasactionData).then(
-            //     (response) => {
-            //         console.log('response', response);
-            //         setIsSaving(false);
-            //     },
-            //     (error) => {
-            //         if (process.env.NODE_ENV === "development") {
-            //             console.log(error);
-            //             console.log(error.response);
-            //         }
-            //         setIsSaving(false);
-            //     }
-            // );
-            // const address = Addresses.AuctionAddress;
-            // const abi = CreateAuctionContract;
-            // var myContractInstance = await new web3.eth.Contract(abi, address);
-            // let receipt = await myContractInstance.methods.getHighestBid(cubeData.tokenId).call();
-            // console.log("receipt",receipt);
             console.log("balance", (balance / 10 ** 18).toString());
             setBalance(balance);
         })();
@@ -890,7 +864,6 @@ function CubeNFTs(props) {
                                                             null
                                                         )}
                                                         <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
-                                                        {console.log("highestBid", highestBid)}
                                                         {highestBid !== '0' ? (
                                                             <Typography variant="h5" gutterBottom>Highest Bid : {(highestBid) / 10 ** 18} WETH </Typography>
                                                         ) : (null)}
