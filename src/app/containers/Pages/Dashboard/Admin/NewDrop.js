@@ -508,7 +508,11 @@ function NewDrop(props) {
                                                 placeholder=""
                                                 className="form-control"
                                                 onChange={(e) => {
-                                                    setMinimumBid(e.target.value);
+                                                    if (e.target.value > 0) {
+                                                        setMinimumBid(e.target.value);
+                                                    } else {
+                                                        setMinimumBid(0);
+                                                    }
                                                 }}
                                             />
                                         </div>
@@ -524,7 +528,11 @@ function NewDrop(props) {
                                                 placeholder=""
                                                 className="form-control"
                                                 onChange={(e) => {
-                                                    setBidDelta(e.target.value);
+                                                    if (e.target.value > 0) {
+                                                        setBidDelta(e.target.value);
+                                                    } else {
+                                                        setBidDelta(0);
+                                                    }
                                                 }}
                                             />
                                         </div>
