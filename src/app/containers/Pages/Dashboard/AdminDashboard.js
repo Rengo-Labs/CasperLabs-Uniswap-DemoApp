@@ -83,7 +83,7 @@ function AdminDashboard(props) {
             onClick={(e) => e.preventDefault()}
             style={{ color: 'rgb(167,0,0)' }}
           >
-            <img src={Logo} alt="Logo"  width="100" height="100" />
+            <img src={Logo} alt="Logo" width="100" height="100" />
             {/* Robot Drop */}
           </a>
           <a
@@ -135,13 +135,13 @@ function AdminDashboard(props) {
                 </span>
               </Dropdown.Toggle>
 
-              <Dropdown.Menu alignRight="true" style={{ backgroundColor: "#f8f9fa" }}>
+              <Dropdown.Menu alignRight="true" style={{ backgroundColor: "rgb(167, 0, 0)" }}>
                 <Dropdown.Item>
                   <Link to="/dashboard" style={{ width: "100%" }}>
                     Dashboard
                   </Link>
                 </Dropdown.Item>
-                <Dropdown.Item>
+                <Dropdown.Item >
                   <Link
                     onClick={() => {
                       Cookies.remove("Authorization");
@@ -203,54 +203,54 @@ function AdminDashboard(props) {
               <NewSeason setActiveTab={setActiveTab} />
             </Route>
             <Route exact path={`${path}/mySeason`}>
-              <MySeasons setActiveTab={setActiveTab}/>
+              <MySeasons setActiveTab={setActiveTab} />
             </Route>
-            
+
             <Route exact path={`${path}/mySeason/drops/:seasonId`}>
-                <SeasonDrops setActiveTab={setActiveTab} />
-              </Route>
+              <SeasonDrops setActiveTab={setActiveTab} />
+            </Route>
             <Route exact path={`${path}/newDrop`}>
-                <NewDrop setActiveTab={setActiveTab} />
-              </Route>
+              <NewDrop setActiveTab={setActiveTab} />
+            </Route>
 
-              <Route exact path={`${path}/myDrops`}>
-                <MyDrops setActiveTab={setActiveTab} />
-              </Route>
+            <Route exact path={`${path}/myDrops`}>
+              <MyDrops setActiveTab={setActiveTab} />
+            </Route>
 
-              <Route exact path={`${path}/myDrops/cubes/:dropId`}>
-                <DropCubes setActiveTab={setActiveTab} />
-              </Route>
-              
-              <Route exact path={`${path}/myCubes/Nfts/:dropId/:cubeId`}>
-                <CubeNFTs setActiveTab={setActiveTab} />
-              </Route>
-              
-              <Route exact path={`${path}/newCollection`}>
-                <MyCollection setActiveTab={setActiveTab} />
-              </Route>
+            <Route exact path={`${path}/myDrops/cubes/:dropId`}>
+              <DropCubes setActiveTab={setActiveTab} />
+            </Route>
+
+            <Route exact path={`${path}/myCubes/Nfts/:dropId/:cubeId`}>
+              <CubeNFTs setActiveTab={setActiveTab} />
+            </Route>
+
+            <Route exact path={`${path}/newCollection`}>
+              <MyCollection setActiveTab={setActiveTab} />
+            </Route>
 
 
-              <Route exact path={`${path}/collection/nfts/:collectionId`}>
-                <CollectionNfts setActiveTab={setActiveTab} />
-              </Route>
-              <Route exact path={`${path}/profilesettings`}>
-                <ProfileSetting
-                  setActiveTab={setActiveTab}
-                />
-              </Route>
-              <Route exact path={`${path}/changepassword`}>
-                <ChangePassword setActiveTab={setActiveTab} />
-              </Route>
-              <Route path={`${path}`}>
-                <AdminDashboardDefaultScreen
-                  match={props.match}
-                  setActiveTab={setActiveTab}
-                />
-              </Route>
+            <Route exact path={`${path}/collection/nfts/:collectionId`}>
+              <CollectionNfts setActiveTab={setActiveTab} />
+            </Route>
+            <Route exact path={`${path}/profilesettings`}>
+              <ProfileSetting
+                setActiveTab={setActiveTab}
+              />
+            </Route>
+            <Route exact path={`${path}/changepassword`}>
+              <ChangePassword setActiveTab={setActiveTab} />
+            </Route>
+            <Route path={`${path}`}>
+              <AdminDashboardDefaultScreen
+                match={props.match}
+                setActiveTab={setActiveTab}
+              />
+            </Route>
           </Switch>
         </div>
-        </div>
       </div>
+    </div>
   );
 }
 
