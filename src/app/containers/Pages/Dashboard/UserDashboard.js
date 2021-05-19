@@ -123,7 +123,7 @@ function UserDashboard(props) {
                 </span>
               </Dropdown.Toggle>
 
-              <Dropdown.Menu alignRight="true" style={{ backgroundColor: "#f8f9fa" }}>
+              <Dropdown.Menu alignRight="true" style={{ backgroundColor: "rgb(167, 0, 0)" }}>
                 <Dropdown.Item>
                   <Link to="/dashboard" style={{ width: "100%" }}>
                     Dashboard

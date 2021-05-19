@@ -89,6 +89,8 @@ function CubeNFTs(props) {
     const [isClaiming, setIsClaiming] = useState(false);
     const [network, setNetwork] = useState("");
     const [open, setOpen] = React.useState(false);
+    const [openNFTData, setOpenNFTData] = React.useState(false);
+    
     const [isPuttingOnSale, setIsPuttingOnSale] = useState(false);
     const [isPuttingOnAuction, setIsPuttingOnAuction] = useState(false);
     const [isClaimFunds, setIsClaimFunds] = useState(null);
@@ -117,6 +119,12 @@ function CubeNFTs(props) {
     const handleShowBackdrop = () => {
         setOpen(true);
     };
+    const handleCloseNFTData = () => {
+        setOpenNFTData(false);
+    };
+    const handleShowNFTData = () => {
+        setOpenNFTData(true);
+    };
     const [openNetwork, setOpenNetwork] = useState(false);
     const handleCloseNetwork = () => {
         setOpenNetwork(false);
@@ -135,7 +143,7 @@ function CubeNFTs(props) {
 
     }, []);
     let getCubeNFTs = () => {
-        handleShowBackdrop();
+        handleShowNFTData();
 
         let Data = {
             tokenId: cubeId,
@@ -154,7 +162,7 @@ function CubeNFTs(props) {
                 axios.get(`/transaction/tokenTransaction/${response.data.tokensdata.tokenId}`).then((res) => {
                     console.log("res", res);
                     setTransactionHistory(res.data.transactions)
-                    handleCloseBackdrop();
+                    handleCloseNFTData();
                 }, (error) => {
                     if (process.env.NODE_ENV === "development") {
                         console.log(error);
@@ -168,7 +176,7 @@ function CubeNFTs(props) {
                             window.location.reload();
                         }
                     }
-                    handleCloseBackdrop();
+                    handleCloseNFTData();
                 })
 
                 // handleCloseBackdrop();
@@ -185,7 +193,7 @@ function CubeNFTs(props) {
                         window.location.reload();
                     }
                 }
-                handleCloseBackdrop();
+                handleCloseNFTData();
             })
     }
     let loadWeb3 = async () => {
@@ -375,7 +383,7 @@ function CubeNFTs(props) {
         const network = await web3.eth.net.getNetworkType()
         if (network !== 'ropsten') {
             setNetwork(network);
-            setIsPuttingOnSale(false);
+            setIsPuttingOnAuction(false);
             handleShowNetwork();
         }
         else {
@@ -423,6 +431,7 @@ function CubeNFTs(props) {
                     setIsPuttingOnAuction(false);
                     let variant = "success";
                     enqueueSnackbar('Auction Created Successfully.', { variant });
+                    getCubeNFTs();
                 },
                 (error) => {
                     if (process.env.NODE_ENV === "development") {
@@ -431,7 +440,7 @@ function CubeNFTs(props) {
                     }
                     handleCloseBackdrop();
 
-                    setIsPuttingOnSale(false);
+                    setIsPuttingOnAuction(false);
                     let variant = "error";
                     enqueueSnackbar('Unable to Put on Auction.', { variant });
                 }
@@ -644,7 +653,7 @@ function CubeNFTs(props) {
                     </section >
                     <div className="form-group" style={{ marginTop: '20px', marginBottom: '20px' }}>
 
-                        {open ? (
+                        {openNFTData ? (
                             <div align="center" className="text-center">
                                 <Spinner
                                     animation="border"

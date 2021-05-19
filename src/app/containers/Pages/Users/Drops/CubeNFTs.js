@@ -94,6 +94,7 @@ function CubeNFTs(props) {
     const [weth, setWeth] = useState(0);
     const [enableWethButton, setEnableWethButton] = useState(false);
     const [isConfirmingWeth, setIsConfirmingWeth] = useState(false);
+    const [wethBalance, setWethBalance] = useState(0);
 
     useEffect(() => {
 
@@ -470,7 +471,6 @@ function CubeNFTs(props) {
                 handleShowBackdrop();
                 const wethAddress = Addresses.WethAddress;
                 const wethAbi = WethContract;
-                // const address = Addresses.AuctionAddress;
                 var myWethContractInstance = await new web3.eth.Contract(wethAbi, wethAddress);
                 let wethReceipt = await myWethContractInstance.methods.balanceOf(accounts[0]).call();
                 console.log("wethReceipt", wethReceipt);
@@ -612,7 +612,12 @@ function CubeNFTs(props) {
                     let bidByUser = await myContractInstance.methods.getBidByUser(accounts[0], response.data.tokensdata.tokenId).call();
                     console.log("bidByUser", bidByUser);
                     setBidByUser(bidByUser);
-                    setBid((highestBid - bidByUser + response.data.Dropdata.bidDelta) / 10 ** 18)
+                    if (highestBid === '0' || highestBid === 0) {
+                        console.log();
+                        setBid(response.data.Dropdata.MinimumBid / 10 ** 18)
+                    } else {
+                        setBid((highestBid - bidByUser + response.data.Dropdata.bidDelta) / 10 ** 18)
+                    }
                 }
 
 
@@ -657,9 +662,13 @@ function CubeNFTs(props) {
             const web3 = window.web3
             const accounts = await web3.eth.getAccounts();
             const balance = await web3.eth.getBalance(accounts[0]);
-
-            console.log("balance", (balance / 10 ** 18).toString());
+            const wethAddress = Addresses.WethAddress;
+            const wethAbi = WethContract;
+            var myWethContractInstance = await new web3.eth.Contract(wethAbi, wethAddress);
+            let wethReceipt = await myWethContractInstance.methods.balanceOf(accounts[0]).call();
+            console.log("balance", (wethReceipt / 10 ** 18).toString(),);
             setBalance(balance);
+            setWethBalance(wethReceipt)
         })();
 
     }, []);
@@ -923,7 +932,7 @@ function CubeNFTs(props) {
                                                                         </>
                                                                     ) : (
                                                                         <>
-                                                                            <input type='number' step={dropData.bidDelta / 10 ** 18} min={(highestBid - bidByUser + dropData.bidDelta) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                            {highestBid !== '0' ? (<input type='number' step={dropData.bidDelta / 10 ** 18} min={(highestBid - bidByUser + dropData.bidDelta) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
                                                                                 if (evt.target.value >= 0) {
                                                                                     if (evt.target.value < (highestBid - bidByUser + dropData.bidDelta) / 10 ** 18) {
                                                                                         setBid((highestBid - bidByUser + dropData.bidDelta) / 10 ** 18)
@@ -940,6 +949,26 @@ function CubeNFTs(props) {
                                                                                 }
 
                                                                             }} />
+                                                                            ) : (
+                                                                                <input type='number' step={dropData.bidDelta / 10 ** 18} min={(dropData.MinimumBid) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                                    if (evt.target.value >= 0) {
+                                                                                        if (evt.target.value < (dropData.MinimumBid) / 10 ** 18) {
+                                                                                            setBid((dropData.MinimumBid) / 10 ** 18)
+                                                                                        } else
+                                                                                            if (evt.target.value > balance / 10 ** 18) {
+                                                                                                setBid(balance / 10 ** 18)
+                                                                                            }
+                                                                                            else {
+                                                                                                setBid(evt.target.value)
+                                                                                            }
+                                                                                    }
+                                                                                    else {
+                                                                                        setBid((dropData.MinimumBid) / 10 ** 18)
+                                                                                    }
+
+                                                                                }} />
+                                                                            )}
+
                                                                             <br></br>
                                                                             {isSaving ? (
 

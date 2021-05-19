@@ -343,7 +343,7 @@ function MarketPlace(props) {
 
                                             {cubeData.map((i, index) => (
                                                 <Grid item xs={12} sm={6} md={3} key={index}>
-                                                    <Link to={"/marketPlace/Cubes/Nfts/notdrop/" + i._id + "/" + userSaleData[index]._id}>
+                                                    <Link to={"/marketPlace/Cubes/Nfts/notdrop/" + userSaleData[index].expiresAt + "/" + i._id + "/" + userSaleData[index]._id}>
                                                         <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                             {/* style={{ height: "100%" }} variant="outlined" */}
                                                             <CardActionArea>
@@ -391,6 +391,20 @@ function MarketPlace(props) {
                                                                         title={i.MusicArtistName}
                                                                         subheader={i.MusicArtistAbout}
                                                                     />
+                                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
+                                                                        {new Date() < new Date(userSaleData[index].expiresAt) ? (
+                                                                            <div style={{ color: "#FF0000" }}>
+                                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                                    <strong>Sale Ends At:</strong>
+                                                                                </Typography>
+                                                                                <Countdown daysInHours date={new Date(userSaleData[index].expiresAt)}>
+                                                                                </Countdown>
+                                                                            </div>) : (
+                                                                            <Typography variant="body2" style={{ color: "#FF0000" }} component="p">
+                                                                                <strong>Sale Ended</strong>
+                                                                            </Typography>
+                                                                        )}
+                                                                    </Typography>
                                                                 </CardContent>
                                                             </CardActionArea>
                                                             <CardActions>

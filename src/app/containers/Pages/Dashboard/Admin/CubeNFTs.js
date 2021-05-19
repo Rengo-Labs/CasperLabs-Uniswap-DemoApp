@@ -79,7 +79,7 @@ function CubeNFTs(props) {
     const [cubeData, setCubeData] = useState({});
     const [dropData, setDropData] = useState({});
     const [transactionHistory, setTransactionHistory] = useState([]);
-    const [highestBid, setHighestBid] = useEffect(0);
+    const [highestBid, setHighestBid] = useState(0);
     const [bidHistory, setBidHistory] = useState([]);
     const [isClaiming, setIsClaiming] = useState(false);
     const [network, setNetwork] = useState("");
@@ -444,184 +444,172 @@ function CubeNFTs(props) {
                     </section >
                     <div className="form-group" style={{ marginTop: '20px', marginBottom: '20ox' }}>
 
-                        {open ? (
-                            <div align="center" className="text-center">
-                                <Spinner
-                                    animation="border"
-                                    role="status"
-                                    style={{ color: "#ff0000" }}
+                        <div className="row">
+                            <div className="col-md-12 col-lg-6">
+                                <Grid
+                                    container
+                                    spacing={2}
+                                    direction="row"
+                                    justify="flex-start"
+                                // alignItems="flex-start"
                                 >
+                                    {console.log("tokenList", tokenList)}
 
-                                </Spinner>
-                                <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                            </div>
-                        ) : (
-                            <div className="row">
-                                <div className="col-md-12 col-lg-6">
-                                    <Grid
-                                        container
-                                        spacing={2}
-                                        direction="row"
-                                        justify="flex-start"
-                                    // alignItems="flex-start"
-                                    >
-                                        {console.log("tokenList", tokenList)}
+                                    {tokenList.map((i, index) => (
 
-                                        {tokenList.map((i, index) => (
+                                        <Grid item xs={12} sm={6} md={6} key={index}>
+                                            <Card style={{ height: "100%" }} variant="outlined">
+                                                <CardHeader className="text-center"
+                                                    title={i[0].title}
+                                                />
+                                                <CardMedia
+                                                    style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                    className={classes.media}
+                                                    image={i[0].artwork}
 
-                                            <Grid item xs={12} sm={6} md={6} key={index}>
-                                                <Card style={{ height: "100%" }} variant="outlined">
-                                                    <CardHeader className="text-center"
-                                                        title={i[0].title}
+                                                    title="NFT Image"
+                                                />
+                                                <CardContent>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Artwork Description: </strong>{i[0].description}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Token Rarity: </strong>{i[0].type}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Token Supply: </strong>{i[0].tokensupply}
+                                                    </Typography>
+                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
+                                                    <CardHeader
+                                                        avatar={<Avatar src={i[0].ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                        title={i[0].ImageArtistName}
+                                                        subheader={i[0].ImageArtistAbout}
                                                     />
-                                                    <CardMedia
-                                                        style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
-                                                        className={classes.media}
-                                                        image={i[0].artwork}
-
-                                                        title="NFT Image"
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Website URL: </strong>{i[0].ImageArtistWebsite}
+                                                    </Typography>
+                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
+                                                    <CardHeader
+                                                        avatar={<Avatar src={i[0].ProducerProfile} aria-label="Producer" className={classes.avatar} />}
+                                                        title={i[0].ProducerName}
+                                                        subheader={i[0].ProducerInspiration}
                                                     />
-                                                    <CardContent>
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Artwork Description: </strong>{i[0].description}
-                                                        </Typography>
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Token Rarity: </strong>{i[0].type}
-                                                        </Typography>
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Token Supply: </strong>{i[0].tokensupply}
-                                                        </Typography>
-                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={i[0].ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                            title={i[0].ImageArtistName}
-                                                            subheader={i[0].ImageArtistAbout}
-                                                        />
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Website URL: </strong>{i[0].ImageArtistWebsite}
-                                                        </Typography>
-                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={i[0].ProducerProfile} aria-label="Producer" className={classes.avatar} />}
-                                                            title={i[0].ProducerName}
-                                                            subheader={i[0].ProducerInspiration}
-                                                        />
-                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={i[0].ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
-                                                            title={i[0].ExecutiveProducerName}
-                                                            subheader={i[0].ExecutiveProducerInspiration}
-                                                        />
-                                                        <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={i[0].FanProfile} aria-label="Fan" className={classes.avatar} />}
-                                                            title={i[0].FanName}
-                                                            subheader={i[0].FanInspiration}
-                                                        />
+                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
+                                                    <CardHeader
+                                                        avatar={<Avatar src={i[0].ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
+                                                        title={i[0].ExecutiveProducerName}
+                                                        subheader={i[0].ExecutiveProducerInspiration}
+                                                    />
+                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
+                                                    <CardHeader
+                                                        avatar={<Avatar src={i[0].FanProfile} aria-label="Fan" className={classes.avatar} />}
+                                                        title={i[0].FanName}
+                                                        subheader={i[0].FanInspiration}
+                                                    />
 
-                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Other: </strong>{i[0].other}
-                                                        </Typography>
-                                                        {/* <Typography variant="body2" color="textSecondary" component="p">
+                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                        <strong>Other: </strong>{i[0].other}
+                                                    </Typography>
+                                                    {/* <Typography variant="body2" color="textSecondary" component="p">
                                                     <strong>Collection: </strong>{i[0].collectiontitle}
                                                 </Typography> */}
-                                                    </CardContent>
-                                                </Card>
-                                            </Grid>
-                                        ))}
+                                                </CardContent>
+                                            </Card>
+                                        </Grid>
+                                    ))}
 
-                                    </Grid>
-                                </div>
-                                <div className="col-md-12 col-lg-6">
-                                    <div className="form-group">
-                                        <Accordion>
-                                            <AccordionSummary
-                                                expandIcon={<ExpandMoreIcon />}
-                                                aria-controls="panel1a-content"
-                                                id="panel1a-header"
-                                            >
-
-                                                <Typography variant="h6" gutterBottom>Tx History</Typography>
-                                            </AccordionSummary>
-                                            <AccordionDetails>
-                                                {transactionHistory.length === 0 ? (
-                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>No Transaction History Found </strong>
-                                                    </Typography>
-                                                ) : (null)}
-                                                <Grid
-                                                    container
-                                                    spacing={2}
-                                                    direction="row"
-                                                    justify="flex-start"
-                                                // alignItems="flex-start"
-                                                >
-                                                    {transactionHistory.map((i, index) => (
-                                                        <Grid item xs={12} sm={12} md={12} key={index}>
-                                                            <Card className={classes.root}>
-                                                                <CardActionArea style={{ margin: '5px' }}>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>From : </strong>{i.from}
-                                                                    </Typography>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>To : </strong>{i.to}
-                                                                    </Typography>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Hash : </strong>
-                                                                        <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
-                                                                            <span style={{ cursor: 'pointer' }}>{i.transaction.substr(0, 20)}. . .</span>
-                                                                        </a>
-                                                                    </Typography>
-                                                                </CardActionArea>
-                                                            </Card>
-                                                        </Grid>
-
-                                                    ))}
-                                                </Grid>
-                                            </AccordionDetails>
-                                        </Accordion>
-                                        <Accordion>
-                                            <AccordionSummary
-                                                expandIcon={<ExpandMoreIcon />}
-                                                aria-controls="panel2a-content"
-                                                id="panel2a-header"
-                                            >
-                                                <Typography variant="h6" gutterBottom>Bidding History</Typography>
-                                            </AccordionSummary>
-                                            <AccordionDetails>
-                                                {bidHistory.length === 0 ? (
-                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>No Bidding History Found </strong>
-                                                    </Typography>
-                                                ) : (null)}
-                                                <Grid
-                                                    container
-                                                    spacing={2}
-                                                    direction="row"
-                                                    justify="flex-start"
-                                                >
-                                                    {bidHistory.slice(0).reverse().map((i, index) => (
-                                                        <Grid item xs={12} sm={12} md={12} key={index}>
-                                                            <Card className={classes.root} >
-                                                                <CardActionArea style={{ margin: '5px' }}>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Address : </strong>{i.address}
-                                                                    </Typography>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} WETH</span>
-                                                                    </Typography>
-                                                                </CardActionArea>
-                                                            </Card>
-                                                        </Grid>
-                                                    ))}
-                                                </Grid>
-                                            </AccordionDetails>
-                                        </Accordion>
-                                    </div>
-                                </div>
-
+                                </Grid>
                             </div>
-                        )}
+                            <div className="col-md-12 col-lg-6">
+                                <div className="form-group">
+                                    <Accordion>
+                                        <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon />}
+                                            aria-controls="panel1a-content"
+                                            id="panel1a-header"
+                                        >
+
+                                            <Typography variant="h6" gutterBottom>Tx History</Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            {transactionHistory.length === 0 ? (
+                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                    <strong>No Transaction History Found </strong>
+                                                </Typography>
+                                            ) : (null)}
+                                            <Grid
+                                                container
+                                                spacing={2}
+                                                direction="row"
+                                                justify="flex-start"
+                                            // alignItems="flex-start"
+                                            >
+                                                {transactionHistory.map((i, index) => (
+                                                    <Grid item xs={12} sm={12} md={12} key={index}>
+                                                        <Card className={classes.root}>
+                                                            <CardActionArea style={{ margin: '5px' }}>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>From : </strong>{i.from}
+                                                                </Typography>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>To : </strong>{i.to}
+                                                                </Typography>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Hash : </strong>
+                                                                    <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                                                                        <span style={{ cursor: 'pointer' }}>{i.transaction.substr(0, 20)}. . .</span>
+                                                                    </a>
+                                                                </Typography>
+                                                            </CardActionArea>
+                                                        </Card>
+                                                    </Grid>
+
+                                                ))}
+                                            </Grid>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                    <Accordion>
+                                        <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon />}
+                                            aria-controls="panel2a-content"
+                                            id="panel2a-header"
+                                        >
+                                            <Typography variant="h6" gutterBottom>Bidding History</Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            {bidHistory.length === 0 ? (
+                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                    <strong>No Bidding History Found </strong>
+                                                </Typography>
+                                            ) : (null)}
+                                            <Grid
+                                                container
+                                                spacing={2}
+                                                direction="row"
+                                                justify="flex-start"
+                                            >
+                                                {bidHistory.slice(0).reverse().map((i, index) => (
+                                                    <Grid item xs={12} sm={12} md={12} key={index}>
+                                                        <Card className={classes.root} >
+                                                            <CardActionArea style={{ margin: '5px' }}>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Address : </strong>{i.address}
+                                                                </Typography>
+                                                                <Typography variant="body2" color="textSecondary" component="p">
+                                                                    <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} WETH</span>
+                                                                </Typography>
+                                                            </CardActionArea>
+                                                        </Card>
+                                                    </Grid>
+                                                ))}
+                                            </Grid>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                </div>
+                            </div>
+
+                        </div>
+
                     </div>
                 </form>
             </div >

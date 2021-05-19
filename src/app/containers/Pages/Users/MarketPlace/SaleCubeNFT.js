@@ -1,45 +1,38 @@
 import { Grid } from '@material-ui/core/';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import Avatar from '@material-ui/core/Avatar';
+import Backdrop from '@material-ui/core/Backdrop';
 import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import axios from 'axios';
-import React, { useEffect, useState } from "react";
-import Cookies from "js-cookie";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { Spinner } from "react-bootstrap";
-import Chip from '@material-ui/core/Chip';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import { Row } from "react-bootstrap";
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import Countdown from 'react-countdown';
-import { useSnackbar } from 'notistack';
-import { useParams } from "react-router-dom";
-import HeaderHome from '../../../../components/Headers/Header';
-import LoginErrorModal from '../../../../components/Modals/LoginErrorModal';
-import ConfirmBidModal from '../../../../components/Modals/ConfirmBidModal';
-import Web3 from 'web3';
-import { Minimize } from '@material-ui/icons';
-import jwtDecode from "jwt-decode";
-import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
-import { Button } from 'react-bootstrap';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
+import axios from 'axios';
+import Cookies from "js-cookie";
+import jwtDecode from "jwt-decode";
+import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
+import { Button, Row, Spinner } from "react-bootstrap";
+import Countdown from 'react-countdown';
+import { useHistory, useParams } from "react-router-dom";
+import Web3 from 'web3';
+import r1 from '../../../../assets/img/patients/patient.jpg';
 import MarketPlaceContract from '../../../../components/blockchain/Abis/MarketPlaceContract.json';
-import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
-
-
 import WethContract from '../../../../components/blockchain/Abis/WethContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
-import WethModal from '../../../../components/Modals/WethModal';
+import HeaderHome from '../../../../components/Headers/Header';
 import ConfirmBuyCubeModal from '../../../../components/Modals/ConfirmBuyCubeModal';
+import LoginErrorModal from '../../../../components/Modals/LoginErrorModal';
+import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
+import WethModal from '../../../../components/Modals/WethModal';
+
+
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -85,7 +78,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function SaleCubeNFTs(props) {
-
+    let history = useHistory();
     let jwt = Cookies.get("Authorization");
     let jwtDecoded
     if (jwt) {
@@ -114,7 +107,7 @@ function SaleCubeNFTs(props) {
 
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
-    const { dropId, cubeId, auctionId } = useParams();
+    const { expiresAt, cubeId, auctionId } = useParams();
     const [tokenList, setTokenList] = useState([]);
     const [cubeData, setCubeData] = useState({});
     const [dropData, setDropData] = useState({});
@@ -123,6 +116,7 @@ function SaleCubeNFTs(props) {
     const [balance, setBalance] = useState();
     const [hide, setHide] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isRemoving, setIsRemoving] = useState(false);
     const [network, setNetwork] = useState("");
     const [transactionHistory, setTransactionHistory] = useState([]);
     const [bidHistory, setBidHistory] = useState([]);
@@ -209,7 +203,33 @@ function SaleCubeNFTs(props) {
             handleShow();
         }
     }
-
+    let removeFromSale = () => {
+        setIsRemoving(true);
+        let saleData = {
+            auctionId: auctionId,
+            tokenId: cubeId
+        }
+        console.log("saleData", saleData);
+        axios.post("auction/deleteauction", saleData).then(
+            (response) => {
+                console.log('response', response);
+                setIsRemoving(false);
+                // getSaleCubeNFTs();
+                let variant = "success";
+                enqueueSnackbar('Removed from Sale Successfully.', { variant });
+                history.push("/")
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsRemoving(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Remove from Sale.', { variant });
+            }
+        );
+    }
 
     let ConfirmBuyCube = async () => {
         handleCloseBuyCubeModal();
@@ -229,7 +249,7 @@ function SaleCubeNFTs(props) {
             const wethAddress = Addresses.WethAddress;
             const wethAbi = WethContract;
             const address = Addresses.MarketPlaceAddress;
-                const abi = MarketPlaceContract;
+            const abi = MarketPlaceContract;
             var myWethContractInstance = await new web3.eth.Contract(wethAbi, wethAddress);
             let wethReceipt = await myWethContractInstance.methods.balanceOf(accounts[0]).call();
             if (wethReceipt < (cubeData.SalePrice)) {
@@ -253,7 +273,7 @@ function SaleCubeNFTs(props) {
                     }
                 })
 
-                
+
                 const CubeAddress = Addresses.CreateCubeAddress;
                 var myContractInstance = await new web3.eth.Contract(abi, address);
                 console.log("myContractInstance", myContractInstance);
@@ -439,7 +459,7 @@ function SaleCubeNFTs(props) {
         enqueueSnackbar('Successfully transferred Weth to your account', { variant });
 
     }
-
+    console.log("expiresAt", expiresAt);
     return (
         <div className="main-wrapper">
             <div className="home-section home-full-height">
@@ -541,81 +561,53 @@ function SaleCubeNFTs(props) {
                                                         ) : (
                                                             <Button variant="primary" onClick={(e) => getWeth(e)} style={{ float: "right" }} >Get More Weth</Button>
                                                         )) : (null)}
-                                                    {/* {new Date() > new Date(dropData.AuctionEndsAt) ? (
-                                                            jwt ? (
-                                                                <>
-                                                                    {cubeData.userId === jwtDecoded.userId ? (
-                                                                        isClaiming ? (
-                                                                            <div align="center" className="text-center">
-                                                                                <Spinner
-                                                                                    animation="border"
-                                                                                    role="status"
-                                                                                    style={{ color: "#ff0000" }}
-                                                                                >
-                                                                                </Spinner>
-                                                                                <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                                                                            </div>
-                                                                        ) : (
-                                                                            null
-                                                                        )
+                                                    {new Date() > new Date(expiresAt) ? (
+                                                        jwt ? (
+                                                            <>
+                                                                {cubeData.userId === jwtDecoded.userId ? (
+                                                                    isRemoving ? (
+                                                                        <div align="center" className="text-center">
+                                                                            <Spinner
+                                                                                animation="border"
+                                                                                role="status"
+                                                                                style={{ color: "#ff0000" }}
+                                                                            >
+                                                                            </Spinner>
+                                                                            <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                                        </div>
                                                                     ) : (
-                                                                        bidHistory.length != 0 ? (bidHistory[bidHistory.length - 1].userId === jwtDecoded.userId ? (
-                                                                            isClaiming ? (
-                                                                                <div align="center" className="text-center">
-                                                                                    <Spinner
-                                                                                        animation="border"
-                                                                                        role="status"
-                                                                                        style={{ color: "#ff0000" }}
-                                                                                    >
-                                                                                    </Spinner>
-                                                                                    <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                                                                                </div>
-                                                                            ) : (
-                                                                                bidHistory[bidHistory.length - 1].claimNft ? (
-                                                                                    <Button variant="primary" disabled style={{ float: "right" }} >Claim Cube</Button>
-                                                                                ) : (
-                                                                                    <Button variant="primary" onClick={(e) => claimCube(e)} style={{ float: "right" }} >Claim Cube</Button>
-
-                                                                                )
-                                                                            )
-                                                                        ) : (
-
-                                                                            bidHistory.findIndex(i => i.userId === jwtDecoded.userId) !== -1 ? (
-                                                                                isClaiming ? (
-                                                                                    <div align="center" className="text-center">
-                                                                                        <Spinner
-                                                                                            animation="border"
-                                                                                            role="status"
-                                                                                            style={{ color: "#ff0000" }}
-                                                                                        >
-
-                                                                                        </Spinner>
-                                                                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    bidHistory[bidHistory.findIndex(i => i.userId === jwtDecoded.userId)].withdraw ? (
-                                                                                        <Button variant="primary" disabled style={{ float: "right" }}  >Withdraw your bid</Button>
-                                                                                    ) : (
-                                                                                        <Button variant="primary" onClick={(e) => withdraw(e)} style={{ float: "right" }}  >Withdraw your bid</Button>)
-
-                                                                                )
-                                                                            ) : (null)
-                                                                        )) : (null))}
-                                                                </>
-                                                            ) : (null)
-                                                        ) : (
-                                                            null
-                                                        )} */}
+                                                                        <Button variant="primary" style={{ float: 'right' }} onClick={removeFromSale}>Remove from Sale</Button>
+                                                                    )
+                                                                ) : (null)}
+                                                            </>
+                                                        ) : (null)
+                                                    ) : (
+                                                        null
+                                                    )}
                                                     <Typography variant="h4" gutterBottom>{cubeData.title}</Typography>
                                                     <Typography variant="h5" gutterBottom>Price : {(cubeData.SalePrice) / 10 ** 18} ETH </Typography>
-
+                                                    {/* <Typography variant="h5" gutterBottom color="textSecondary" > */}
+                                                    {new Date() < new Date(expiresAt) ? (
+                                                        <Typography variant="h5" gutterBottom color="textSecondary">
+                                                            <strong>Sale Ends At:</strong>
+                                                            <span style={{ color: "#FF0000" }} >
+                                                                <Countdown daysInHours date={new Date(expiresAt)}>
+                                                                </Countdown>
+                                                            </span>
+                                                        </Typography>
+                                                    ) : (
+                                                        <Typography variant="body2" style={{ color: "#FF0000" }} component="p">
+                                                            <strong>Sale Ended</strong>
+                                                        </Typography>
+                                                    )}
+                                                    {/* </Typography> */}
                                                     <h3 className="text-muted">Music Artist</h3>
-
                                                     <CardHeader
                                                         avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
                                                         title={cubeData.MusicArtistName}
                                                         subheader={cubeData.MusicArtistAbout}
                                                     />
+
                                                     <Row>
 
                                                         {(cubeData.SalePrice) / 10 ** 18 > balance / 10 ** 18 ? (
@@ -641,7 +633,11 @@ function SaleCubeNFTs(props) {
                                                                         cubeData.userId === jwtDecoded.userId ? (
                                                                             <Button variant="primary" block disabled>You cannot buy your own Cube</Button>
                                                                         ) : (
-                                                                            <Button variant="primary" block onClick={(e) => BuyCube(e)}>Buy Cube</Button>
+                                                                            new Date() < new Date(expiresAt) ? (
+                                                                                <Button variant="primary" block onClick={(e) => BuyCube(e)}>Buy Cube</Button>
+                                                                            ) : (
+                                                                                <Button variant="primary" block disabled>Sale Ended</Button>
+                                                                            )
                                                                         )
                                                                     ) : (
                                                                         <Button variant="primary" block disabled>Buy Cube</Button>

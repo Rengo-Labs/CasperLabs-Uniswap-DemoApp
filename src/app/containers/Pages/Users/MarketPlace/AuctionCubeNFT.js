@@ -1,39 +1,35 @@
 import { Grid } from '@material-ui/core/';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import Avatar from '@material-ui/core/Avatar';
+import Backdrop from '@material-ui/core/Backdrop';
 import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import axios from 'axios';
-import React, { useEffect, useState } from "react";
-import Cookies from "js-cookie";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { Spinner } from "react-bootstrap";
-import Chip from '@material-ui/core/Chip';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import { Row } from "react-bootstrap";
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import Countdown from 'react-countdown';
-import { useSnackbar } from 'notistack';
-import { useParams } from "react-router-dom";
-import HeaderHome from '../../../../components/Headers/Header';
-import LoginErrorModal from '../../../../components/Modals/LoginErrorModal';
-import ConfirmBidModal from '../../../../components/Modals/ConfirmBidModal';
-import Web3 from 'web3';
-import { Minimize } from '@material-ui/icons';
-import jwtDecode from "jwt-decode";
-import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
-import { Button } from 'react-bootstrap';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import axios from 'axios';
+import Cookies from "js-cookie";
+import jwtDecode from "jwt-decode";
+import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
+import { Button, Row, Spinner } from "react-bootstrap";
+import Countdown from 'react-countdown';
+import { useHistory, useParams } from "react-router-dom";
+import Web3 from 'web3';
+import r1 from '../../../../assets/img/patients/patient.jpg';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import WethContract from '../../../../components/blockchain/Abis/WethContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import HeaderHome from '../../../../components/Headers/Header';
+import ConfirmBidModal from '../../../../components/Modals/ConfirmBidModal';
+import LoginErrorModal from '../../../../components/Modals/LoginErrorModal';
+import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 import WethModal from '../../../../components/Modals/WethModal';
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -80,7 +76,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function AuctionCubeNFTs(props) {
-
+    let history = useHistory();
     let jwt = Cookies.get("Authorization");
     let jwtDecoded
     if (jwt) {
@@ -124,6 +120,7 @@ function AuctionCubeNFTs(props) {
     const [network, setNetwork] = useState("");
     const [transactionHistory, setTransactionHistory] = useState([]);
     const [bidHistory, setBidHistory] = useState([]);
+    const [isRemoving, setIsRemoving] = useState(false);
     // if(bidHistory.length!==0)
     // console.log("bidHistory.findIndex(i => i.userId === jwtDecoded.userId)",);
     const [openWeth, setOpenWeth] = useState(false);
@@ -269,6 +266,34 @@ function AuctionCubeNFTs(props) {
                 }
             );
         }
+    }
+    let removeFromAuction = () => {
+        setIsRemoving(true);
+        let saleData = {
+            auctionId: auctionId,
+            tokenId: cubeId
+        }
+        console.log("saleData", saleData);
+        axios.post("auction/deleteauction", saleData).then(
+            (response) => {
+                console.log('response', response);
+                setIsRemoving(false);
+                
+                // getAuctionCubeNFTs();
+                let variant = "success";
+                enqueueSnackbar('Removed from Sale Successfully.', { variant });
+                history.push("/")
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsRemoving(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Remove from Sale.', { variant });
+            }
+        );
     }
 
     let claimCube = async (e) => {
@@ -602,7 +627,11 @@ function AuctionCubeNFTs(props) {
                 let bidByUser = await myContractInstance.methods.getBidByUser(accounts[0], response.data.tokensdata.tokenId).call();
                 console.log("bidByUser", bidByUser);
                 setBidByUser(bidByUser);
-                setBid((highestBid - bidByUser + response.data.UserAuctiondata.bidDelta) / 10 ** 18)
+                if (highestBid === '0') {
+                    setBid(response.data.UserAuctiondata.minimumBid / 10 ** 18);
+                } else {
+                    setBid((highestBid - bidByUser + response.data.UserAuctiondata.bidDelta) / 10 ** 18)
+                }
                 // setBid((response.data.UserAuctiondata.minimumBid) / 10 ** 18)
 
                 axios.get(`/transaction/tokenTransaction/${response.data.tokensdata.tokenId}`).then((res) => {
@@ -786,8 +815,31 @@ function AuctionCubeNFTs(props) {
                                                         {new Date() > new Date(auctionData.auctionEndsAt) ? (
                                                             jwt ? (
                                                                 <>
+                                                                    {cubeData.userId === jwtDecoded.userId && bidHistory.length === 0 ? (
+                                                                        isRemoving ? (
+                                                                            <div align="center" className="text-center">
+                                                                                <Spinner
+                                                                                    animation="border"
+                                                                                    role="status"
+                                                                                    style={{ color: "#ff0000" }}
+                                                                                >
+                                                                                </Spinner>
+                                                                                <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Button variant="primary" style={{ float: 'right' }} onClick={removeFromAuction}>Remove from Sale</Button>
+                                                                        )
+                                                                    ) : (null)}
+                                                                </>
+                                                            ) : (null)
+                                                        ) : (
+                                                            null
+                                                        )}
+                                                        {new Date() > new Date(auctionData.auctionEndsAt) ? (
+                                                            jwt ? (
+                                                                <>
 
-                                                                    {cubeData.userId === jwtDecoded.userId ? (
+                                                                    {cubeData.userId === jwtDecoded.userId && bidHistory.length != 0 ? (
                                                                         isClaiming ? (
                                                                             <div align="center" className="text-center">
                                                                                 <Spinner
@@ -906,50 +958,82 @@ function AuctionCubeNFTs(props) {
                                                             ) : new Date() > new Date(auctionData.auctionStartsAt) && new Date() < new Date(auctionData.auctionEndsAt) ? (
                                                                 <>
                                                                     <label> Enter Bid:(WETH) </label>
-                                                                    {(auctionData.minimumBid) / 10 ** 18 > balance / 10 ** 18 ? (
-                                                                        <>
-                                                                            <input type='number' step="0.0001" disabled className='form-control' style={{ marginBottom: '20px' }} value={bid} />
-                                                                            <br></br>
-                                                                            <Button variant="primary" block disabled>Insufficient Balance</Button>
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <input type='number' step={auctionData.bidDelta / 10 ** 18} min={(highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
-                                                                                if (evt.target.value >= 0) {
-                                                                                    if (evt.target.value < (highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18) {
-                                                                                        setBid((highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18)
-                                                                                    } else
-                                                                                        if (evt.target.value > balance / 10 ** 18) {
-                                                                                            setBid(balance / 10 ** 18)
-                                                                                        }
-                                                                                        else {
-                                                                                            setBid(evt.target.value)
-                                                                                        }
-                                                                                }
-                                                                                else {
-                                                                                    setBid((highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18)
-                                                                                }
-
-                                                                            }} />
-                                                                            <br></br>
-                                                                            {isSaving ? (
-
-                                                                                <div align="center" className="text-center">
-                                                                                    <Spinner
-                                                                                        animation="border"
-                                                                                        role="status"
-                                                                                        style={{ color: "#ff0000" }}
-                                                                                    >
-
-                                                                                    </Spinner>
-                                                                                    <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                                                                                </div>
+                                                                    {jwt ?
+                                                                        (cubeData.userId === jwtDecoded.userId ?
+                                                                            (
+                                                                                <>
+                                                                                    <input type='number' step="0.0001" disabled className='form-control' style={{ marginBottom: '20px' }} value={bid} />
+                                                                                    <br></br>
+                                                                                    <Button variant="primary" block disabled>You Cannot bid on your own Cube</Button>
+                                                                                </>
+                                                                            ) : (auctionData.minimumBid) / 10 ** 18 > balance / 10 ** 18 ? (
+                                                                                <>
+                                                                                    <input type='number' step="0.0001" disabled className='form-control' style={{ marginBottom: '20px' }} value={bid} />
+                                                                                    <br></br>
+                                                                                    <Button variant="primary" block disabled>Insufficient Balance</Button>
+                                                                                </>
                                                                             ) : (
-                                                                                <Button variant="primary" block onClick={(e) => Bid(e)}>place a Bid</Button>
-                                                                            )}
+                                                                                <>
+                                                                                    {highestBid !== '0' ? (
+                                                                                        <input type='number' step={auctionData.bidDelta / 10 ** 18} min={(highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                                            if (evt.target.value >= 0) {
+                                                                                                if (evt.target.value < (highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18) {
+                                                                                                    setBid((highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18)
+                                                                                                } else
+                                                                                                    if (evt.target.value > balance / 10 ** 18) {
+                                                                                                        setBid(balance / 10 ** 18)
+                                                                                                    }
+                                                                                                    else {
+                                                                                                        setBid(evt.target.value)
+                                                                                                    }
+                                                                                            }
+                                                                                            else {
+                                                                                                setBid((highestBid - bidByUser + auctionData.bidDelta) / 10 ** 18)
+                                                                                            }
 
-                                                                        </>
-                                                                    )}
+                                                                                        }} />
+                                                                                    ) : (
+                                                                                        <input type='number' step={auctionData.bidDelta / 10 ** 18} min={(auctionData.minimumBid) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                                            if (evt.target.value >= 0) {
+                                                                                                if (evt.target.value < (auctionData.minimumBid) / 10 ** 18) {
+                                                                                                    setBid((auctionData.minimumBid) / 10 ** 18)
+                                                                                                } else
+                                                                                                    if (evt.target.value > balance / 10 ** 18) {
+                                                                                                        setBid(balance / 10 ** 18)
+                                                                                                    }
+                                                                                                    else {
+                                                                                                        setBid(evt.target.value)
+                                                                                                    }
+                                                                                            }
+                                                                                            else {
+                                                                                                setBid((auctionData.minimumBid) / 10 ** 18)
+                                                                                            }
+
+                                                                                        }} />
+                                                                                    )}
+
+                                                                                    <br></br>
+                                                                                    {isSaving ? (
+
+                                                                                        <div align="center" className="text-center">
+                                                                                            <Spinner
+                                                                                                animation="border"
+                                                                                                role="status"
+                                                                                                style={{ color: "#ff0000" }}
+                                                                                            >
+
+                                                                                            </Spinner>
+                                                                                            <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <Button variant="primary" block onClick={(e) => Bid(e)}>place a Bid</Button>
+                                                                                    )}
+
+                                                                                </>
+                                                                            )) : (
+                                                                            null
+                                                                        )}
+                                                                    {/* {}` */}
 
                                                                 </>
 

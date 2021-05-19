@@ -111,8 +111,8 @@ function App() {
       return <Route exact path="/auctionDrops/DropCubes/:dropId" render={(routeProps) => <DropCubes {...routeProps} />} />
     } else if (path === "/auctionDrops/DropCubes/Nfts/:dropId/:cubeId") {
       return <Route exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs} />;
-    } else if (path === "/marketPlace/Cubes/Nfts/notdrop/:cubeId/:auctionId") {
-      return <Route exact path="/marketPlace/Cubes/Nfts/notdrop/:cubeId/:auctionId" component={SaleCubeNFTs} />;
+    } else if (path === "/marketPlace/Cubes/Nfts/notdrop/:expiresAt/:cubeId/:auctionId") {
+      return <Route exact path="/marketPlace/Cubes/Nfts/notdrop/:expiresAt/:cubeId/:auctionId" component={SaleCubeNFTs} />;
     } else if (path === "/marketPlace/Cubes/Nfts/userauction/:cubeId/:auctionId") {
       return <Route exact path="/marketPlace/Cubes/Nfts/userauction/:cubeId/:auctionId" component={AuctionCubeNFTs} />;
     } else {
@@ -132,7 +132,7 @@ function App() {
           <LoginRegisterRedirectCheck exact path="/auctionDrops" />
           <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/:dropId" component={DropCubes} />
           <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs} />
-          <LoginRegisterRedirectCheck exact path="/marketPlace/Cubes/Nfts/notdrop/:cubeId/:auctionId" component={SaleCubeNFTs} />
+          <LoginRegisterRedirectCheck exact path="/marketPlace/Cubes/Nfts/notdrop/:expiresAt/:cubeId/:auctionId" component={SaleCubeNFTs} />
           <LoginRegisterRedirectCheck exact path="/marketPlace/Cubes/Nfts/userauction/:cubeId/:auctionId" component={AuctionCubeNFTs} />
 
           <Route path="/forgotpassword" component={ForgotPassword} />
