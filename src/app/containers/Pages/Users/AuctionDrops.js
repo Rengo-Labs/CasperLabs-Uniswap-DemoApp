@@ -129,6 +129,10 @@ function AuctionDrops() {
                                     </Spinner>
                                     <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                 </div>
+                            ) : tokenList.length === 0 ? (
+                                <Typography variant="h6" style={{ marginTop: '50px', marginBottom: '50px' }} >
+                                    <strong>Nothing to Display </strong>
+                                </Typography>
                             ) : (
                                 <Grid
                                     container

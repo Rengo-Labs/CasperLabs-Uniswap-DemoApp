@@ -324,6 +324,10 @@ function MarketPlace(props) {
                                         </Spinner>
                                         <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                     </div>
+                                ) : cubeData.length === 0 && cubeAuctionData.length === 0 ? (
+                                    <Typography variant="h6" style={{ marginTop: '50px', marginBottom: '50px' }} >
+                                        <strong>Nothing to Display </strong>
+                                    </Typography>
                                 ) : (
                                     <>
                                         {cubeData.length !== 0 ? (

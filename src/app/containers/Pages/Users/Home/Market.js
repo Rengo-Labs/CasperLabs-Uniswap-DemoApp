@@ -118,6 +118,10 @@ function MarketPlace(props) {
                                 </Spinner>
                                 <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                             </div>
+                        ) : cubeData.length === 0 && cubeAuctionData.length === 0 ? (
+                            <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '20px' }} >
+                                <strong>Nothing to Display </strong>
+                            </Typography>
                         ) : (
                             <>
                                 {cubeData.length !== 0 ? (
@@ -171,8 +175,8 @@ function MarketPlace(props) {
                                                                 title={i.MusicArtistName}
                                                                 subheader={i.MusicArtistAbout}
                                                             />
-                                                             <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
-                                                                { new Date() < new Date(userSaleData[index].expiresAt) ? (
+                                                            <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
+                                                                {new Date() < new Date(userSaleData[index].expiresAt) ? (
                                                                     <div style={{ color: "#FF0000" }}>
                                                                         {/* {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionEndsAt.toLoca))} */}
                                                                         <Typography variant="body2" color="textSecondary" component="p">
@@ -196,7 +200,7 @@ function MarketPlace(props) {
                                         </Grid >
                                     ))}
                                 </Grid>
-                                {cubeData.length !== 0 ? (
+                                {cubeAuctionData.length !== 0 ? (
                                     <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '20px' }} >
                                         <strong >On Auction </strong>
                                     </Typography>) : (

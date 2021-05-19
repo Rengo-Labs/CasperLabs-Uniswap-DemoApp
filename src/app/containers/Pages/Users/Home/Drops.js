@@ -94,6 +94,10 @@ function Drops() {
                                     </Spinner>
                                     <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                 </div>
+                            ) : tokenList.length === 0 ? (
+                                <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '20px' }} >
+                                    <strong>Nothing to Display </strong>
+                                </Typography>
                             ) : (
                                 <Grid
                                     container
