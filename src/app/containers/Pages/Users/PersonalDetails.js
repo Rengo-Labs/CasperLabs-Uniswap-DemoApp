@@ -16,6 +16,7 @@ class PersonalDetails extends Component {
             mobile: "",
             name: "",
             password: "",
+            confirmPassword:"",
             country: '', msg: '', msgM: '', city: '', msgError: '',
             products: [],
             msgSuccess: '',
@@ -30,17 +31,6 @@ class PersonalDetails extends Component {
         };
         this.mobile = React.createRef();
     }
-    onChangePictureHandler = (event) => {
-        console.log(event.target.files);
-        let fileArray = []
-        for (let i = 0; i < event.target.files.length; i++) {
-            fileArray.push(event.target.files[i]);
-        }
-        console.log(fileArray);
-        this.setState({
-            products: fileArray,
-        })
-    };
     handlePinSubmitEvent = (e) => {
         e.preventDefault();
         this.setState({
@@ -115,98 +105,47 @@ class PersonalDetails extends Component {
         this.setState({
             isLoading: true
         })
-        console.log(e.target.form);
-        let name = this.state.name;
-        // let factoryName = e.target.form[2].value;
-        let email = this.state.email;
-
-        let mobile;
-        if (this.mobile.current.tel.value.charAt(0) === '0') {
-            mobile = this.mobile.current.tel.value.replace(/^0/g, this.mobile.current.selectedCountryData.dialCode)
+        if(this.state.password!==this.state.confirmPassword)
+        {
+            this.setState({
+                msgError: "Password does not match with Confirm Password",
+                msgSuccess: '',
+                isLoading: false
+            })
         }
-        else {
-            mobile = this.mobile.current.tel.value.replace(/^0/g, this.mobile.current.selectedCountryData.dialCode)
-            // console.log("false", typeof this.mobile.current.tel.value);
-        }
-        // console.log("true", this.mobile.current.tel.value.replace(/^0/g, this.mobile.current.selectedCountryData.dialCode) );
-        // this.mobile.current.selectedCountryData.dialCode
-        // let address = e.target.form[5].value;
-        this.setState({ email: email.toLowerCase(), mobile: mobile })
-        let password = this.state.password;
-        let role = this.props.values.role
-        const userData = {
-            name: name,
-            password: password,
-            mobile: mobile,
-            email: email.toLowerCase(),
-            city: this.props.values.city,
-            country: this.props.values.country,
-            address: this.props.values.address,
-            role: role
-        }
-        console.log(userData);
-        // this.setState({
-        //     isLoading: false
-        // })
-        // let fileData = new FormData();
-
-        // fileData.append(`status`, 'pending');
-        // fileData.append(`name`, name);
-        // fileData.append(`password`, password);
-        // fileData.append(`mobile`, mobile);
-        // fileData.append(`email`, email.toLowerCase());
-        // fileData.append(`roles`, role);
-        // fileData.append(`city`, this.props.values.city);
-        // fileData.append(`country`, this.props.values.country);
-        // fileData.append(`address`, address);
-        // fileData.append(`factories`, factoryName);
-        // fileData.append(`passportpicture`, this.props.values.passportPhoto);
-        // fileData.append(`businesscertificate`, this.props.values.businessCertificatePhoto);
-        // fileData.append(`selfiepictures`, this.props.values.selfiePhoto);
-        // fileData.append(`passportsselfie`, this.props.values.selfiePassportPhoto);
-
-
-        // for (let i = 0; i < this.state.products.length; i++) {
-        //     fileData.append(`picturesofproducts`, this.state.products[i]);
-        // }
-
-        // for (var value of fileData.values()) {
-        //     console.log(value);
-        // }
-
-        axios
-            .post("/api/v1/auth/user/signup", userData)
-            .then((response) => {
-                console.log("response", response);
-                if (response.status === 200)
+        else{
+            const userData = {
+                name: this.state.name,
+                password: this.state.password,
+                email: this.state.email.toLowerCase(),
+            }
+            console.log(userData);
+    
+            axios
+                .post("/api/v1/auth/user/signup", userData)
+                .then((response) => {
+                    console.log("response", response);
+                    if (response.status === 200)
+                        this.setState({
+                            msgSuccess: response.data,
+                            msgError: "",
+                            isPinSent: true,
+                            isLoading: false
+                        })
+                })
+                .catch(error => {
+                    console.log(error)
+                    console.log(error.response)
                     this.setState({
-                        msgSuccess: response.data,
-                        msgError: "",
-                        isPinSent: true,
+                        msgError: error.response.data,
+                        msgSuccess: '',
                         isLoading: false
                     })
-            })
-            .catch(error => {
-                console.log(error)
-                console.log(error.response)
-                this.setState({
-                    msgError: error.response.data,
-                    msgSuccess: '',
-                    isLoading: false
                 })
-            })
+        }
     }
-
-
-    back = (e) => {
-        e.preventDefault();
-        this.props.prevStep();
-    }
-
-
     render() {
-
-        const { values } = this.props
+       const { values } = this.props
         if (this.state.isPinVarified) {
             return <Redirect to='/login' />
         }
@@ -287,8 +226,6 @@ class PersonalDetails extends Component {
         }
         else {
             return (
-
-
                 <form onSubmit={this.saveAndContinue} >
                     <div className="row">
                         <div className="col-12 col-md-12">
@@ -303,7 +240,6 @@ class PersonalDetails extends Component {
                                         })
                                     }}
                                     value={this.state.name}
-
                                     required
                                 />
                                 <label className="focus-label">User Name</label>
@@ -321,30 +257,9 @@ class PersonalDetails extends Component {
                                         })
                                     }}
                                     value={this.state.email}
-
                                     required
                                 />
                                 <label className="focus-label">Email</label>
-                            </div>
-                        </div>
-
-                        <div className="col-12 col-md-12">
-                            <div className="form-group">
-                                <IntlTelInput
-                                    containerClassName="intl-tel-input"
-                                    inputClassName="form-control"
-                                    style={{ width: "100%" }}
-                                    onPhoneNumberBlur={(val) => {
-                                        console.log("this.mobile.current.tel", val, this.mobile.current.selectedCountryData.dialCode);
-                                        if (val) {
-                                            this.setState({ msgM: '' })
-                                        }
-                                        else
-                                            this.setState({ msgM: 'Invalid Mobile Number.' })
-
-                                    }}
-                                    ref={this.mobile}
-                                />
                             </div>
                         </div>
 
@@ -359,11 +274,28 @@ class PersonalDetails extends Component {
                                             password: e.target.value
                                         })
                                     }}
-                                    // defaultValue={values.password}
                                     minLength="4"
                                     required
                                 />
                                 <label className="focus-label">Password</label>
+                            </div>
+                        </div>
+
+                        <div className="col-12 col-md-12">
+                            <div className="form-group form-focus focused">
+                                <input
+                                    type="password"
+                                    className="form-control floating"
+                                    value={this.state.confirmPassword}
+                                    onChange={(e) => {
+                                        this.setState({
+                                            confirmPassword: e.target.value
+                                        })
+                                    }}
+                                    minLength="4"
+                                    required
+                                />
+                                <label className="focus-label">Confirm Password</label>
                             </div>
                         </div>
 
@@ -381,10 +313,10 @@ class PersonalDetails extends Component {
                             Already have an account?
                               </Link>
                     </div>
-                    <div>
+                    {/* <div>
                         <button className="btn login-btn" style={{ textAlign: "left" }} onClick={this.back}>Back</button>
 
-                    </div>
+                    </div> */}
                     <br />
                     <div>
                         {this.state.isLoading ? (

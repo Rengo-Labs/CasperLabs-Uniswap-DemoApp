@@ -15,6 +15,7 @@ import ForgotPassword from "../Pages/Users/ForgotPassword";
 import HomeScreen from "../Pages/Users/HomeScreen";
 import KYCScreen from "../Pages/Users/KYCScreen";
 import LoginScreen from "../Pages/Users/LoginScreen";
+import UserLoginScreen from "../Pages/Users/UserLoginScreen"
 import MarketPlace from "../Pages/Users/MarketPlace";
 import PrivacyPolicy from "../Pages/Users/PrivacyPolicy";
 import RegisterScreen from "../Pages/Users/RegisterScreen";
@@ -103,6 +104,10 @@ function App() {
       return <Redirect to="/dashboard" />;
     } else if (path === "/admin-login") {
       return <Route component={LoginScreen} />;
+    } else if (path === "/login") {
+      return <Route component={UserLoginScreen} />;
+    } else if (path === "/register") {
+      return <Route component={RegisterScreen} />;
     } else if (path === "/marketPlace") {
       return <Route component={MarketPlace} />;
     } else if (path === "/auctionDrops") {
@@ -129,6 +134,8 @@ function App() {
           <LoginRegisterRedirectCheck exact path="/register" />
           <LoginRegisterRedirectCheck exact path="/marketPlace" />
           <LoginRegisterRedirectCheck exact path="/admin-login" />
+          <LoginRegisterRedirectCheck exact path="/login" />
+          {/* <LoginRegisterRedirectCheck exact path="/" /> */}
           <LoginRegisterRedirectCheck exact path="/auctionDrops" />
           <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/:dropId" component={DropCubes} />
           <LoginRegisterRedirectCheck exact path="/auctionDrops/DropCubes/Nfts/:dropId/:cubeId" component={CubeNFTs} />

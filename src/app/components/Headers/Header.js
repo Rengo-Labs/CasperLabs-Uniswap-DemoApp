@@ -188,7 +188,7 @@ function HeaderHome(props) {
               </a>
             </li>
             <li className="login-link ">
-              <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
+              {/* <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} > */}
 
                 {localStorage.getItem("Address") ? (
                   <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
@@ -196,12 +196,15 @@ function HeaderHome(props) {
                   </a>
                 ) : (
                   <>
-                    <span style={selectedNavStyle.Community} onClick={() => Login()}>
-                      Login
+                    <Link to="/login" style={{ color: 'rgb(167,0,0)' }} >
+                      <span style={selectedNavStyle.Community} >
+                        Login/Signup
               </span>
+                    </Link>
                   </>
+
                 )}
-              </Link>
+              {/* </Link> */}
             </li>
             <li>
               <a href="/" style={{ color: 'rgb(167,0,0)' }} >
@@ -245,10 +248,11 @@ function HeaderHome(props) {
               </a>
             ) : (
               <>
-
-                <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
-                  Login
+                <Link to="/login" style={{ color: 'rgb(167,0,0)' }} >
+                  <span style={{ cursor: 'pointer' }}>
+                    Login/Signup
             </span>
+                </Link>
               </>
             )
           )}

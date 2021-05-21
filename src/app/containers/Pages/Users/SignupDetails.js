@@ -1,7 +1,6 @@
 // PersonalDetails.jsx
 import React, { Component } from 'react';
-import { CountryDropdown } from 'react-country-region-selector';
-import 'react-intl-tel-input/dist/main.css';
+
 import { Form } from 'semantic-ui-react';
 
 import logo from "../../../assets/img/img-04.jpg";
@@ -10,61 +9,41 @@ import logo from "../../../assets/img/img-04.jpg";
 class SignupDetails extends Component {
     constructor(props) {
         super(props);
-        this.state = { country: '', msg: '', msgM: '', city: '',address:'',factoryName:'', passportPhoto: '', selfiePassportPhoto: '', passportPhotoBlob: logo, selfiePassportPhotoBlob: logo };
+        this.state = { email: '', msg: '', msgM: '', userName: '', password: '', confirmPassword: '', passportPhoto: '', selfiePassportPhoto: '', passportPhotoBlob: logo, selfiePassportPhotoBlob: logo };
         this.mobile = React.createRef();
     }
     componentDidMount = () => {
         const { values } = this.props;
 
         // if (values.passportPhoto !== '' && values.selfiePassportPhoto !== '') {
-            this.setState({
-                // selfiePassportPhotoBlob: URL.createObjectURL(values.selfiePassportPhoto),
-                // passportPhotoBlob: URL.createObjectURL(values.passportPhoto),
-                // selfiePassportPhoto: values.selfiePassportPhoto,
-                // passportPhoto: values.passportPhoto,
-                country: values.country,
-                city: values.city,
-                address:values.address,
-                factoryName:values.factoryName,
-            })
+        this.setState({
+            // selfiePassportPhotoBlob: URL.createObjectURL(values.selfiePassportPhoto),
+            // passportPhotoBlob: URL.createObjectURL(values.passportPhoto),
+            // selfiePassportPhoto: values.selfiePassportPhoto,
+            // passportPhoto: values.passportPhoto,
+            email: values.email,
+            userName: values.userName,
+            address: values.address,
+            factoryName: values.factoryName,
+        })
         // }
     }
-    selectCountry(val) {
-        this.setState({ country: val });
-    }
-    // onChangePassportHandler = (event) => {
-    //     if (event.target.files[0] !== undefined) {
-    //         this.setState({
-    //             passportPhoto: event.target.files[0],
-    //             passportPhotoBlob: URL.createObjectURL(event.target.files[0])
-    //         })
-    //     }
-    // };
-    // onChangePassportSelfieHandler = (event) => {
-    //     if (event.target.files[0] !== undefined) {
-    //         this.setState({
-    //             selfiePassportPhoto: event.target.files[0],
-    //             selfiePassportPhotoBlob: URL.createObjectURL(event.target.files[0])
-    //         })
-    //     }
-    // }
-
     saveAndContinue = (e) => {
         e.preventDefault();
-        if (this.state.city === "") {
-            this.setState({ msg: 'Please Enter City' });
+        if (this.state.userName === "") {
+            this.setState({ msg: 'Please Enter User Name' });
             return;
         }
-        else if (this.state.country === "") {
-            this.setState({ msg: 'Please Select Country' });
+        else if (this.state.email === "") {
+            this.setState({ msg: 'Please Enter your Email' });
             return;
         }
-        else if (this.state.address === "") {
-            this.setState({ msg: 'Please Enter Address' });
+        else if (this.state.password === "") {
+            this.setState({ msg: 'Please Enter Password' });
             return;
         }
-        else if (this.state.factoryName === "") {
-            this.setState({ msg: 'Please Enter Business Name' });
+        else if (this.state.password !== this.state.confirmPassword) {
+            this.setState({ msg: 'Password does not match with Confirm Password' });
             return;
         }
         // else if (this.state.passportPhoto === "") {
@@ -76,8 +55,8 @@ class SignupDetails extends Component {
         // }
         else {
             this.props.handleStepTwo({
-                city: this.state.city,
-                country: this.state.country,
+                userName: this.state.userName,
+                email: this.state.email,
                 address: this.state.address,
                 factoryName: this.state.factoryName,
                 // passportPhoto: this.state.passportPhoto,
@@ -94,158 +73,90 @@ class SignupDetails extends Component {
 
     render() {
         const { values } = this.props
-        const { country } = this.state;
+        const { email } = this.state;
 
         return (
             <Form >
                 <div className="row">
-                    {/* <div className="col-12 col-md-6">
-                        <label className="focus-label">Passport Picture</label>
-                        <div className="form-group">
-                            <div className="change-avatar">
-                                <div className="profile-img">
-                                    <div
-                                        style={{
-                                            background: "#E9ECEF",
-                                            width: "100px",
-                                            height: "100px",
-                                        }}
-                                    >
-                                        <img src={this.state.passportPhotoBlob} alt="Passport" />
-                                    </div>
-                                </div>
-
-                                <div className="upload-img">
-                                    <div
-                                        className="change-photo-btn"
-                                        style={{ backgroundColor: "rgb(167,0,0)" }}
-                                    >
-                                        <span>
-                                            <i className="fa fa-upload"></i>
-                          Upload Photo
-                        </span>
-                                        <input
-                                            name="sampleFile"
-                                            type="file"
-                                            className="upload"
-                                            accept=".png,.jpg,.jpeg,.gif"
-                                            onChange={this.onChangePassportHandler}
-                                        />
-                                    </div>
-                                    <small className="form-text text-muted">
-                                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
-                      </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-12 col-md-6">
-                        <label className="focus-label">Passport Picture with Selfie</label>
-                        <div className="form-group">
-                            <div className="change-avatar">
-                                <div className="profile-img">
-                                    <div
-                                        style={{
-                                            background: "#E9ECEF",
-                                            width: "100px",
-                                            height: "100px",
-                                        }}
-                                    >
-                                        <img src={this.state.selfiePassportPhotoBlob} alt="Selfie with Passport" />
-                                    </div>
-                                </div>
-
-                                <div className="upload-img">
-                                    <div
-                                        className="change-photo-btn"
-                                        style={{ backgroundColor: "rgb(167,0,0)" }}
-                                    >
-                                        <span>
-                                            <i className="fa fa-upload"></i>
-                          Upload Photo
-                        </span>
-                                        <input
-                                            name="sampleFile"
-                                            type="file"
-                                            className="upload"
-                                            accept=".png,.jpg,.jpeg,.gif"
-                                            onChange={this.onChangePassportSelfieHandler}
-                                        />
-                                    </div>
-                                    <small className="form-text text-muted">
-                                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
-                      </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div> */}
-
                     <div className="col-12 col-md-12">
                         <div className="form-group form-focus focused">
-
                             <input
                                 // placeholder='City'
                                 onChange={(e) => {
-                                    this.setState({ city: e.target.value })
+                                    this.setState({ userName: e.target.value })
                                 }}
-                                defaultValue={values.city}
+                                defaultValue={values.userName}
                                 className="form-control floating"
                                 required
                             />
-                            <label className="focus-label">City</label>
+                            <label className="focus-label">User Name</label>
 
                         </div>
                     </div>
                     <div className="col-12 col-md-12">
-                        <div className="form-group ">
-                            <CountryDropdown
-                                value={country}
-                                onChange={(val) => {
-                                    this.selectCountry(val);
-                                }}
+                        <div className="form-group form-focus focused">
+                            <input
+                                type="email"
                                 className="form-control floating"
+                                onChange={(e) => {
+                                    this.setState({
+                                        email: e.target.value
+                                    })
+                                }}
+                                value={this.state.email}
+
+                                required
                             />
+                            <label className="focus-label">Email</label>
                         </div>
                     </div>
                     <div className="col-12 col-md-12">
                         <div className="form-group form-focus focused">
                             <input
-                                type="text"
+                                type="password"
                                 className="form-control floating"
+                                value={this.state.password}
                                 onChange={(e) => {
-                                    this.setState({ address: e.target.value })
+                                    this.setState({
+                                        password: e.target.value
+                                    })
                                 }}
-                                defaultValue={values.address}
+                                // defaultValue={values.password}
+                                minLength="4"
                                 required
                             />
-                            <label className="focus-label">Address</label>
+                            <label className="focus-label">Password</label>
                         </div>
                     </div>
                     <div className="col-12 col-md-12">
                         <div className="form-group form-focus focused">
                             <input
-                                type="text"
+                                type="password"
                                 className="form-control floating"
+                                value={this.state.password}
                                 onChange={(e) => {
-                                    this.setState({ factoryName: e.target.value })
+                                    this.setState({
+                                        confirmPassword: e.target.value
+                                    })
                                 }}
-                                defaultValue={values.factoryName}
+                                // defaultValue={values.password}
+                                minLength="4"
                                 required
                             />
-                            <label className="focus-label">Business Name</label>
+                            <label className="focus-label">Password</label>
                         </div>
                     </div>
                 </div>
                 <div className="form-group">
-                            <p style={{ color: "#FF0000" }}>{this.state.msg}</p>
-                        </div>
+                    <p style={{ color: "#FF0000" }}>{this.state.msg}</p>
+                </div>
                 {/* <div>
                     <button className="btn login-btn" style={{ textAlign: "left" }} onClick={this.back}>Back</button>
                 </div> */}
                 <br />
                 <div className="text-center">
                     <button className="btn btn-lg login-btn" onClick={this.saveAndContinue}>
-                        Save And Continue</button>
+                        Sign Up</button>
                 </div>
             </Form>
         )

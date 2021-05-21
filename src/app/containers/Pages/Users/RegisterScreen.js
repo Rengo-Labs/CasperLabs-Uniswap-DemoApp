@@ -7,7 +7,7 @@ import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";
 import Header from "../../../components/Headers/Header";
 import MainForm from "./MainForm";
-// import loginBanner from "../../../assets/img/importExport.jpg";
+import loginBanner from "../../../assets/img/Login.png";
 
 
 
@@ -36,12 +36,12 @@ function RegisterScreen(props) {
                       className="col-md-8 col-lg-7 login-left"
                       style={{ textAlign: "center" }}
                     >
-                      {/* <img
+                      <img
                         src={loginBanner}
                         className="img-fluid"
                         alt="Doccure Login"
                         style={{ height: "400px", paddingTop: "20px" }}
-                      /> */}
+                      />
                     </div>
                     <div className="col-md-11 col-lg-5 login-right">
 
