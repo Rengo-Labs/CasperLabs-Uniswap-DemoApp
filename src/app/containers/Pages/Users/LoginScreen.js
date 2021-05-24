@@ -22,6 +22,7 @@ function LoginScreen(props) {
   let [msg, setMsg] = useState("");
   let [isMobileVarified, setIsMobileVarified] = useState(false);
 
+
   let handleSubmitEvent = (event) => {
     setMsg("");
     setIsError(false);
@@ -62,7 +63,7 @@ function LoginScreen(props) {
         setIsLoading(false);
       });
   };
-
+  
   return (
 
     <div
@@ -191,6 +192,8 @@ function LoginScreen(props) {
         </div>
         <Footer position={""} />
       </div>
+
+      
     </div>
   );
 }

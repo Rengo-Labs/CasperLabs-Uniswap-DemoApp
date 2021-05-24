@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import React, { useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
 import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
@@ -12,8 +13,10 @@ import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";
 import Header from "../../../components/Headers/Header";
 import { Form, Ref } from 'semantic-ui-react';
-
+import Web3 from "web3";
+import NetworkErrorModal from "../../../components/Modals/NetworkErrorModal";
 function UserLoginScreen(props) {
+  let history = useHistory();
   let [email, setEmail] = useState();
   let [password, setPassword] = useState();// eslint-disable-next-line
   let [data, setData] = useState("");
@@ -22,6 +25,11 @@ function UserLoginScreen(props) {
   let [msg, setMsg] = useState("");
   let [isMobileVarified, setIsMobileVarified] = useState(false);
 
+  let [network, setNetwork] = useState(false);
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   let handleSubmitEvent = (event) => {
     setMsg("");
     setIsError(false);
@@ -40,7 +48,8 @@ function UserLoginScreen(props) {
         setData(response.data.token);
 
         setIsLoading(false);
-        window.location.reload();
+        // history.push("/");
+        // window.location.reload();
 
       })
       .catch((error) => {
@@ -62,7 +71,59 @@ function UserLoginScreen(props) {
         setIsLoading(false);
       });
   };
+  let Login = async (e) => {
+    console.log("HELLO",e);
+    e.preventDefault();
+    setIsLoading(true);
+    if (window.ethereum) {
+      window.web3 = new Web3(window.ethereum)
+      await window.ethereum.enable()
+    }
+    else if (window.web3) {
+      window.web3 = new Web3(window.web3.currentProvider)
+    }
+    else {
+      window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+    }
 
+    const web3 = window.web3
+    const accounts = await web3.eth.getAccounts();
+    const network = await web3.eth.net.getNetworkType()
+    console.log("Account test: ", accounts[0], network);
+    if (network !== 'ropsten') {
+      setNetwork(network);
+      setIsLoading(false);
+      handleShow();
+    }
+    else {
+      let loginData = {
+        address: accounts[0],
+        network: network,
+        // roles: 'admin'
+      }
+      axios.post("user/auth/login", loginData).then(
+        (response) => {
+          console.log("response", response);
+          Cookies.set("Authorization", response.data.token, {
+          });
+          if (response.data.roles === "user") {
+            localStorage.setItem("Address", accounts[0]);
+          }
+          setIsLoading(false);
+          history.push("/");
+          // window.location.reload();
+
+        },
+        (error) => {
+          if (process.env.NODE_ENV === "development") {
+            console.log(error);
+            console.log(error.response);
+          }
+          setIsLoading(false);
+        })
+    }
+
+  }
   return (
 
     <div
@@ -113,7 +174,7 @@ function UserLoginScreen(props) {
                           <div className="login-header">
                             <h3 style={{ textAlign: "center" }}>Sign In</h3>
                           </div>
-                          <form onSubmit={handleSubmitEvent}>
+                          <form onSubmit={(e)=>Login(e)}>
                             <div className="form-group form-focus focused">
                               <input
                                 type="email"
@@ -125,7 +186,7 @@ function UserLoginScreen(props) {
                                   setEmail(e.target.value);
                                 }}
                               />
-                              <label className="focus-label">Email</label>
+                              <label className="focus-label">Emaill</label>
                             </div>
                             <div className="form-group form-focus focused">
                               <input
@@ -142,14 +203,14 @@ function UserLoginScreen(props) {
                               <p style={{ color: "red" }}>{msg}</p>
                             </div>
                             <div className="text-right">
-                                <Link
-                                  to="/forgotPassword"
-                                  className="forgot-link"
-                                  style={{ color: "#000" }}
-                                >
-                                  Forgot Password ?
+                              <Link
+                                to="/forgotPassword"
+                                className="forgot-link"
+                                style={{ color: "#000" }}
+                              >
+                                Forgot Password ?
                                 </Link>
-                              </div>
+                            </div>
 
                             {isLoading ? (
                               <div className="text-center">
@@ -174,9 +235,9 @@ function UserLoginScreen(props) {
                             {/* Incorrect Email or Password. */}
 
                             <div className="text-center dont-have">
-                                Don’t have an account?{" "}
-                                <Link to="/register">Register</Link>
-                              </div>
+                              Don’t have an account?{" "}
+                              <Link to="/register">Register</Link>
+                            </div>
                           </form>
                         </>
 
@@ -191,6 +252,12 @@ function UserLoginScreen(props) {
         </div>
         <Footer position={""} />
       </div>
+      <NetworkErrorModal
+        show={show}
+        handleClose={handleClose}
+        network={network}
+      >
+      </NetworkErrorModal>
     </div>
   );
 }

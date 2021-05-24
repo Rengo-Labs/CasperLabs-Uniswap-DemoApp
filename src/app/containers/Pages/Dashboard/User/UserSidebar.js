@@ -89,11 +89,11 @@ function AdminSidebar(props) {
             <li className="menu-title">
               <span>Settings</span>
             </li>
-            {/* <li className={props.activeTab.settings}>
+            <li className={props.activeTab.settings}>
               <Link to={`${props.match.url}/profilesettings`}>
                 <i className="fa fa-cog"></i> <span>Profile Settings</span>
               </Link>
-            </li> */}
+            </li>
             {/* <li className={props.activeTab.changePassword}>
               <Link to={`${props.match.url}/changepassword`}>
                 <i className="fa fa-key"></i> <span>Change Password</span>

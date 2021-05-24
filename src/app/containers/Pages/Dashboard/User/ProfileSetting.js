@@ -5,7 +5,78 @@ import { Spinner, Form } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import Cookies from "js-cookie";
 
+import { makeStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import r1 from '../../../../assets/img/patients/patient.jpg';
+import { useSnackbar } from 'notistack';
+import ipfs from '../../../../components/IPFS/ipfs';
+const useStyles = makeStyles({
+  root: {
+    flexGrow: 1,
+  },
+});
+
 function ProfileSetting(props) {
+  const classes = useStyles();
+  const { enqueueSnackbar } = useSnackbar();
+  let [artist, setArtist] = useState('');
+  let [description, setDescription] = useState("");
+  let [aboutTheTrack, setAboutTheTrack] = useState("");
+  let [name, setName] = useState("");
+  let [website, setWebsite] = useState("");
+  let [aboutTheArt, setAboutTheArt] = useState("");
+  let [ipfsHash, setIpfsHash] = useState(null);
+  let [inspirationForThePiece, setInspirationForThePiece] = useState("");
+  let [executiveInspirationForThePiece, setExecutiveInspirationForThePiece] = useState("");
+  let [fanInspirationForThePiece, setFanInspirationForThePiece] = useState("");
+
+  let [rarities, setRarities] = useState(["Mastercraft", "Legendary", "Epic", "Rare", "Uncommon", "Common"]);
+  let [supplyType, setSupplyType] = useState("Single");
+  let [imageArtistTypes, setImageArtistTypes] = useState([]);
+  let [executiveProducerTypes, setExecutiveProducerTypes] = useState([]);
+  let [fans, setFanTypes] = useState([]);
+  let [producerTypes, setProducerTypes] = useState([]);
+
+  let [imageArtist, setImageArtist] = useState('');
+  let [collectionTypes, setCollectionTypes] = useState([]);
+  let [collectionType, setCollectionType] = useState("New");
+  let [collection, setCollection] = useState('');
+
+  let [producer, setProducer] = useState('');
+  let [tokenSupply, setTokenSupply] = useState("1");
+  let [isUploadingIPFS, setIsUploadingIPFS] = useState(false);
+  let [isUploadingExecutiveProducer, setIsUploadingExecutiveProducer] = useState(false);
+  let [isUploadingProducer, setIsUploadingProducer] = useState(false);
+  let [isUploadingFan, setIsUploadingFan] = useState(false);
+  let [isUploadingImageArtist, setIsUploadingImageArtist] = useState(false);
+  let [rarity, setRarity] = useState('');
+  let [fan, setFan] = useState('');
+  let [other, setOther] = useState('');
+  let [image, setImage] = useState(r1);
+  let [artistImage, setArtistImage] = useState(r1);
+  let [producerImage, setProducerImage] = useState(r1);
+  let [executiveProducerImage, setExecutiveProducerImage] = useState(r1);
+  let [fanImage, setFanImage] = useState(r1);
+  let [imageArtistType, setImageArtistType] = useState("New");
+  let [producerType, setProducerType] = useState("New");
+  let [executiveProducerType, setExecutiveProducerType] = useState("New");
+  let [fanType, setFanType] = useState("New");
+  let [collectionId, setCollectionId] = useState('');
+
+  let [executiveProducer, setExecutiveProducer] = useState('');
+  // let [artistImage, setArtistImage] = useState(logo);
+
+  let [isUploadingArtist, setIsUploadingArtist] = useState(false);
+
+  const [value, setValue] = React.useState(0);
+
+  const handleChange = (event, newValue) => {
+    console.log("newValue", newValue);
+    setValue(newValue);
+  };
+
   let [isImageSelected, setIsImageSelected] = useState(false);
   let [imageData, setImageData] = useState();
   let [mobileInput, setMobileInput] = useState();
@@ -38,15 +109,15 @@ function ProfileSetting(props) {
     }
     props.setActiveTab({
       dashboard: "",
-            totalUserAccount: "",
-            pendingUserAccount: "",
-            earningsList: "",
-            tradeListOrders: "",
-            referralEarnings:"",
-            disputedOrders: "",
-            resolvedDisputedOrders: "",
-            settings: "active",
-            changePassword: "",
+      totalUserAccount: "",
+      pendingUserAccount: "",
+      earningsList: "",
+      tradeListOrders: "",
+      referralEarnings: "",
+      disputedOrders: "",
+      resolvedDisputedOrders: "",
+      settings: "active",
+      changePassword: "",
     });// eslint-disable-next-line
   }, []);
   let onSubmitHandleEvent = (event) => {
@@ -136,6 +207,175 @@ function ProfileSetting(props) {
         });
     }
   };
+
+  let onChangeFile = (e) => {
+    setIsUploadingIPFS(true);
+    const reader = new window.FileReader();
+    let imageNFT = e.target.files[0]
+    reader.readAsArrayBuffer(e.target.files[0]);
+    reader.onloadend = () => {
+      // setBuffer(Buffer(reader.result));
+      ipfs.add(Buffer(reader.result), async (err, result) => {
+        if (err) {
+          console.log(err);
+          setIsUploadingIPFS(false);
+          let variant = "error";
+          enqueueSnackbar('Unable to Upload Image to IPFS ', { variant });
+          return
+        }
+        console.log("HASH", result[0].hash);
+
+        setIpfsHash(result[0].hash);
+        let variant = "success";
+        enqueueSnackbar('Image Uploaded to IPFS Successfully', { variant });
+        // 
+      })
+    }
+    // setIsUploadingIPFS(true);
+    let fileData = new FormData();
+    fileData.append("image", imageNFT);
+    axios.post("upload/uploadtos3", fileData).then(
+      (response) => {
+        console.log("response", response);
+        setImage(response.data.url);
+        setIsUploadingIPFS(false);
+        let variant = "success";
+        enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+      },
+      (error) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log(error);
+          console.log(error.response);
+        }
+        setIsUploadingIPFS(false);
+        let variant = "error";
+        enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+      }
+    );
+
+  }
+  let onChangeSelfieHandler = (e) => {
+    setIsUploadingImageArtist(true);
+    let fileData = new FormData();
+    fileData.append("image", e.target.files[0]);
+    axios.post("upload/uploadtos3", fileData).then(
+      (response) => {
+        console.log("response", response);
+        setArtistImage(response.data.url);
+        setIsUploadingImageArtist(false);
+        let variant = "success";
+        enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+      },
+      (error) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log(error);
+          console.log(error.response);
+        }
+        setIsUploadingImageArtist(false);
+        let variant = "error";
+        enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+      }
+    );
+  }
+  let onChangeProducerHandler = (e) => {
+    setIsUploadingProducer(true);
+    let fileData = new FormData();
+    fileData.append("image", e.target.files[0]);
+    axios.post("upload/uploadtos3", fileData).then(
+      (response) => {
+        console.log("response", response);
+        setProducerImage(response.data.url);
+        setIsUploadingProducer(false);
+        let variant = "success";
+        enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+      },
+      (error) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log(error);
+          console.log(error.response);
+        }
+        setIsUploadingProducer(false);
+        let variant = "error";
+        enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+      }
+    );
+  }
+  let onChangeExecutiveProducerHandler = (e) => {
+    setIsUploadingExecutiveProducer(true);
+    let fileData = new FormData();
+    fileData.append("image", e.target.files[0]);
+    axios.post("upload/uploadtos3", fileData).then(
+      (response) => {
+        console.log("response", response);
+        setExecutiveProducerImage(response.data.url);
+        setIsUploadingExecutiveProducer(false);
+        let variant = "success";
+        enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+      },
+      (error) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log(error);
+          console.log(error.response);
+        }
+        setIsUploadingExecutiveProducer(false);
+        let variant = "error";
+        enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+      }
+    );
+  }
+  let onChangeFanHandler = (e) => {
+    setIsUploadingFan(true);
+    let fileData = new FormData();
+    fileData.append("image", e.target.files[0]);
+    axios.post("upload/uploadtos3", fileData).then(
+      (response) => {
+        console.log("response", response);
+        setFanImage(response.data.url);
+        setIsUploadingFan(false);
+        let variant = "success";
+        enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+      },
+      (error) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log(error);
+          console.log(error.response);
+        }
+        setIsUploadingFan(false);
+        let variant = "error";
+        enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+      }
+    );
+  }
+  let onChangeArtistHandler = (e) => {
+    setIsUploadingArtist(true);
+    let fileData = new FormData();
+    fileData.append("image", e.target.files[0]);
+    axios.post("upload/uploadtos3", fileData).then(
+      (response) => {
+        console.log("response", response);
+        setArtistImage(response.data.url);
+        setIsUploadingArtist(false);
+        let variant = "success";
+        enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+      },
+      (error) => {
+        if (process.env.NODE_ENV === "development") {
+          console.log(error);
+          console.log(error.response);
+        }
+        setIsUploadingArtist(false);
+        let variant = "error";
+        enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+
+      }
+    );
+  }
+
   return (
     <>
       {/* {props.userData.name !== undefined ? ( */}
@@ -147,148 +387,554 @@ function ProfileSetting(props) {
           <li className="breadcrumb-item active">Profile Settings</li>
         </ul>
         <div className="card-body">
-          {/* // <!-- Profile Settings Form --> */}
-          <form onSubmit={onSubmitHandleEvent}>
-            <div className="row form-row">
-              <div className="col-12 col-md-12">
-                <div className="form-group">
-                  <div className="change-avatar">
-                    <div className="profile-img">
-                      {/* {props.userData.pictureURL !== undefined ? ( */}
-                      {/* <img
-                      src={props.userData.pictureURL}
-                      alt="User Image"
-                      /> */}
-                      {/* ) : (
-                            <> */}
-                      <div
-                        style={{
-                          background: "#E9ECEF",
-                          width: "100px",
-                          height: "100px",
-                        }}
-                      >
-                        <p
-                          style={{
-                            color: "#00D0F1",
-                            fontSize: "24px",
-                            marginLeft: "35%",
-                            paddingTop: "33%",
-                          }}
-                        >
-                          {/* <strong>{props.userData.name[0]}</strong> */}
-                        </p>
-                      </div>
-                      {/* </>
-                          )} */}
+          <Paper className={classes.root}>
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              indicatorColor="primary"
+              textColor="primary"
+              centered
+            >
+              <Tab label="Image Aritst" />
+              <Tab label="Music Aritst" />
+              <Tab label="Producer" />
+              <Tab label="Executive Producer" />
+              <Tab label="Fan" />
+            </Tabs>
+          </Paper>
+          {value === 0 ? (
+            <form style={{ margin: "20px" }}>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  required
+                  value={imageArtist}
+                  placeholder="Enter Image Artist Name"
+                  className="form-control"
+                  onChange={(e) => {
+                    setImageArtist(e.target.value)
+                  }}
+                />
+              </div>
+              <div className="form-group">
+                {/* <label>About the Track</label> */}
+                <textarea
+                  type="text"
+                  required
+                  rows="4"
+                  value={aboutTheArt}
+                  placeholder="About the Art"
+                  className="form-control"
+                  onChange={(e) => {
+                    setAboutTheArt(e.target.value)
+                  }}
+                />
+              </div>
+              <label className="focus-label">Image Artist Photo</label>
+              <div className="form-group">
+                <div className="change-avatar">
+                  <div className="profile-img">
+                    <div
+                      style={{
+                        background: "#E9ECEF",
+                        width: "100px",
+                        height: "100px",
+                      }}
+                    >
+                      <img src={artistImage} alt="Selfie" />
                     </div>
-                    <div className="upload-img">
-                      <div
-                        className="change-photo-btn"
-                        style={{ backgroundColor: "rgb(167,0,0)" }}
-                      >
-                        <span>
-                          <i className="fa fa-upload"></i>
-                          Upload Photo
-                        </span>
-                        <input
-                          name="sampleFile"
-                          type="file"
-                          className="upload"
-                          accept=".png,.jpg,.jpeg,.gif"
-                          onChange={onChangePictureHandler}
-                        />
-                      </div>
-                      <small className="form-text text-muted">
-                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                  </div>
+                  <div className="upload-img">
+                    <div
+                      className="change-photo-btn"
+                      style={{ backgroundColor: "rgb(167,0,0)" }}
+                    >
+                      {isUploadingImageArtist ? (
+                        <div className="text-center">
+                          <Spinner
+                            animation="border"
+                            role="status"
+                            style={{ color: "#fff" }}
+                          >
+                          </Spinner>
+                        </div>
+                      ) : (
+                        <span><i className="fa fa-upload"></i>Upload photo</span>
+                      )}
+                      <input
+                        name="sampleFile"
+                        type="file"
+                        className="upload"
+                        accept=".png,.jpg,.jpeg,.gif"
+                        onChange={onChangeSelfieHandler}
+                      />
+                    </div>
+                    <small className="form-text text-muted">
+                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
                       </small>
-                    </div>
                   </div>
                 </div>
               </div>
-              <div className="col-12 col-md-6">
-                <div className="form-group">
-                  <label>Name</label>
-                  <input
-                    disabled
-                    type="text"
-                    className="form-control"
+              <div className="form-group">
+                <input
+                  type="text"
+                  required
+                  value={website}
+                  placeholder="Enter Website URL"
+                  className="form-control"
+                  onChange={(e) => {
+                    setWebsite(e.target.value)
+                  }}
+                />
+              </div>
+            </form>
+          ) : value === 1 ? (
+            <>
+              <div className="form-group">
+                {/* <label>Artist Name</label> */}
+                <input
+                  type="text"
+                  required
+                  value={artist}
+                  placeholder="Enter Music Artist Name"
+                  className="form-control"
+                  onChange={(e) => {
+                    setArtist(e.target.value)
+                  }}
+                />
+              </div>
+              <label className="focus-label">Artist Profile Photo</label>
+              <div className="form-group">
+                <div className="change-avatar">
+                  <div className="profile-img">
+                    <div
+                      style={{
+                        background: "#E9ECEF",
+                        width: "100px",
+                        height: "100px",
+                      }}
+                    >
+                      <img src={artistImage} alt="Selfie" />
+                    </div>
+                  </div>
+                  <div className="upload-img">
+                    <div
+                      className="change-photo-btn"
+                      style={{ backgroundColor: "rgb(167,0,0)" }}
+                    >
+                      {isUploadingArtist ? (
+                        <div className="text-center">
+                          <Spinner
+                            animation="border"
+                            role="status"
+                            style={{ color: "#fff" }}
+                          >
+                          </Spinner>
+                        </div>
+                      ) : (
+                        <span><i className="fa fa-upload"></i>Upload photo</span>
+                      )}
+                      <input
+                        name="sampleFile"
+                        type="file"
+                        className="upload"
+                        accept=".png,.jpg,.jpeg,.gif"
+                        onChange={onChangeArtistHandler}
+                      />
+                    </div>
+                    <small className="form-text text-muted">
+                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                  </div>
+                </div>
+              </div>
+              <div className="form-group">
+                {/* <label>About the Track</label> */}
+                <textarea
+                  type="text"
+                  required
+                  rows="4"
+                  value={aboutTheTrack}
+                  placeholder="About the Track"
+                  className="form-control"
+                  onChange={(e) => {
+                    setAboutTheTrack(e.target.value)
+                  }}
+                />
+              </div>
+            </>
+          ) : value === 2 ? (
+            <>
+              <div className="form-group">
+                {/* <label>Producer</label> */}
+                <input
+                  type="text"
+                  required
+                  value={producer}
+                  placeholder="Enter Producer Name"
+                  className="form-control"
+                  onChange={(e) => {
+                    setProducer(e.target.value)
+                  }}
+                />
+              </div>
+              <label className="focus-label">Producer Profile Photo</label>
+              <div className="form-group">
+                <div className="change-avatar">
+                  <div className="profile-img">
+                    <div
+                      style={{
+                        background: "#E9ECEF",
+                        width: "100px",
+                        height: "100px",
+                      }}
+                    >
+                      <img src={producerImage} alt="Selfie" />
+                    </div>
+                  </div>
+                  <div className="upload-img">
+                    <div
+                      className="change-photo-btn"
+                      style={{ backgroundColor: "rgb(167,0,0)" }}
+                    >
+                      {isUploadingProducer ? (
+                        <div className="text-center">
+                          <Spinner
+                            animation="border"
+                            role="status"
+                            style={{ color: "#fff" }}
+                          >
+                          </Spinner>
+                        </div>
+                      ) : (
+                        <span><i className="fa fa-upload"></i>Upload photo</span>
+                      )}
+                      <input
+                        name="sampleFile"
+                        type="file"
+                        className="upload"
+                        accept=".png,.jpg,.jpeg,.gif"
+                        onChange={onChangeProducerHandler}
+                      />
+                    </div>
+                    <small className="form-text text-muted">
+                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                  </div>
+                </div>
+              </div>
+              <div className="form-group">
+                {/* <label>Inspiration For the Piece</label> */}
+                <textarea
+                  type="text"
+                  required
+                  rows="4"
+                  value={inspirationForThePiece}
+                  placeholder="Inspiration For the Piece"
+                  className="form-control"
+                  onChange={(e) => {
+                    setInspirationForThePiece(e.target.value)
+                  }}
+                />
+              </div>
+            </>
+          ) : value === 3 ? (
+            <>
+              <div className="form-group">
+                {/* <label>Producer</label> */}
+                <input
+                  type="text"
+                  required
+                  value={executiveProducer}
+                  placeholder="Enter Executive Producer Name"
+                  className="form-control"
+                  onChange={(e) => {
+                    setExecutiveProducer(e.target.value)
+                  }}
+                />
+              </div>
+              <label className="focus-label">Executive Producer Profile Photo</label>
+              <div className="form-group">
+                <div className="change-avatar">
+                  <div className="profile-img">
+                    <div
+                      style={{
+                        background: "#E9ECEF",
+                        width: "100px",
+                        height: "100px",
+                      }}
+                    >
+                      <img src={executiveProducerImage} alt="Selfie" />
+                    </div>
+                  </div>
+                  <div className="upload-img">
+                    <div
+                      className="change-photo-btn"
+                      style={{ backgroundColor: "rgb(167,0,0)" }}
+                    >
+                      {isUploadingExecutiveProducer ? (
+                        <div className="text-center">
+                          <Spinner
+                            animation="border"
+                            role="status"
+                            style={{ color: "#fff" }}
+                          >
+                          </Spinner>
+                        </div>
+                      ) : (
+                        <span><i className="fa fa-upload"></i>Upload photo</span>
+                      )}
+                      <input
+                        name="sampleFile"
+                        type="file"
+                        className="upload"
+                        accept=".png,.jpg,.jpeg,.gif"
+                        onChange={onChangeExecutiveProducerHandler}
+                      />
+                    </div>
+                    <small className="form-text text-muted">
+                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                  </div>
+                </div>
+              </div>
+              <div className="form-group">
+                {/* <label>Inspiration For the Piece</label> */}
+                <textarea
+                  type="text"
+                  required
+                  rows="4"
+                  value={executiveInspirationForThePiece}
+                  placeholder="Inspiration For the Piece"
+                  className="form-control"
+                  onChange={(e) => {
+                    setExecutiveInspirationForThePiece(e.target.value)
+                  }}
+                />
+              </div>
+            </>
+          ) : value === 4 ? (
+            <>
+              <div className="form-group">
+                {/* <label>Producer</label> */}
+                <input
+                  type="text"
+                  required
+                  value={fan}
+                  placeholder="Enter Fan Name"
+                  className="form-control"
+                  onChange={(e) => {
+                    setFan(e.target.value)
+                  }}
+                />
+              </div>
+              <label className="focus-label">Fan Profile Photo</label>
+              <div className="form-group">
+                <div className="change-avatar">
+                  <div className="profile-img">
+                    <div
+                      style={{
+                        background: "#E9ECEF",
+                        width: "100px",
+                        height: "100px",
+                      }}
+                    >
+                      <img src={fanImage} alt="Selfie" />
+                    </div>
+                  </div>
+                  <div className="upload-img">
+                    <div
+                      className="change-photo-btn"
+                      style={{ backgroundColor: "rgb(167,0,0)" }}
+                    >{isUploadingFan ? (
+                      <div className="text-center">
+                        <Spinner
+                          animation="border"
+                          role="status"
+                          style={{ color: "#fff" }}
+                        >
+                        </Spinner>
+                      </div>
+                    ) : (
+                      <span><i className="fa fa-upload"></i>Upload photo</span>
+                    )}
+                      <input
+                        name="sampleFile"
+                        type="file"
+                        className="upload"
+                        accept=".png,.jpg,.jpeg,.gif"
+                        onChange={onChangeFanHandler}
+                      />
+                    </div>
+                    <small className="form-text text-muted">
+                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                  </div>
+                </div>
+              </div>
+              <div className="form-group">
+                {/* <label>Inspiration For the Piece</label> */}
+                <textarea
+                  type="text"
+                  required
+                  rows="4"
+                  value={fanInspirationForThePiece}
+                  placeholder="Inspiration For the Piece"
+                  className="form-control"
+                  onChange={(e) => {
+                    setFanInspirationForThePiece(e.target.value)
+                  }}
+                />
+              </div>
+            </>
+          ) : (
+            <form onSubmit={onSubmitHandleEvent}>
+              <div className="row form-row">
+                <div className="col-12 col-md-12">
+                  <div className="form-group">
+                    <div className="change-avatar">
+                      <div className="profile-img">
+                        {/* {props.userData.pictureURL !== undefined ? ( */}
+                        {/* <img
+                      src={props.userData.pictureURL}
+                      alt="User Image"
+                      /> */}
+                        {/* ) : (
+                            <> */}
+                        <div
+                          style={{
+                            background: "#E9ECEF",
+                            width: "100px",
+                            height: "100px",
+                          }}
+                        >
+                          <p
+                            style={{
+                              color: "#00D0F1",
+                              fontSize: "24px",
+                              marginLeft: "35%",
+                              paddingTop: "33%",
+                            }}
+                          >
+                            {/* <strong>{props.userData.name[0]}</strong> */}
+                          </p>
+                        </div>
+                        {/* </>
+                          )} */}
+                      </div>
+                      <div className="upload-img">
+                        <div
+                          className="change-photo-btn"
+                          style={{ backgroundColor: "rgb(167,0,0)" }}
+                        >
+                          <span>
+                            <i className="fa fa-upload"></i>
+                          Upload Photo
+                        </span>
+                          <input
+                            name="sampleFile"
+                            type="file"
+                            className="upload"
+                            accept=".png,.jpg,.jpeg,.gif"
+                            onChange={onChangePictureHandler}
+                          />
+                        </div>
+                        <small className="form-text text-muted">
+                          Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                      </div>
+                    </div>
+                  </div>
+                </div >
+                <div className="col-12 col-md-6">
+                  <div className="form-group">
+                    <label>Name</label>
+                    <input
+                      disabled
+                      type="text"
+                      className="form-control"
                     // defaultValue={props.userData.name}
-                  />
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="col-12 col-md-6">
-                <div className="form-group">
-                  <label>Email ID</label>
-                  <input
-                    disabled
-                    type="email"
-                    className="form-control"
+                <div className="col-12 col-md-6">
+                  <div className="form-group">
+                    <label>Email ID</label>
+                    <input
+                      disabled
+                      type="email"
+                      className="form-control"
                     // defaultValue={props.userData.email}
-                  />
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="col-12 col-md-6">
-                <div className="form-group">
-                  <label>Mobile</label>
-                  <input
-                    // pattern="[+]852[0-9]{8}"
-                    type="text"
-                    // defaultValue={props.userData.mobile}
-                    className="form-control"
-                    onChange={(e) => {
-                      setMobileInput(e.target.value);
-                      setIsFieldChanged(true);
-                    }}
-                    required
-                  />
-                  {/* <small>Format: +852XXXXXXXX</small> */}
+                <div className="col-12 col-md-6">
+                  <div className="form-group">
+                    <label>Mobile</label>
+                    <input
+                      // pattern="[+]852[0-9]{8}"
+                      type="text"
+                      // defaultValue={props.userData.mobile}
+                      className="form-control"
+                      onChange={(e) => {
+                        setMobileInput(e.target.value);
+                        setIsFieldChanged(true);
+                      }}
+                      required
+                    />
+                    {/* <small>Format: +852XXXXXXXX</small> */}
+                  </div>
                 </div>
-              </div>
-              <div className="col-12">
-                <div className="form-group">
-                  <label>Two Factor Authentication</label>
-                  <Form.Check
-                    type="switch"
-                    id="custom-switch"
-                    label="If enabled, you will receive a security code for login!"
-                    checked={check}
-                    onChange={handleSet2FAcheck}
-                  />
+                <div className="col-12">
+                  <div className="form-group">
+                    <label>Two Factor Authentication</label>
+                    <Form.Check
+                      type="switch"
+                      id="custom-switch"
+                      label="If enabled, you will receive a security code for login!"
+                      checked={check}
+                      onChange={handleSet2FAcheck}
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="submit-section">
-              {isSavingChanges ? (
-                <div className="text-center">
-                  <Spinner
-                    animation="border"
-                    role="status"
-                    style={{ color: "#00D0F1" }}
-                  >
-                    <span className="sr-only">Loading...</span>
-                  </Spinner>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <button
-                    type="submit"
-                    // className="btn btn-primary submit-btn"
-                    className="btn submit-btn"
-                  >
-                    Save Changes
+              </div >
+              <div className="submit-section">
+                {isSavingChanges ? (
+                  <div className="text-center">
+                    <Spinner
+                      animation="border"
+                      role="status"
+                      style={{ color: "#00D0F1" }}
+                    >
+                      <span className="sr-only">Loading...</span>
+                    </Spinner>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <button
+                      type="submit"
+                      // className="btn btn-primary submit-btn"
+                      className="btn submit-btn"
+                    >
+                      Save Changes
                   </button>
-                </div>
-              )}
-            </div>
-          </form>
+                  </div>
+                )}
+              </div>
+            </form >
+
+          )
+          }
+          {/* // <!-- Profile Settings Form --> */}
+
           <Modal show={showSuccessModal} onHide={handleCloseSuccessModal}>
             <Modal.Header closeButton>
               <Modal.Title>Successfully Updated</Modal.Title>
             </Modal.Header>
           </Modal>
-        </div>
-      </div>
+        </div >
+      </div >
       {/* ) : (
       <></>
         )} */}
