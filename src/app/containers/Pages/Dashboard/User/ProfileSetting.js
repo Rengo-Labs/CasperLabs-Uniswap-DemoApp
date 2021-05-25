@@ -12,6 +12,7 @@ import Tab from '@material-ui/core/Tab';
 import r1 from '../../../../assets/img/patients/patient.jpg';
 import { useSnackbar } from 'notistack';
 import ipfs from '../../../../components/IPFS/ipfs';
+import { Container } from "@material-ui/core";
 const useStyles = makeStyles({
   root: {
     flexGrow: 1,
@@ -403,527 +404,522 @@ function ProfileSetting(props) {
             </Tabs>
           </Paper>
           {value === 0 ? (
-            <form style={{ margin: "20px" }}>
+            <Container>
+              <form style={{ margin: "20px" }}>
 
-              <div className="form-group">
-                <input
-                  type="text"
-                  required
-                  value={imageArtist}
-                  placeholder="Enter Image Artist Name"
-                  className="form-control"
-                  onChange={(e) => {
-                    setImageArtist(e.target.value)
-                  }}
-                />
-              </div>
-              <div className="form-group">
-                {/* <label>About the Track</label> */}
-                <textarea
-                  type="text"
-                  required
-                  rows="4"
-                  value={aboutTheArt}
-                  placeholder="About the Art"
-                  className="form-control"
-                  onChange={(e) => {
-                    setAboutTheArt(e.target.value)
-                  }}
-                />
-              </div>
-              <label className="focus-label">Image Artist Photo</label>
-              <div className="form-group">
-                <div className="change-avatar">
-                  <div className="profile-img">
-                    <div
-                      style={{
-                        background: "#E9ECEF",
-                        width: "100px",
-                        height: "100px",
-                      }}
-                    >
-                      <img src={artistImage} alt="Selfie" />
-                    </div>
-                  </div>
-                  <div className="upload-img">
-                    <div
-                      className="change-photo-btn"
-                      style={{ backgroundColor: "rgb(167,0,0)" }}
-                    >
-                      {isUploadingImageArtist ? (
-                        <div className="text-center">
-                          <Spinner
-                            animation="border"
-                            role="status"
-                            style={{ color: "#fff" }}
-                          >
-                          </Spinner>
-                        </div>
-                      ) : (
-                        <span><i className="fa fa-upload"></i>Upload photo</span>
-                      )}
-                      <input
-                        name="sampleFile"
-                        type="file"
-                        className="upload"
-                        accept=".png,.jpg,.jpeg,.gif"
-                        onChange={onChangeSelfieHandler}
-                      />
-                    </div>
-                    <small className="form-text text-muted">
-                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
-                      </small>
-                  </div>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    required
+                    value={imageArtist}
+                    placeholder="Enter Image Artist Name"
+                    className="form-control"
+                    onChange={(e) => {
+                      setImageArtist(e.target.value)
+                    }}
+                  />
                 </div>
-              </div>
-              <div className="form-group">
-                <input
-                  type="text"
-                  required
-                  value={website}
-                  placeholder="Enter Website URL"
-                  className="form-control"
-                  onChange={(e) => {
-                    setWebsite(e.target.value)
-                  }}
-                />
-              </div>
-            </form>
-          ) : value === 1 ? (
-            <>
-              <div className="form-group">
-                {/* <label>Artist Name</label> */}
-                <input
-                  type="text"
-                  required
-                  value={artist}
-                  placeholder="Enter Music Artist Name"
-                  className="form-control"
-                  onChange={(e) => {
-                    setArtist(e.target.value)
-                  }}
-                />
-              </div>
-              <label className="focus-label">Artist Profile Photo</label>
-              <div className="form-group">
-                <div className="change-avatar">
-                  <div className="profile-img">
-                    <div
-                      style={{
-                        background: "#E9ECEF",
-                        width: "100px",
-                        height: "100px",
-                      }}
-                    >
-                      <img src={artistImage} alt="Selfie" />
-                    </div>
-                  </div>
-                  <div className="upload-img">
-                    <div
-                      className="change-photo-btn"
-                      style={{ backgroundColor: "rgb(167,0,0)" }}
-                    >
-                      {isUploadingArtist ? (
-                        <div className="text-center">
-                          <Spinner
-                            animation="border"
-                            role="status"
-                            style={{ color: "#fff" }}
-                          >
-                          </Spinner>
-                        </div>
-                      ) : (
-                        <span><i className="fa fa-upload"></i>Upload photo</span>
-                      )}
-                      <input
-                        name="sampleFile"
-                        type="file"
-                        className="upload"
-                        accept=".png,.jpg,.jpeg,.gif"
-                        onChange={onChangeArtistHandler}
-                      />
-                    </div>
-                    <small className="form-text text-muted">
-                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
-                      </small>
-                  </div>
+                <div className="form-group">
+                  {/* <label>About the Track</label> */}
+                  <textarea
+                    type="text"
+                    required
+                    rows="4"
+                    value={aboutTheArt}
+                    placeholder="About the Art"
+                    className="form-control"
+                    onChange={(e) => {
+                      setAboutTheArt(e.target.value)
+                    }}
+                  />
                 </div>
-              </div>
-              <div className="form-group">
-                {/* <label>About the Track</label> */}
-                <textarea
-                  type="text"
-                  required
-                  rows="4"
-                  value={aboutTheTrack}
-                  placeholder="About the Track"
-                  className="form-control"
-                  onChange={(e) => {
-                    setAboutTheTrack(e.target.value)
-                  }}
-                />
-              </div>
-            </>
-          ) : value === 2 ? (
-            <>
-              <div className="form-group">
-                {/* <label>Producer</label> */}
-                <input
-                  type="text"
-                  required
-                  value={producer}
-                  placeholder="Enter Producer Name"
-                  className="form-control"
-                  onChange={(e) => {
-                    setProducer(e.target.value)
-                  }}
-                />
-              </div>
-              <label className="focus-label">Producer Profile Photo</label>
-              <div className="form-group">
-                <div className="change-avatar">
-                  <div className="profile-img">
-                    <div
-                      style={{
-                        background: "#E9ECEF",
-                        width: "100px",
-                        height: "100px",
-                      }}
-                    >
-                      <img src={producerImage} alt="Selfie" />
-                    </div>
-                  </div>
-                  <div className="upload-img">
-                    <div
-                      className="change-photo-btn"
-                      style={{ backgroundColor: "rgb(167,0,0)" }}
-                    >
-                      {isUploadingProducer ? (
-                        <div className="text-center">
-                          <Spinner
-                            animation="border"
-                            role="status"
-                            style={{ color: "#fff" }}
-                          >
-                          </Spinner>
-                        </div>
-                      ) : (
-                        <span><i className="fa fa-upload"></i>Upload photo</span>
-                      )}
-                      <input
-                        name="sampleFile"
-                        type="file"
-                        className="upload"
-                        accept=".png,.jpg,.jpeg,.gif"
-                        onChange={onChangeProducerHandler}
-                      />
-                    </div>
-                    <small className="form-text text-muted">
-                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
-                      </small>
-                  </div>
-                </div>
-              </div>
-              <div className="form-group">
-                {/* <label>Inspiration For the Piece</label> */}
-                <textarea
-                  type="text"
-                  required
-                  rows="4"
-                  value={inspirationForThePiece}
-                  placeholder="Inspiration For the Piece"
-                  className="form-control"
-                  onChange={(e) => {
-                    setInspirationForThePiece(e.target.value)
-                  }}
-                />
-              </div>
-            </>
-          ) : value === 3 ? (
-            <>
-              <div className="form-group">
-                {/* <label>Producer</label> */}
-                <input
-                  type="text"
-                  required
-                  value={executiveProducer}
-                  placeholder="Enter Executive Producer Name"
-                  className="form-control"
-                  onChange={(e) => {
-                    setExecutiveProducer(e.target.value)
-                  }}
-                />
-              </div>
-              <label className="focus-label">Executive Producer Profile Photo</label>
-              <div className="form-group">
-                <div className="change-avatar">
-                  <div className="profile-img">
-                    <div
-                      style={{
-                        background: "#E9ECEF",
-                        width: "100px",
-                        height: "100px",
-                      }}
-                    >
-                      <img src={executiveProducerImage} alt="Selfie" />
-                    </div>
-                  </div>
-                  <div className="upload-img">
-                    <div
-                      className="change-photo-btn"
-                      style={{ backgroundColor: "rgb(167,0,0)" }}
-                    >
-                      {isUploadingExecutiveProducer ? (
-                        <div className="text-center">
-                          <Spinner
-                            animation="border"
-                            role="status"
-                            style={{ color: "#fff" }}
-                          >
-                          </Spinner>
-                        </div>
-                      ) : (
-                        <span><i className="fa fa-upload"></i>Upload photo</span>
-                      )}
-                      <input
-                        name="sampleFile"
-                        type="file"
-                        className="upload"
-                        accept=".png,.jpg,.jpeg,.gif"
-                        onChange={onChangeExecutiveProducerHandler}
-                      />
-                    </div>
-                    <small className="form-text text-muted">
-                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
-                      </small>
-                  </div>
-                </div>
-              </div>
-              <div className="form-group">
-                {/* <label>Inspiration For the Piece</label> */}
-                <textarea
-                  type="text"
-                  required
-                  rows="4"
-                  value={executiveInspirationForThePiece}
-                  placeholder="Inspiration For the Piece"
-                  className="form-control"
-                  onChange={(e) => {
-                    setExecutiveInspirationForThePiece(e.target.value)
-                  }}
-                />
-              </div>
-            </>
-          ) : value === 4 ? (
-            <>
-              <div className="form-group">
-                {/* <label>Producer</label> */}
-                <input
-                  type="text"
-                  required
-                  value={fan}
-                  placeholder="Enter Fan Name"
-                  className="form-control"
-                  onChange={(e) => {
-                    setFan(e.target.value)
-                  }}
-                />
-              </div>
-              <label className="focus-label">Fan Profile Photo</label>
-              <div className="form-group">
-                <div className="change-avatar">
-                  <div className="profile-img">
-                    <div
-                      style={{
-                        background: "#E9ECEF",
-                        width: "100px",
-                        height: "100px",
-                      }}
-                    >
-                      <img src={fanImage} alt="Selfie" />
-                    </div>
-                  </div>
-                  <div className="upload-img">
-                    <div
-                      className="change-photo-btn"
-                      style={{ backgroundColor: "rgb(167,0,0)" }}
-                    >{isUploadingFan ? (
-                      <div className="text-center">
-                        <Spinner
-                          animation="border"
-                          role="status"
-                          style={{ color: "#fff" }}
-                        >
-                        </Spinner>
-                      </div>
-                    ) : (
-                      <span><i className="fa fa-upload"></i>Upload photo</span>
-                    )}
-                      <input
-                        name="sampleFile"
-                        type="file"
-                        className="upload"
-                        accept=".png,.jpg,.jpeg,.gif"
-                        onChange={onChangeFanHandler}
-                      />
-                    </div>
-                    <small className="form-text text-muted">
-                      Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
-                      </small>
-                  </div>
-                </div>
-              </div>
-              <div className="form-group">
-                {/* <label>Inspiration For the Piece</label> */}
-                <textarea
-                  type="text"
-                  required
-                  rows="4"
-                  value={fanInspirationForThePiece}
-                  placeholder="Inspiration For the Piece"
-                  className="form-control"
-                  onChange={(e) => {
-                    setFanInspirationForThePiece(e.target.value)
-                  }}
-                />
-              </div>
-            </>
-          ) : (
-            <form onSubmit={onSubmitHandleEvent}>
-              <div className="row form-row">
-                <div className="col-12 col-md-12">
-                  <div className="form-group">
-                    <div className="change-avatar">
-                      <div className="profile-img">
-                        {/* {props.userData.pictureURL !== undefined ? ( */}
-                        {/* <img
-                      src={props.userData.pictureURL}
-                      alt="User Image"
-                      /> */}
-                        {/* ) : (
-                            <> */}
-                        <div
-                          style={{
-                            background: "#E9ECEF",
-                            width: "100px",
-                            height: "100px",
-                          }}
-                        >
-                          <p
-                            style={{
-                              color: "#00D0F1",
-                              fontSize: "24px",
-                              marginLeft: "35%",
-                              paddingTop: "33%",
-                            }}
-                          >
-                            {/* <strong>{props.userData.name[0]}</strong> */}
-                          </p>
-                        </div>
-                        {/* </>
-                          )} */}
-                      </div>
-                      <div className="upload-img">
-                        <div
-                          className="change-photo-btn"
-                          style={{ backgroundColor: "rgb(167,0,0)" }}
-                        >
-                          <span>
-                            <i className="fa fa-upload"></i>
-                          Upload Photo
-                        </span>
-                          <input
-                            name="sampleFile"
-                            type="file"
-                            className="upload"
-                            accept=".png,.jpg,.jpeg,.gif"
-                            onChange={onChangePictureHandler}
-                          />
-                        </div>
-                        <small className="form-text text-muted">
-                          Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
-                      </small>
+                <label className="focus-label">Image Artist Photo</label>
+                <div className="form-group">
+                  <div className="change-avatar">
+                    <div className="profile-img">
+                      <div
+                        style={{
+                          background: "#E9ECEF",
+                          width: "100px",
+                          height: "100px",
+                        }}
+                      >
+                        <img src={artistImage} alt="Selfie" />
                       </div>
                     </div>
-                  </div>
-                </div >
-                <div className="col-12 col-md-6">
-                  <div className="form-group">
-                    <label>Name</label>
-                    <input
-                      disabled
-                      type="text"
-                      className="form-control"
-                    // defaultValue={props.userData.name}
-                    />
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="form-group">
-                    <label>Email ID</label>
-                    <input
-                      disabled
-                      type="email"
-                      className="form-control"
-                    // defaultValue={props.userData.email}
-                    />
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="form-group">
-                    <label>Mobile</label>
-                    <input
-                      // pattern="[+]852[0-9]{8}"
-                      type="text"
-                      // defaultValue={props.userData.mobile}
-                      className="form-control"
-                      onChange={(e) => {
-                        setMobileInput(e.target.value);
-                        setIsFieldChanged(true);
-                      }}
-                      required
-                    />
-                    {/* <small>Format: +852XXXXXXXX</small> */}
+                    <div className="upload-img">
+                      <div
+                        className="change-photo-btn"
+                        style={{ backgroundColor: "rgb(167,0,0)" }}
+                      >
+                        {isUploadingImageArtist ? (
+                          <div className="text-center">
+                            <Spinner
+                              animation="border"
+                              role="status"
+                              style={{ color: "#fff" }}
+                            >
+                            </Spinner>
+                          </div>
+                        ) : (
+                          <span><i className="fa fa-upload"></i>Upload photo</span>
+                        )}
+                        <input
+                          name="sampleFile"
+                          type="file"
+                          className="upload"
+                          accept=".png,.jpg,.jpeg,.gif"
+                          onChange={onChangeSelfieHandler}
+                        />
+                      </div>
+                      <small className="form-text text-muted">
+                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                    </div>
                   </div>
                 </div>
-                <div className="col-12">
-                  <div className="form-group">
-                    <label>Two Factor Authentication</label>
-                    <Form.Check
-                      type="switch"
-                      id="custom-switch"
-                      label="If enabled, you will receive a security code for login!"
-                      checked={check}
-                      onChange={handleSet2FAcheck}
-                    />
-                  </div>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    required
+                    value={website}
+                    placeholder="Enter Website URL"
+                    className="form-control"
+                    onChange={(e) => {
+                      setWebsite(e.target.value)
+                    }}
+                  />
                 </div>
-              </div >
-              <div className="submit-section">
-                {isSavingChanges ? (
-                  <div className="text-center">
-                    <Spinner
-                      animation="border"
-                      role="status"
-                      style={{ color: "#00D0F1" }}
-                    >
-                      <span className="sr-only">Loading...</span>
-                    </Spinner>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <button
-                      type="submit"
-                      // className="btn btn-primary submit-btn"
-                      className="btn submit-btn"
-                    >
-                      Save Changes
+                <div className="submit-section">
+                  {isSavingChanges ? (
+                    <div className="text-center">
+                      <Spinner
+                        animation="border"
+                        role="status"
+                        style={{ color: "#00D0F1" }}
+                      >
+                        <span className="sr-only">Loading...</span>
+                      </Spinner>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <button
+                        type="submit"
+                        // className="btn btn-primary submit-btn"
+                        className="btn submit-btn"
+                      >
+                        Save Changes
                   </button>
-                  </div>
-                )}
-              </div>
-            </form >
+                    </div>
+                  )}
+                </div>
+              </form>
+            </Container>
+          ) : value === 1 ? (
+            <Container>
+              <form style={{ margin: "20px" }}>
 
+                <div className="form-group">
+                  {/* <label>Artist Name</label> */}
+                  <input
+                    type="text"
+                    required
+                    value={artist}
+                    placeholder="Enter Music Artist Name"
+                    className="form-control"
+                    onChange={(e) => {
+                      setArtist(e.target.value)
+                    }}
+                  />
+                </div>
+                <label className="focus-label">Artist Profile Photo</label>
+                <div className="form-group">
+                  <div className="change-avatar">
+                    <div className="profile-img">
+                      <div
+                        style={{
+                          background: "#E9ECEF",
+                          width: "100px",
+                          height: "100px",
+                        }}
+                      >
+                        <img src={artistImage} alt="Selfie" />
+                      </div>
+                    </div>
+                    <div className="upload-img">
+                      <div
+                        className="change-photo-btn"
+                        style={{ backgroundColor: "rgb(167,0,0)" }}
+                      >
+                        {isUploadingArtist ? (
+                          <div className="text-center">
+                            <Spinner
+                              animation="border"
+                              role="status"
+                              style={{ color: "#fff" }}
+                            >
+                            </Spinner>
+                          </div>
+                        ) : (
+                          <span><i className="fa fa-upload"></i>Upload photo</span>
+                        )}
+                        <input
+                          name="sampleFile"
+                          type="file"
+                          className="upload"
+                          accept=".png,.jpg,.jpeg,.gif"
+                          onChange={onChangeArtistHandler}
+                        />
+                      </div>
+                      <small className="form-text text-muted">
+                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                    </div>
+                  </div>
+                </div>
+                <div className="form-group">
+                  {/* <label>About the Track</label> */}
+                  <textarea
+                    type="text"
+                    required
+                    rows="4"
+                    value={aboutTheTrack}
+                    placeholder="About the Track"
+                    className="form-control"
+                    onChange={(e) => {
+                      setAboutTheTrack(e.target.value)
+                    }}
+                  />
+                </div>
+                <div className="submit-section">
+                  {isSavingChanges ? (
+                    <div className="text-center">
+                      <Spinner
+                        animation="border"
+                        role="status"
+                        style={{ color: "#00D0F1" }}
+                      >
+                        <span className="sr-only">Loading...</span>
+                      </Spinner>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <button
+                        type="submit"
+                        // className="btn btn-primary submit-btn"
+                        className="btn submit-btn"
+                      >
+                        Save Changes
+                  </button>
+                    </div>
+                  )}
+                </div>
+              </form>
+            </Container>
+          ) : value === 2 ? (
+            <Container>
+              <form style={{ margin: "20px" }}>
+
+                <div className="form-group">
+                  {/* <label>Producer</label> */}
+                  <input
+                    type="text"
+                    required
+                    value={producer}
+                    placeholder="Enter Producer Name"
+                    className="form-control"
+                    onChange={(e) => {
+                      setProducer(e.target.value)
+                    }}
+                  />
+                </div>
+                <label className="focus-label">Producer Profile Photo</label>
+                <div className="form-group">
+                  <div className="change-avatar">
+                    <div className="profile-img">
+                      <div
+                        style={{
+                          background: "#E9ECEF",
+                          width: "100px",
+                          height: "100px",
+                        }}
+                      >
+                        <img src={producerImage} alt="Selfie" />
+                      </div>
+                    </div>
+                    <div className="upload-img">
+                      <div
+                        className="change-photo-btn"
+                        style={{ backgroundColor: "rgb(167,0,0)" }}
+                      >
+                        {isUploadingProducer ? (
+                          <div className="text-center">
+                            <Spinner
+                              animation="border"
+                              role="status"
+                              style={{ color: "#fff" }}
+                            >
+                            </Spinner>
+                          </div>
+                        ) : (
+                          <span><i className="fa fa-upload"></i>Upload photo</span>
+                        )}
+                        <input
+                          name="sampleFile"
+                          type="file"
+                          className="upload"
+                          accept=".png,.jpg,.jpeg,.gif"
+                          onChange={onChangeProducerHandler}
+                        />
+                      </div>
+                      <small className="form-text text-muted">
+                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                    </div>
+                  </div>
+                </div>
+                <div className="form-group">
+                  {/* <label>Inspiration For the Piece</label> */}
+                  <textarea
+                    type="text"
+                    required
+                    rows="4"
+                    value={inspirationForThePiece}
+                    placeholder="Inspiration For the Piece"
+                    className="form-control"
+                    onChange={(e) => {
+                      setInspirationForThePiece(e.target.value)
+                    }}
+                  />
+                </div>
+                <div className="submit-section">
+                  {isSavingChanges ? (
+                    <div className="text-center">
+                      <Spinner
+                        animation="border"
+                        role="status"
+                        style={{ color: "#00D0F1" }}
+                      >
+                        <span className="sr-only">Loading...</span>
+                      </Spinner>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <button
+                        type="submit"
+                        // className="btn btn-primary submit-btn"
+                        className="btn submit-btn"
+                      >
+                        Save Changes
+                  </button>
+                    </div>
+                  )}
+                </div>
+              </form>
+            </Container>
+          ) : value === 3 ? (
+            <Container>
+              <form style={{ margin: "20px" }}>
+
+                <div className="form-group">
+                  {/* <label>Producer</label> */}
+                  <input
+                    type="text"
+                    required
+                    value={executiveProducer}
+                    placeholder="Enter Executive Producer Name"
+                    className="form-control"
+                    onChange={(e) => {
+                      setExecutiveProducer(e.target.value)
+                    }}
+                  />
+                </div>
+                <label className="focus-label">Executive Producer Profile Photo</label>
+                <div className="form-group">
+                  <div className="change-avatar">
+                    <div className="profile-img">
+                      <div
+                        style={{
+                          background: "#E9ECEF",
+                          width: "100px",
+                          height: "100px",
+                        }}
+                      >
+                        <img src={executiveProducerImage} alt="Selfie" />
+                      </div>
+                    </div>
+                    <div className="upload-img">
+                      <div
+                        className="change-photo-btn"
+                        style={{ backgroundColor: "rgb(167,0,0)" }}
+                      >
+                        {isUploadingExecutiveProducer ? (
+                          <div className="text-center">
+                            <Spinner
+                              animation="border"
+                              role="status"
+                              style={{ color: "#fff" }}
+                            >
+                            </Spinner>
+                          </div>
+                        ) : (
+                          <span><i className="fa fa-upload"></i>Upload photo</span>
+                        )}
+                        <input
+                          name="sampleFile"
+                          type="file"
+                          className="upload"
+                          accept=".png,.jpg,.jpeg,.gif"
+                          onChange={onChangeExecutiveProducerHandler}
+                        />
+                      </div>
+                      <small className="form-text text-muted">
+                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                    </div>
+                  </div>
+                </div>
+                <div className="form-group">
+                  {/* <label>Inspiration For the Piece</label> */}
+                  <textarea
+                    type="text"
+                    required
+                    rows="4"
+                    value={executiveInspirationForThePiece}
+                    placeholder="Inspiration For the Piece"
+                    className="form-control"
+                    onChange={(e) => {
+                      setExecutiveInspirationForThePiece(e.target.value)
+                    }}
+                  />
+                </div>
+                <div className="submit-section">
+                  {isSavingChanges ? (
+                    <div className="text-center">
+                      <Spinner
+                        animation="border"
+                        role="status"
+                        style={{ color: "#00D0F1" }}
+                      >
+                        <span className="sr-only">Loading...</span>
+                      </Spinner>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <button
+                        type="submit"
+                        // className="btn btn-primary submit-btn"
+                        className="btn submit-btn"
+                      >
+                        Save Changes
+                  </button>
+                    </div>
+                  )}
+                </div>
+              </form>
+            </Container>
+          ) : value === 4 ? (
+            <Container>
+              <form style={{ margin: "20px" }}>
+
+                <div className="form-group">
+                  {/* <label>Producer</label> */}
+                  <input
+                    type="text"
+                    required
+                    value={fan}
+                    placeholder="Enter Fan Name"
+                    className="form-control"
+                    onChange={(e) => {
+                      setFan(e.target.value)
+                    }}
+                  />
+                </div>
+                <label className="focus-label">Fan Profile Photo</label>
+                <div className="form-group">
+                  <div className="change-avatar">
+                    <div className="profile-img">
+                      <div
+                        style={{
+                          background: "#E9ECEF",
+                          width: "100px",
+                          height: "100px",
+                        }}
+                      >
+                        <img src={fanImage} alt="Selfie" />
+                      </div>
+                    </div>
+                    <div className="upload-img">
+                      <div
+                        className="change-photo-btn"
+                        style={{ backgroundColor: "rgb(167,0,0)" }}
+                      >{isUploadingFan ? (
+                        <div className="text-center">
+                          <Spinner
+                            animation="border"
+                            role="status"
+                            style={{ color: "#fff" }}
+                          >
+                          </Spinner>
+                        </div>
+                      ) : (
+                        <span><i className="fa fa-upload"></i>Upload photo</span>
+                      )}
+                        <input
+                          name="sampleFile"
+                          type="file"
+                          className="upload"
+                          accept=".png,.jpg,.jpeg,.gif"
+                          onChange={onChangeFanHandler}
+                        />
+                      </div>
+                      <small className="form-text text-muted">
+                        Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
+                      </small>
+                    </div>
+                  </div>
+                </div>
+                <div className="form-group">
+                  {/* <label>Inspiration For the Piece</label> */}
+                  <textarea
+                    type="text"
+                    required
+                    rows="4"
+                    value={fanInspirationForThePiece}
+                    placeholder="Inspiration For the Piece"
+                    className="form-control"
+                    onChange={(e) => {
+                      setFanInspirationForThePiece(e.target.value)
+                    }}
+                  />
+                </div>
+                <div className="submit-section">
+                  {isSavingChanges ? (
+                    <div className="text-center">
+                      <Spinner
+                        animation="border"
+                        role="status"
+                        style={{ color: "#00D0F1" }}
+                      >
+                        <span className="sr-only">Loading...</span>
+                      </Spinner>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <button
+                        type="submit"
+                        // className="btn btn-primary submit-btn"
+                        className="btn submit-btn"
+                      >
+                        Save Changes
+                  </button>
+                    </div>
+                  )}
+                </div>
+              </form>
+            </Container>
+          ) : (
+            null
           )
           }
           {/* // <!-- Profile Settings Form --> */}

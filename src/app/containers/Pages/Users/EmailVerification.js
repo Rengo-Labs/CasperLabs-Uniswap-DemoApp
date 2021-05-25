@@ -29,7 +29,7 @@ function EmailVerification(props) {
     setIsSuccess("");
     setIsConfirming(true);
     axios
-      .get(`/api/v1/users/emailverification/${email}/${token}`)
+      .get(`/users/emailverification/${email}/${token}`)
       .then((response) => {
         setIsSuccess(true);
         setIsConfirming(false);

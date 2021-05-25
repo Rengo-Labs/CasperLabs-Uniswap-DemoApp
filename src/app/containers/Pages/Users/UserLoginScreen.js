@@ -17,8 +17,8 @@ import Web3 from "web3";
 import NetworkErrorModal from "../../../components/Modals/NetworkErrorModal";
 function UserLoginScreen(props) {
   let history = useHistory();
-  let [email, setEmail] = useState();
-  let [password, setPassword] = useState();// eslint-disable-next-line
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();// eslint-disable-next-line
   let [data, setData] = useState("");
   let [isLoading, setIsLoading] = useState(false);// eslint-disable-next-line
   let [isError, setIsError] = useState(false);
@@ -97,8 +97,8 @@ function UserLoginScreen(props) {
     }
     else {
       let loginData = {
-        address: accounts[0],
-        network: network,
+        email: email.toLowerCase(),
+        password: password,
         // roles: 'admin'
       }
       axios.post("user/auth/login", loginData).then(

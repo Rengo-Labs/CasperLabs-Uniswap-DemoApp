@@ -17,7 +17,18 @@ import MyCubes from "./User/MyCubes";
 import UserDashboardDefaultScreen from "./User/UserDashboardDefaultScreen";
 import UserSidebar from "./User/UserSidebar";
 
-
+import DropCubes from "./User/DropsCubes";
+import MyDrops from "./User/MyDrops";
+import MyNFTs from "./User/MyNFTs";
+import MySeasons from "./User/MySeasons";
+import MyCollection from "./User/MyCollection";
+import NewCube from "./User/NewCube";
+import NewDrop from "./User/NewDrop";
+import NewNFT from "./User/NewNFT";
+import NewSeason from "./User/NewSeason";
+import RandomDrop from "./User/RandomDrop";
+import SeasonDrops from "./User/SeasonDrops";
+import CollectionNfts from "./User/CollectionNfts";
 axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
   "Authorization"
 )}`;
@@ -168,10 +179,57 @@ function UserDashboard(props) {
             <Route exact path={`${path}/myCubes`}>
               <MyCubes setActiveTab={setActiveTab} />
             </Route>
-
+            <Route exact path={`${path}/newNFT`}>
+              <NewNFT setActiveTab={setActiveTab} />
+            </Route>
+            <Route exact path={`${path}/myNFTs`}>
+              <MyNFTs setActiveTab={setActiveTab} />
+            </Route>
+            {/* myNFTs:"", */}
+            <Route exact path={`${path}/newDrop`}>
+              <NewDrop setActiveTab={setActiveTab} />
+            </Route>
             <Route exact path={`${path}/myCubes/Nfts/:dropId/:cubeId`}>
-                <CubeNFTs setActiveTab={setActiveTab} />
-              </Route>
+              <CubeNFTs setActiveTab={setActiveTab} />
+            </Route>
+            <Route exact path={`${path}/newSupefNFT`}>
+              <NewCube setActiveTab={setActiveTab} />
+            </Route>
+
+            <Route exact path={`${path}/newRandomDrop`}>
+              <RandomDrop setActiveTab={setActiveTab} />
+            </Route>
+
+            <Route exact path={`${path}/newSeason`}>
+              <NewSeason setActiveTab={setActiveTab} />
+            </Route>
+            <Route exact path={`${path}/mySeason`}>
+              <MySeasons setActiveTab={setActiveTab} />
+            </Route>
+
+            <Route exact path={`${path}/mySeason/drops/:seasonId`}>
+              <SeasonDrops setActiveTab={setActiveTab} />
+            </Route>
+            <Route exact path={`${path}/newDrop`}>
+              <NewDrop setActiveTab={setActiveTab} />
+            </Route>
+
+            <Route exact path={`${path}/myDrops`}>
+              <MyDrops setActiveTab={setActiveTab} />
+            </Route>
+
+            <Route exact path={`${path}/myDrops/cubes/:dropId`}>
+              <DropCubes setActiveTab={setActiveTab} />
+            </Route>
+
+            <Route exact path={`${path}/newCollection`}>
+              <MyCollection setActiveTab={setActiveTab} />
+            </Route>
+
+
+            <Route exact path={`${path}/collection/nfts/:collectionId`}>
+              <CollectionNfts setActiveTab={setActiveTab} />
+            </Route>
             <Route exact path={`${path}/profilesettings`}>
               <ProfileSetting
                 setActiveTab={setActiveTab}
