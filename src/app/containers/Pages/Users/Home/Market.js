@@ -1,21 +1,18 @@
 
 import { Avatar, CardHeader, Grid } from '@material-ui/core/';
 import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
 import { Link } from 'react-router-dom';
-import { useParams } from "react-router-dom";
-import TablePagination from '@material-ui/core/TablePagination';
-// import HeaderHome from '../../../../components/Headers/Header';
+
 const useStyles = makeStyles((theme) => ({
     root: {
         maxWidth: 345,
@@ -48,22 +45,11 @@ const useStyles = makeStyles((theme) => ({
 
 
 function MarketPlace(props) {
-    const { dropId } = useParams();
-
-    console.log("id", dropId);
     const classes = useStyles();
-    const [hide, setHide] = useState(false);
-    const [tokenList, setTokenList] = useState([]);
     const [userSaleData, setUserSaledata] = useState([]);
     const [cubeData, setCubeData] = useState([]);
-
     const [userAuctionData, setUserAuctiondata] = useState([]);
     const [cubeAuctionData, setCubeAuctionData] = useState([]);
-
-    const [rowsPerPage, setRowsPerPage] = React.useState(4);
-    const [totalSaleCube, setTotalSaleCube] = React.useState(0);
-    const [page, setPage] = React.useState(0);
-
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
         setOpen(false);
@@ -78,11 +64,8 @@ function MarketPlace(props) {
                 console.log("responseeeee", response);
                 setCubeData(response.data.Saletokendata);
                 setUserSaledata(response.data.Usersaledata)
-                setTotalSaleCube(response.data.Salecount)
                 setCubeAuctionData(response.data.Auctiontokendata)
                 setUserAuctiondata(response.data.Userauctiondata)
-                // setTokenList(response.data.Dropdata);
-                // setTotalDrops(response.data.Dropscount);
                 handleCloseBackdrop();
             },
             (error) => {
@@ -150,7 +133,7 @@ function MarketPlace(props) {
                                                             // image={img}
                                                             title=""
                                                         >
-                                                            <div class="mainDiv">
+                                                            <div className="mainDiv">
 
                                                                 <div className="square"></div>
                                                                 <div className="square2"></div>
@@ -216,7 +199,7 @@ function MarketPlace(props) {
                                 >
 
                                     {cubeAuctionData.map((i, index) => (
-                                        <Grid item xs={12} sm={6} md={3}>
+                                        <Grid item xs={12} sm={6} md={3} key={index}>
                                             <Link to={"/marketPlace/Cubes/Nfts/userauction/" + i._id + "/" + userAuctionData[index]._id}>
                                                 <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                     <CardActionArea>
@@ -225,7 +208,7 @@ function MarketPlace(props) {
                                                             // image={img}
                                                             title=""
                                                         >
-                                                            <div class="mainDiv">
+                                                            <div className="mainDiv">
 
                                                                 <div className="square"></div>
                                                                 <div className="square2"></div>

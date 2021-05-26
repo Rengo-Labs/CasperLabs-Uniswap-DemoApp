@@ -22,6 +22,8 @@ import CollectionCard from '../../../../components/Cards/CollectionCard';
 import { useSnackbar } from 'notistack';
 import { Spinner } from "react-bootstrap";
 import { Link } from 'react-router-dom';
+import CreateNewCollectionModal from '../../../../components/Modals/CreateNewCollectionModal';
+import r1 from '../../../../assets/img/patients/patient.jpg';
 const useStyles = makeStyles({
     root: {
         minWidth: 250,
@@ -58,6 +60,13 @@ function MyCollection(props) {
     let [open, setOpen] = useState(false);
 
     let [collectionCount, setCollectionCount] = useState(0);
+    const [openCollectionModal, setOpenCollectionModal] = useState(false);
+    const handleCloseCollectionModal = () => {
+        setOpenCollectionModal(false);
+    };
+    const handleShowCollectionModal = () => {
+        setOpenCollectionModal(true);
+    };
 
     const classes = useStyles();
     let getCollections = (start, end) => {
@@ -75,39 +84,53 @@ function MyCollection(props) {
             })
             .catch((error) => {
                 console.log(error.response.data);
-                if (error.response.data !== undefined) {
-                    if (error.response.data === "Unauthorized access (invalid token) !!") {
-                        Cookies.remove("Authorization");
-                        localStorage.removeItem("Address")
-                        window.location.reload();
-                    }
-                }
+                // if (error.response.data !== undefined) {
+                //     if (error.response.data === "Unauthorized access (invalid token) !!") {
+                //         Cookies.remove("Authorization");
+                //         localStorage.removeItem("Address")
+                //         window.location.reload();
+                //     }
+                // }
                 setOpen(false);
             });
     };
 
-    let createCollections = () => {
+    let createCollections = (collectionTitle, collectionImage) => {
         setIsCreating(true);
-        let CollectionData = {
-            collectiontitle: collection
+        if (collectionTitle === "" || collectionTitle === null || collectionTitle === undefined) {
+            setIsCreating(false);
+            let variant = "error";
+            enqueueSnackbar('Collection Title cannot be empty .', { variant });
         }
-        axios
-            .post(`/collection/createcollection`, CollectionData)
-            .then((response) => {
-                setIsCreating(false);
-                console.log("response.data", response);
-                setCollection("response.data.Collectiondata");
+        else if (collectionImage === "" || collectionImage === null || collectionImage === undefined || collectionImage === r1) {
+            setIsCreating(false);
+            let variant = "error";
+            enqueueSnackbar('Please Select Collection Image.', { variant });
+        }
+        else {
+            let CollectionData = {
+                collectiontitle: collectionTitle,
+                collectionImage: collectionImage
 
-                let variant = "success";
-                enqueueSnackbar('Collection Created Successfully .', { variant });
-                getCollections()
-            })
-            .catch((error) => {
-                console.log(error.response);
-                setIsCreating(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Create Collection .', { variant });
-            });
+            }
+            axios
+                .post(`/collection/createcollection`, CollectionData)
+                .then((response) => {
+                    setIsCreating(false);
+                    console.log("response.data", response);
+                    setCollection("response.data.Collectiondata");
+
+                    let variant = "success";
+                    enqueueSnackbar('Collection Created Successfully .', { variant });
+                    getCollections()
+                })
+                .catch((error) => {
+                    console.log(error.response);
+                    setIsCreating(false);
+                    let variant = "error";
+                    enqueueSnackbar('Unable to Create Collection .', { variant });
+                });
+        }
     };
     const handleChangePage = (event, newPage) => {
         console.log("newPage", newPage);
@@ -152,50 +175,14 @@ function MyCollection(props) {
                 </li>
                 <li className="breadcrumb-item active">Collections</li>
             </ul>
-            {/* <div className="container">
-                <Row>
-                    <Col>
-                        <Row>
-                            <Col>
-                                <input type='text' onChange={(e) => setCollection(e.target.value)} value={collection} placeholder="Collection Name" className="form-control" />
-
-                            </Col>
-                            <div class="input-group-prepend">
-                                {collection !== "" ? (
-                                    isCreating ? (
-                                        <div className="text-center">
-                                            <Spinner
-                                                animation="border"
-                                                role="status"
-                                                style={{ color: "#ff0000" }}
-                                            >
-                                                <span className="sr-only">Loading...</span>
-                                            </Spinner>
-                                        </div>
-                                    ) : (
-                                        <button type="button" onClick={() => createCollections()} className="btn submit-btn">Create New Collection</button>
-                                    )
-                                ) : (<button type="button" disabled className="btn submit-btn">Create New Collection</button>)}
-
-                            </div>
-                        </Row>
-                    </Col>
-                    <Col>
-                    </Col>
-                </Row>
-            </div> */}
+            <div className="container">
+                <button type="button" onClick={() => handleShowCollectionModal()} className="btn float-right submit-btn">Create New Collection</button>
+            </div>
             <div className="card-body">
                 <div className={classes.root}>
                     {open ? (
                         <div align="center" className="text-center">
-                            <Spinner
-                                animation="border"
-                                role="status"
-                                style={{ color: "#ff0000" }}
-                            >
-
-                            </Spinner>
-                            <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                            <Spinner animation="border" role="status" style={{ color: "#ff0000" }} > </Spinner>
                         </div>
                     ) : collections.length === 0 ? (
                         <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '20px' }} >
@@ -241,6 +228,14 @@ function MyCollection(props) {
                 onChangePage={handleChangePage}
                 onChangeRowsPerPage={handleChangeRowsPerPage}
             />
+            <CreateNewCollectionModal
+                show={openCollectionModal}
+                handleClose={handleCloseCollectionModal}
+                createCollections={createCollections}
+                isCreating={isCreating}
+
+
+            ></CreateNewCollectionModal>
         </div >
     );
 }

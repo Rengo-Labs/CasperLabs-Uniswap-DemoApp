@@ -1,15 +1,4 @@
-import React, { useState } from "react";
-
-import { Link } from "react-router-dom";
-
-const style = {
-  minHeight: "500px",
-  backgroundAttachment: "fixed",
-  backgroundPosition: "center",
-  backgroundRepeat: "no-repeat",
-  backgroundSize: "cover",
-};
-
+import React from "react";
 function HomeBanner() {
   return (
     <section className="section section-search">

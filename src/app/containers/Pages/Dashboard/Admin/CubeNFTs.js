@@ -542,7 +542,7 @@ function CubeNFTs(props) {
                                                 spacing={2}
                                                 direction="row"
                                                 justify="flex-start"
-                                            // alignItems="flex-start"
+
                                             >
                                                 {transactionHistory.map((i, index) => (
                                                     <Grid item xs={12} sm={12} md={12} key={index}>

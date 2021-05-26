@@ -119,9 +119,6 @@ function SaleCubeNFTs(props) {
     const [isRemoving, setIsRemoving] = useState(false);
     const [network, setNetwork] = useState("");
     const [transactionHistory, setTransactionHistory] = useState([]);
-    const [bidHistory, setBidHistory] = useState([]);
-    // if(bidHistory.length!==0)
-    // console.log("bidHistory.findIndex(i => i.userId === jwtDecoded.userId)",);
     const [openWeth, setOpenWeth] = useState(false);
     const handleCloseWeth = () => {
         setOpenWeth(false);
@@ -396,31 +393,6 @@ function SaleCubeNFTs(props) {
             const web3 = window.web3
             const accounts = await web3.eth.getAccounts();
             const balance = await web3.eth.getBalance(accounts[0]);
-            // let TrasactionData = {
-            //     tokenId: 2,
-            //     from: "0xf363D646C2767dB90Af945ebD6F71367166159A2",
-            //     to: accounts[0],
-            //     transaction: "0xbe29d7a2ad4ee12732c5a9d38b0b539e514e01b9686d5af3be4d08d769ccfa17"
-            // }
-
-            // axios.post("/transaction/tokenTransaction ", TrasactionData).then(
-            //     (response) => {
-            //         console.log('response', response);
-            //         setIsSaving(false);
-            //     },
-            //     (error) => {
-            //         if (process.env.NODE_ENV === "development") {
-            //             console.log(error);
-            //             console.log(error.response);
-            //         }
-            //         setIsSaving(false);
-            //     }
-            // );
-            // const address = Addresses.AuctionAddress;
-            // const abi = CreateAuctionContract;
-            // var myContractInstance = await new web3.eth.Contract(abi, address);
-            // let receipt = await myContractInstance.methods.getHighestBid(cubeData.tokenId).call();
-            // console.log("receipt",receipt);
             console.log("balance", (balance / 10 ** 18).toString());
             setBalance(balance);
         })();
@@ -522,7 +494,6 @@ function SaleCubeNFTs(props) {
                                                                                 <span onClick={(e) => {
                                                                                     e.preventDefault()
                                                                                     setHide(true);
-                                                                                    // nonOwnerAudio.crossOrigin = 'anonymous';
                                                                                     nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
                                                                                     nonOwnerAudio.play()
                                                                                     setTimeout(() => {
@@ -666,7 +637,7 @@ function SaleCubeNFTs(props) {
                                                 spacing={2}
                                                 direction="row"
                                                 justify="flex-start"
-                                            // alignItems="flex-start"
+
                                             >
                                                 {/* {console.log("tokenList", tokenList)} */}
                                                 {hide ? (
@@ -756,7 +727,7 @@ function SaleCubeNFTs(props) {
                                                             spacing={2}
                                                             direction="row"
                                                             justify="flex-start"
-                                                        // alignItems="flex-start"
+            
                                                         >
                                                             {transactionHistory.slice(0).reverse().map((i, index) => (
                                                                 <Grid item xs={12} sm={12} md={12} key={index}>

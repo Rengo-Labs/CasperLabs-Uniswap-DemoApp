@@ -151,11 +151,11 @@ function NewNFT(props) {
                     console.log(error.response);
                 }
                 if (error.response.data !== undefined) {
-                    if (error.response.data === "Unauthorized access (invalid token) !!") {
-                        Cookies.remove("Authorization");
-                        localStorage.removeItem("Address")
-                        window.location.reload();
-                    }
+                    // if (error.response.data === "Unauthorized access (invalid token) !!") {
+                    //     Cookies.remove("Authorization");
+                    //     localStorage.removeItem("Address")
+                    //     window.location.reload();
+                    // }
                 }
             })
     }
@@ -170,13 +170,13 @@ function NewNFT(props) {
                     console.log(error);
                     console.log(error.response);
                 }
-                if (error.response.data !== undefined) {
-                    if (error.response.data === "Unauthorized access (invalid token) !!") {
-                        Cookies.remove("Authorization");
-                        localStorage.removeItem("Address")
-                        window.location.reload();
-                    }
-                }
+                // if (error.response.data !== undefined) {
+                //     if (error.response.data === "Unauthorized access (invalid token) !!") {
+                //         Cookies.remove("Authorization");
+                //         localStorage.removeItem("Address")
+                //         window.location.reload();
+                //     }
+                // }
             })
     }
 
@@ -1279,14 +1279,14 @@ function NewNFT(props) {
                                             }}
                                         />
                                     </div>
-                                    <FormControl component="fieldset">
+                                    {/* <FormControl component="fieldset">
                                         <lable component="legend">Select to add in Collection </lable>
                                         <RadioGroup row aria-label="position" name="position" defaultValue="top">
                                             <FormControlLabel style={{ color: 'black' }} value="New Collection" onChange={() => setCollectionType("New")} checked={collectionType === 'New'} control={<Radio color="secondary" />} label="New Collection" />
                                             <FormControlLabel style={{ color: 'black' }} value="Existing Collection" onChange={() => setCollectionType("Existing")} checked={collectionType === 'Existing'} control={<Radio color="secondary" />} label="Existing Collection" />
                                         </RadioGroup>
-                                    </FormControl>
-                                    {collectionType === 'New' ? (
+                                    </FormControl> */}
+                                    {/* {collectionType === 'New' ? (
                                         <div className="form-group">
                                             <label>New Collection</label>
                                             <input
@@ -1300,7 +1300,7 @@ function NewNFT(props) {
                                                 }}
                                             />
                                         </div>
-                                    ) : (
+                                    ) : ( */}
                                         <div className="form-group">
 
                                             <label>Select Collection</label>
@@ -1332,7 +1332,7 @@ function NewNFT(props) {
                                             </div>
                                         </div>
 
-                                    )}
+                                    {/* )} */}
 
 
 
