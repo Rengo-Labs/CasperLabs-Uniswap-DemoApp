@@ -68,7 +68,7 @@ function NFTCube(props) {
                             </div>
 
                         ) : (
-                            <div class="mainDiv">
+                            <div className="mainDiv">
                                 <div className="square" onClick={() => {
                                     setHide(true);
                                     setTimeout(() => setHide(false), 10000);

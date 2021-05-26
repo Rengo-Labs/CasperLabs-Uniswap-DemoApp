@@ -684,7 +684,7 @@ function CubeNFTs(props) {
                                                         title={i[0].title}
                                                     />
                                                     <CardMedia
-                                                        style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                        style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                         className={classes.media}
                                                         image={i[0].artwork}
 
@@ -777,7 +777,7 @@ function CubeNFTs(props) {
                                                                     </Typography>
                                                                     <Typography variant="body2" color="textSecondary" component="p">
                                                                         <strong>Hash : </strong>
-                                                                        <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                                                                        <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" rel="noopener noreferrer" style={{ color: 'rgb(167,0,0)' }}>
                                                                             <span style={{ cursor: 'pointer' }}>{i.transaction.substr(0, 20)}. . .</span>
                                                                         </a>
                                                                     </Typography>

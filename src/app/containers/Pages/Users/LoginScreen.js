@@ -2,7 +2,6 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import React, { useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
-import { Link } from "react-router-dom";
 import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
@@ -11,21 +10,16 @@ import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";
 import Header from "../../../components/Headers/Header";
-import { Form, Ref } from 'semantic-ui-react';
 
 function LoginScreen(props) {
   let [userName, setUserName] = useState();
-  let [password, setPassword] = useState();// eslint-disable-next-line
-  let [data, setData] = useState("");
-  let [isLoading, setIsLoading] = useState(false);// eslint-disable-next-line
-  let [isError, setIsError] = useState(false);
+  let [password, setPassword] = useState();
+  let [isLoading, setIsLoading] = useState(false);
   let [msg, setMsg] = useState("");
-  let [isMobileVarified, setIsMobileVarified] = useState(false);
 
 
   let handleSubmitEvent = (event) => {
     setMsg("");
-    setIsError(false);
     setIsLoading(true);
     event.preventDefault();
     axios
@@ -38,7 +32,7 @@ function LoginScreen(props) {
 
         Cookies.set("Authorization", response.data.token, {
         });
-        setData(response.data.token);
+        // setData(response.data.token);
 
         setIsLoading(false);
         window.location.reload();
@@ -55,38 +49,20 @@ function LoginScreen(props) {
           setMsg("Unknown Error Occured, try again.");
         }
 
-        // setMsg(error.message);
-        // console.log(error);
-        // console.log(error.message);
-
-        setIsError(true);
         setIsLoading(false);
       });
   };
-  
+
   return (
 
-    <div
-      className="account-page"
-    // style={{ height: "inherit" }}
-    >
-      <div
-        className="main-wrapper"
-      // style={{ height: "inherit" }}
-      >
-        <div
-          className="home-section home-full-height"
-        // style={{ height: "inherit" }}
-        >
+    <div className="account-page">
+      <div className="main-wrapper">
+        <div className="home-section home-full-height">
           <Header />
-
           <div
             className="content"
-            // style={{ paddingTop: "12%" }}
-            // style={{ paddingTop: "150px" }}
             style={{ paddingTop: "180px", height: "100vh" }}
             position="absolute"
-
           >
             <div className="container-fluid">
               <div
@@ -94,7 +70,6 @@ function LoginScreen(props) {
                 style={{ height: `${props.windowHeight}`, marginRight: "px" }}
               >
                 <div className="col-md-8 offset-md-2">
-                  {/* <!-- Login Tab Content --> */}
                   <div className="account-content">
                     <div className="row align-items-center justify-content-center">
                       <div
@@ -120,7 +95,6 @@ function LoginScreen(props) {
                                 type="text"
                                 required
                                 className="form-control floating"
-                                // defaultValue={userName}
                                 value={userName}
                                 onChange={(e) => {
                                   setUserName(e.target.value);
@@ -133,7 +107,6 @@ function LoginScreen(props) {
                                 type="password"
                                 required
                                 className="form-control floating"
-                                // defaultValue={password}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                               />
@@ -142,15 +115,6 @@ function LoginScreen(props) {
                             <div className="text-center">
                               <p style={{ color: "red" }}>{msg}</p>
                             </div>
-                            {/* <div className="text-right">
-                                <Link
-                                  to="/forgotPassword"
-                                  className="forgot-link"
-                                  style={{ color: "#000" }}
-                                >
-                                  Forgot Password ?
-                                </Link>
-                              </div> */}
 
                             {isLoading ? (
                               <div className="text-center">
@@ -164,27 +128,18 @@ function LoginScreen(props) {
                               </div>
                             ) : (
                               <button
-                                // className="btn btn-primary btn-block btn-lg login-btn"
                                 className="btn btn-block btn-lg login-btn"
                                 type="submit"
                               >
                                 Sign In
                               </button>
                             )}
-
-                            {/* Incorrect Email or Password. */}
-
-                            {/* <div className="text-center dont-have">
-                                Don’t have an account?{" "}
-                                <Link to="/register">Register</Link>
-                              </div> */}
                           </form>
                         </>
 
                       </div>
                     </div>
                   </div>
-                  {/* <!-- /Login Tab Content --> */}
                 </div>
               </div>
             </div>
@@ -193,7 +148,7 @@ function LoginScreen(props) {
         <Footer position={""} />
       </div>
 
-      
+
     </div>
   );
 }

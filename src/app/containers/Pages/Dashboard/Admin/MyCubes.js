@@ -157,7 +157,7 @@ function MyCubes(props) {
                             >
                                 {tokenList.map((i, index) => (
 
-                                    <Grid item xs={12} sm={6} md={3}>
+                                    <Grid item xs={12} sm={6} md={3} key={index}>
                                         <Link to={"/dashboard/myCubes/Nfts/notdrop/" + i._id}>
                                             <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                 {/* style={{ height: "100%" }} variant="outlined" */}

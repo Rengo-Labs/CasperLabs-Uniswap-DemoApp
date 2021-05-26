@@ -84,14 +84,13 @@ function AuctionCubeNFTs(props) {
     }
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
     const [nonOwnerAudio, setNonOwnerAudio] = useState(new Audio());
-    const [isClaiming, setIsClaiming] = useState(false);
+    const [isClaiming, setIsClaiming] = useState(false);// eslint-disable-next-line
     const [isClaimingWeth, setIsClaimingWeth] = useState(false);
     const [weth, setWeth] = useState(0);
     const [enableWethButton, setEnableWethButton] = useState(false);
     const [isConfirmingWeth, setIsConfirmingWeth] = useState(false);
 
     useEffect(() => {
-
         (async () => {
             ownerAudio.addEventListener('ended', () => ownerAudio.pause());
             nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
@@ -99,8 +98,7 @@ function AuctionCubeNFTs(props) {
                 ownerAudio.removeEventListener('ended', () => ownerAudio.pause());
                 nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
             };
-        })();
-
+        })();// eslint-disable-next-line
     }, []);
 
     const { enqueueSnackbar } = useSnackbar();
@@ -109,8 +107,6 @@ function AuctionCubeNFTs(props) {
     const [tokenList, setTokenList] = useState([]);
     const [cubeData, setCubeData] = useState({});
     const [auctionData, setAuctionData] = useState({});
-    const [minBid, setMinBid] = useState(0);
-
     const [bidByUser, setBidByUser] = useState(0);
     const [highestBid, setHighestBid] = useState(0);
     const [bid, setBid] = useState();
@@ -278,7 +274,7 @@ function AuctionCubeNFTs(props) {
             (response) => {
                 console.log('response', response);
                 setIsRemoving(false);
-                
+
                 // getAuctionCubeNFTs();
                 let variant = "success";
                 enqueueSnackbar('Removed from Sale Successfully.', { variant });
@@ -511,7 +507,7 @@ function AuctionCubeNFTs(props) {
                     setEnableWethButton(false);
                     const address = Addresses.AuctionAddress;
                     const abi = CreateAuctionContract;
-                    let wethReceipt = await myWethContractInstance.methods.approve(address, (bid * 10 ** 18).toString()).send({ from: accounts[0] }, (err, response) => {
+                    await myWethContractInstance.methods.approve(address, (bid * 10 ** 18).toString()).send({ from: accounts[0] }, (err, response) => {
                         console.log('get transaction', err, response);
                         if (err !== null) {
                             console.log("err", err);
@@ -675,8 +671,7 @@ function AuctionCubeNFTs(props) {
 
             console.log("balance", (balance / 10 ** 18).toString());
             setBalance(balance);
-        })();
-
+        })();// eslint-disable-next-line
     }, []);
     let getWeth = () => {
         // console.log("GET");
@@ -689,7 +684,6 @@ function AuctionCubeNFTs(props) {
         const web3 = window.web3
         const wethAddress = Addresses.WethAddress;
         const wethAbi = WethContract;
-        const address = Addresses.AuctionAddress;
         const accounts = await web3.eth.getAccounts();
         var myWethContractInstance = await new web3.eth.Contract(wethAbi, wethAddress);
         let wethReceipt = await myWethContractInstance.methods.deposit().send({ from: accounts[0], value: weth * 10 ** 18 }, (err, response) => {
@@ -753,7 +747,7 @@ function AuctionCubeNFTs(props) {
                                                                         </div>
                                                                     </div>
                                                                 ) : (
-                                                                    <div class="mainDiv">
+                                                                    <div className="mainDiv">
                                                                         {jwt ? (
                                                                             cubeData.userId === jwtDecoded.userId ? (
                                                                                 <span onClick={(e) => {
@@ -838,8 +832,7 @@ function AuctionCubeNFTs(props) {
                                                         {new Date() > new Date(auctionData.auctionEndsAt) ? (
                                                             jwt ? (
                                                                 <>
-
-                                                                    {cubeData.userId === jwtDecoded.userId && bidHistory.length != 0 ? (
+                                                                    {cubeData.userId === jwtDecoded.userId && bidHistory.length !== 0 ? (
                                                                         isClaiming ? (
                                                                             <div align="center" className="text-center">
                                                                                 <Spinner
@@ -859,7 +852,7 @@ function AuctionCubeNFTs(props) {
 
                                                                         )
                                                                     ) : (
-                                                                        bidHistory.length != 0 ? (bidHistory[bidHistory.length - 1].userId === jwtDecoded.userId ? (
+                                                                        bidHistory.length !== 0 ? (bidHistory[bidHistory.length - 1].userId === jwtDecoded.userId ? (
                                                                             isClaiming ? (
                                                                                 <div align="center" className="text-center">
                                                                                     <Spinner
@@ -1088,7 +1081,7 @@ function AuctionCubeNFTs(props) {
                                                                     title={i[0].title}
                                                                 />
                                                                 <CardMedia
-                                                                    style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                                    variant="outlined" style={{ height: "100%", border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                                     className={classes.media}
                                                                     image={i[0].artwork}
 
@@ -1152,7 +1145,6 @@ function AuctionCubeNFTs(props) {
                                                         aria-controls="panel1a-content"
                                                         id="panel1a-header"
                                                     >
-
                                                         <Typography variant="h6" gutterBottom>Tx History</Typography>
                                                     </AccordionSummary>
                                                     <AccordionDetails>
@@ -1166,7 +1158,7 @@ function AuctionCubeNFTs(props) {
                                                             spacing={2}
                                                             direction="row"
                                                             justify="flex-start"
-            
+
                                                         >
                                                             {transactionHistory.slice(0).reverse().map((i, index) => (
                                                                 <Grid item xs={12} sm={12} md={12} key={index}>
@@ -1180,7 +1172,7 @@ function AuctionCubeNFTs(props) {
                                                                             </Typography>
                                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                                                 <strong>Hash : </strong>
-                                                                                <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                                                                                <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" rel="noopener noreferrer"style={{ color: 'rgb(167,0,0)' }}>
                                                                                     <span style={{ cursor: 'pointer' }}>{i.transaction.substr(0, 20)}. . .</span>
                                                                                 </a>
                                                                             </Typography>

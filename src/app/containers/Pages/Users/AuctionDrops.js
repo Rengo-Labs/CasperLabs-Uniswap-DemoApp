@@ -1,35 +1,26 @@
+import { CardHeader, Grid } from '@material-ui/core/';
+import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import { makeStyles } from '@material-ui/core/styles';
+import TablePagination from '@material-ui/core/TablePagination';
+import Typography from '@material-ui/core/Typography';
+import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { Spinner } from "react-bootstrap";
+import Countdown from 'react-countdown';
+import { Link } from 'react-router-dom';
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";
 import HeaderHome from "../../../components/Headers/Header";
-import Collectible from "./Home/Drops";
-import DigitalArt from "./Home/Market";
-import HomeBanner from "./Home/HomeBanner";
-import PricingBanner from "./Home/PricingBanner";
-import TrendingCollections from "./Home/TrendingCollections";
-import VirtailWorlds from "./Home/VirtualWorlds";
-import { Avatar, CardHeader, Grid } from '@material-ui/core/';
-import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
 
-import CardActionArea from '@material-ui/core/CardActionArea';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import CardMedia from '@material-ui/core/CardMedia';
-import { makeStyles } from '@material-ui/core/styles';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
-import Countdown from 'react-countdown';
-import Cookies from "js-cookie";
-import React, { useEffect, useState } from "react";
-import { Spinner } from "react-bootstrap";
 
-import r1 from '../../../assets/img/patients/patient.jpg';
-import TablePagination from '@material-ui/core/TablePagination';
 
-import MyDrops from "../Dashboard/Admin/MyDrops";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -63,10 +54,7 @@ const useStyles = makeStyles((theme) => ({
 
 function AuctionDrops() {
     const classes = useStyles();
-    const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
-    const [imageData, setImageData] = useState([]);
-
     const [rowsPerPage, setRowsPerPage] = React.useState(12);
     const [totalDrops, setTotalDrops] = React.useState(0);
     const [page, setPage] = React.useState(0);
@@ -95,7 +83,7 @@ function AuctionDrops() {
             })
     }
     useEffect(() => {
-        getMyDrops(0, rowsPerPage);
+        getMyDrops(0, rowsPerPage);// eslint-disable-next-line
     }, []);
     const handleChangePage = (event, newPage) => {
         console.log("newPage", newPage);

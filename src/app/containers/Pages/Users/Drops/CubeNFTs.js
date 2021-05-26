@@ -118,7 +118,7 @@ function CubeNFTs(props) {
     const [minBid, setMinBid] = useState(0);
     const [bidByUser, setBidByUser] = useState(0);
     const [highestBid, setHighestBid] = useState(0);
-    const [bid, setBid] = useState();
+    const [bid, setBid] = useState(null);
     const [balance, setBalance] = useState();
     const [hide, setHide] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -748,7 +748,7 @@ function CubeNFTs(props) {
                                                                         </div>
                                                                     </div>
                                                                 ) : (
-                                                                    <div class="mainDiv">
+                                                                    <div className="mainDiv">
                                                                         {jwt ? (
                                                                             cubeData.userId === jwtDecoded.userId ? (
                                                                                 <span onClick={(e) => {
@@ -825,7 +825,7 @@ function CubeNFTs(props) {
                                                                             null
                                                                         )
                                                                     ) : (
-                                                                        bidHistory.length != 0 ? (bidHistory[bidHistory.length - 1].userId === jwtDecoded.userId ? (
+                                                                        bidHistory.length !== 0 ? (bidHistory[bidHistory.length - 1].userId === jwtDecoded.userId ? (
                                                                             isClaiming ? (
                                                                                 <div align="center" className="text-center">
                                                                                     <Spinner
@@ -932,7 +932,7 @@ function CubeNFTs(props) {
                                                                         </>
                                                                     ) : (
                                                                         <>
-                                                                            {highestBid !== '0' ? (<input type='number' step={dropData.bidDelta / 10 ** 18} min={(highestBid - bidByUser + dropData.bidDelta) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                            {highestBid !== '0' ? (<input type='number' step={dropData.bidDelta / 10 ** 18} min={(highestBid - bidByUser + dropData.bidDelta) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} defaultValue={bid} onChange={(evt) => {
                                                                                 if (evt.target.value >= 0) {
                                                                                     if (evt.target.value < (highestBid - bidByUser + dropData.bidDelta) / 10 ** 18) {
                                                                                         setBid((highestBid - bidByUser + dropData.bidDelta) / 10 ** 18)
@@ -950,7 +950,7 @@ function CubeNFTs(props) {
 
                                                                             }} />
                                                                             ) : (
-                                                                                <input type='number' step={dropData.bidDelta / 10 ** 18} min={(dropData.MinimumBid) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                                <input type='number' step={dropData.bidDelta / 10 ** 18} min={(dropData.MinimumBid) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} defaultValue={bid} onChange={(evt) => {
                                                                                     if (evt.target.value >= 0) {
                                                                                         if (evt.target.value < (dropData.MinimumBid) / 10 ** 18) {
                                                                                             setBid((dropData.MinimumBid) / 10 ** 18)
@@ -1041,7 +1041,7 @@ function CubeNFTs(props) {
                                                                     title={i[0].title}
                                                                 />
                                                                 <CardMedia
-                                                                    style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                                    style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                                     className={classes.media}
                                                                     image={i[0].artwork}
 
@@ -1133,7 +1133,7 @@ function CubeNFTs(props) {
                                                                             </Typography>
                                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                                                 <strong>Hash : </strong>
-                                                                                <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                                                                                <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" rel="noopener noreferrer" style={{ color: 'rgb(167,0,0)' }}>
                                                                                     <span style={{ cursor: 'pointer' }}>{i.transaction.substr(0, 20)}. . .</span>
                                                                                 </a>
                                                                             </Typography>

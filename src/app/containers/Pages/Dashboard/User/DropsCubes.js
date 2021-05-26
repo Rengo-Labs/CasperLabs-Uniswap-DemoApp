@@ -47,10 +47,7 @@ const useStyles = makeStyles((theme) => ({
 
 function DropCubes(props) {
     const { dropId } = useParams();
-
-    console.log("id", dropId);
     const classes = useStyles();
-    const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
     const [imageData, setImageData] = useState([]);
     const [cubeData, setCubeData] = useState([]);
@@ -175,7 +172,7 @@ function DropCubes(props) {
                         // alignItems="flex-start"
                         >
                             {cubeData.map((i, index) => (
-                                <Grid item xs={12} sm={6} md={3}>
+                                <Grid item xs={12} sm={6} md={3} key={index}>
                                     <Link to={"/dashboard/myCubes/Nfts/" + dropId + "/" + i._id}>
                                         <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                             {/* style={{ height: "100%" }} variant="outlined" */}

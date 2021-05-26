@@ -4,24 +4,23 @@ import { SnackbarProvider } from 'notistack';
 import React, { useEffect } from "react";
 import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
 import AdminDashboard from "../Pages/Dashboard/AdminDashboard";
-import CubeNFTs from "../Pages/Users/Drops/CubeNFTs";
 import UserDashboard from "../Pages/Dashboard/UserDashboard";
 import AuctionDrops from "../Pages/Users/AuctionDrops";
+import CubeNFTs from "../Pages/Users/Drops/CubeNFTs";
 import DropCubes from "../Pages/Users/Drops/DropCubes";
 // import ExporterDashboard from "../Pages/Dashboard/ExporterDashboard";
 // import ImporterDashboard from "../Pages/Dashboard/ImporterDashboard";
 import EmailVerification from "../Pages/Users/EmailVerification";
 import ForgotPassword from "../Pages/Users/ForgotPassword";
 import HomeScreen from "../Pages/Users/HomeScreen";
-import KYCScreen from "../Pages/Users/KYCScreen";
 import LoginScreen from "../Pages/Users/LoginScreen";
-import UserLoginScreen from "../Pages/Users/UserLoginScreen"
 import MarketPlace from "../Pages/Users/MarketPlace";
+import AuctionCubeNFTs from "../Pages/Users/MarketPlace/AuctionCubeNFT";
+import SaleCubeNFTs from "../Pages/Users/MarketPlace/SaleCubeNFT";
 import PrivacyPolicy from "../Pages/Users/PrivacyPolicy";
 import RegisterScreen from "../Pages/Users/RegisterScreen";
 import TermsAndConditions from "../Pages/Users/TermsAndConditions";
-import SaleCubeNFTs from "../Pages/Users/MarketPlace/SaleCubeNFT";
-import AuctionCubeNFTs from "../Pages/Users/MarketPlace/AuctionCubeNFT";
+import UserLoginScreen from "../Pages/Users/UserLoginScreen";
 
 function App() {
   let isLoggedIn;

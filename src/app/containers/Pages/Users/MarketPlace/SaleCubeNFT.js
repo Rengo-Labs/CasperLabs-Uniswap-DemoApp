@@ -85,15 +85,13 @@ function SaleCubeNFTs(props) {
         jwtDecoded = jwtDecode(jwt);
     }
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
-    const [nonOwnerAudio, setNonOwnerAudio] = useState(new Audio());
-    const [isClaiming, setIsClaiming] = useState(false);
+    const [nonOwnerAudio, setNonOwnerAudio] = useState(new Audio());// eslint-disable-next-line
     const [isClaimingWeth, setIsClaimingWeth] = useState(false);
     const [weth, setWeth] = useState(0);
     const [enableWethButton, setEnableWethButton] = useState(false);
     const [isConfirmingWeth, setIsConfirmingWeth] = useState(false);
 
     useEffect(() => {
-
         (async () => {
             ownerAudio.addEventListener('ended', () => ownerAudio.pause());
             nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
@@ -101,8 +99,7 @@ function SaleCubeNFTs(props) {
                 ownerAudio.removeEventListener('ended', () => ownerAudio.pause());
                 nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
             };
-        })();
-
+        })();// eslint-disable-next-line
     }, []);
 
     const { enqueueSnackbar } = useSnackbar();
@@ -110,9 +107,6 @@ function SaleCubeNFTs(props) {
     const { expiresAt, cubeId, auctionId } = useParams();
     const [tokenList, setTokenList] = useState([]);
     const [cubeData, setCubeData] = useState({});
-    const [dropData, setDropData] = useState({});
-    const [minBid, setMinBid] = useState(0);
-    const [bid, setBid] = useState();
     const [balance, setBalance] = useState();
     const [hide, setHide] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -178,7 +172,6 @@ function SaleCubeNFTs(props) {
 
         let jwt = Cookies.get("Authorization");
         if (jwt) {
-            //   console.log(jwtDecode(jwt));
             await loadWeb3();
             const web3 = window.web3
             const accounts = await web3.eth.getAccounts();
@@ -231,7 +224,6 @@ function SaleCubeNFTs(props) {
     let ConfirmBuyCube = async () => {
         handleCloseBuyCubeModal();
         setIsSaving(true);
-        console.log("bid", bid);
         await loadWeb3();
         const web3 = window.web3
         const accounts = await web3.eth.getAccounts();
@@ -259,14 +251,13 @@ function SaleCubeNFTs(props) {
             }
             else {
                 setEnableWethButton(false);
-                let wethReceipt = await myWethContractInstance.methods.approve(address, (cubeData.SalePrice).toString()).send({ from: accounts[0] }, (err, response) => {
+                await myWethContractInstance.methods.approve(address, (cubeData.SalePrice).toString()).send({ from: accounts[0] }, (err, response) => {
                     console.log('get transaction', err, response);
                     if (err !== null) {
                         console.log("err", err);
                         let variant = "error";
                         enqueueSnackbar('User Canceled Transaction', { variant });
                         handleCloseBackdrop();
-                        setIsClaiming(false);
                     }
                 })
 
@@ -282,7 +273,6 @@ function SaleCubeNFTs(props) {
                         let variant = "error";
                         enqueueSnackbar('User Canceled Transaction', { variant });
                         handleCloseBackdrop();
-                        setIsClaiming(false);
                     }
                 })
                 // console.log("receipt", receipt);
@@ -395,11 +385,9 @@ function SaleCubeNFTs(props) {
             const balance = await web3.eth.getBalance(accounts[0]);
             console.log("balance", (balance / 10 ** 18).toString());
             setBalance(balance);
-        })();
-
+        })();// eslint-disable-next-line
     }, []);
     let getWeth = () => {
-        // console.log("GET");
         handleShowWeth();
     }
     let confirmGetWeth = async () => {
@@ -409,7 +397,6 @@ function SaleCubeNFTs(props) {
         const web3 = window.web3
         const wethAddress = Addresses.WethAddress;
         const wethAbi = WethContract;
-        const address = Addresses.AuctionAddress;
         const accounts = await web3.eth.getAccounts();
         var myWethContractInstance = await new web3.eth.Contract(wethAbi, wethAddress);
         let wethReceipt = await myWethContractInstance.methods.deposit().send({ from: accounts[0], value: weth * 10 ** 18 }, (err, response) => {
@@ -475,7 +462,7 @@ function SaleCubeNFTs(props) {
                                                                         </div>
                                                                     </div>
                                                                 ) : (
-                                                                    <div class="mainDiv">
+                                                                    <div className="mainDiv">
                                                                         {jwt ? (
                                                                             cubeData.userId === jwtDecoded.userId ? (
                                                                                 <span onClick={(e) => {
@@ -639,7 +626,6 @@ function SaleCubeNFTs(props) {
                                                 justify="flex-start"
 
                                             >
-                                                {/* {console.log("tokenList", tokenList)} */}
                                                 {hide ? (
                                                     tokenList.map((i, index) => (
 
@@ -649,7 +635,7 @@ function SaleCubeNFTs(props) {
                                                                     title={i[0].title}
                                                                 />
                                                                 <CardMedia
-                                                                    style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Mastercraft" ? '4px solid ##ff0000' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                                    variant="outlined" style={{ height: "100%", border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                                     className={classes.media}
                                                                     image={i[0].artwork}
 
@@ -727,7 +713,7 @@ function SaleCubeNFTs(props) {
                                                             spacing={2}
                                                             direction="row"
                                                             justify="flex-start"
-            
+
                                                         >
                                                             {transactionHistory.slice(0).reverse().map((i, index) => (
                                                                 <Grid item xs={12} sm={12} md={12} key={index}>
@@ -741,7 +727,7 @@ function SaleCubeNFTs(props) {
                                                                             </Typography>
                                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                                                 <strong>Hash : </strong>
-                                                                                <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                                                                                <a href={"https://ropsten.etherscan.io/tx/" + i.transaction} target="_blank" rel="noopener noreferrer" style={{ color: 'rgb(167,0,0)' }}>
                                                                                     <span style={{ cursor: 'pointer' }}>{i.transaction.substr(0, 20)}. . .</span>
                                                                                 </a>
                                                                             </Typography>
@@ -753,43 +739,6 @@ function SaleCubeNFTs(props) {
                                                         </Grid>
                                                     </AccordionDetails>
                                                 </Accordion>
-                                                {/* <Accordion>
-                                                    <AccordionSummary
-                                                        expandIcon={<ExpandMoreIcon />}
-                                                        aria-controls="panel2a-content"
-                                                        id="panel2a-header"
-                                                    >
-                                                        <Typography variant="h6" gutterBottom>Bidding History</Typography>
-                                                    </AccordionSummary>
-                                                    <AccordionDetails>
-                                                        {bidHistory.length === 0 ? (
-                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>No Bidding History Found </strong>
-                                                            </Typography>
-                                                        ) : (null)}
-                                                        <Grid
-                                                            container
-                                                            spacing={2}
-                                                            direction="row"
-                                                            justify="flex-start"
-                                                        >
-                                                            {bidHistory.slice(0).reverse().map((i, index) => (
-                                                                <Grid item xs={12} sm={12} md={12} key={index}>
-                                                                    <Card className={classes.root} >
-                                                                        <CardActionArea style={{ margin: '5px' }}>
-                                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                                <strong>Address : </strong>{i.address}
-                                                                            </Typography>
-                                                                            <Typography variant="body2" color="textSecondary" component="p">
-                                                                                <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} WETH</span>
-                                                                            </Typography>
-                                                                        </CardActionArea>
-                                                                    </Card>
-                                                                </Grid>
-                                                            ))}
-                                                        </Grid>
-                                                    </AccordionDetails>
-                                                </Accordion> */}
                                             </div>
                                         </div>
 

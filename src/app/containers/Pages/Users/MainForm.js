@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import PersonalDetails from './PersonalDetails';
-import SignupDetails from './SignupDetails';
-import UserDetails from './UserDetails';
 
 class MainForm extends Component {
     state = {
@@ -16,7 +14,6 @@ class MainForm extends Component {
         selfiePassportPhoto: '',
         productPhotos: '',
         factoryName: '',
-        // password: '',
         userName: '',
         country: '',
         address: '',
@@ -40,11 +37,9 @@ class MainForm extends Component {
         this.setState({ [input]: event.target.value })
     }
     handleStepTwo = ({ userName, country, address, factoryName
-        // passportPhoto, selfiePassportPhoto 
     }) => {
         this.setState({
             country, userName, address, factoryName
-            // passportPhoto, selfiePassportPhoto
         });
     }
     handleStepOne = ({ selfiePhoto, businessCertificatePhoto }) => {
@@ -56,31 +51,12 @@ class MainForm extends Component {
         })
     }
 
-    componentDidMount = () => {
-    }
-
     render() {
         const { step } = this.state;
         const { role, name, mobile, email, userName, country, address, factoryName, selfiePhoto, businessCertificatePhoto, passportPhoto, selfiePassportPhoto, productPhotos } = this.state;
         const values = { role, name, mobile, email, userName, country, factoryName, address, selfiePhoto, businessCertificatePhoto, passportPhoto, selfiePassportPhoto, productPhotos };
         switch (step) {
-            // case 1:
-            //     return <UserDetails
-            //         nextStep={this.nextStep}
-            //         addRole={this.addRole}
-            //         handleStepOne={this.handleStepOne}
-            //         selfiePhoto={selfiePhoto}
-            //         businessCertificatePhoto={businessCertificatePhoto}
-            //         // removeRole={this.removeRole}
-            //         role={role}
-            //     />
-            // case 1:
-            //     return <SignupDetails
-            //         nextStep={this.nextStep}
-            //         prevStep={this.prevStep}
-            //         handleStepTwo={this.handleStepTwo}
-            //         values={values}
-            //     />
+
             case 1:
                 return <PersonalDetails
                     nextStep={this.nextStep}

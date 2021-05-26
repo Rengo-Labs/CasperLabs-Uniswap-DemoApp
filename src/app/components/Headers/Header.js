@@ -191,7 +191,7 @@ function HeaderHome(props) {
               {/* <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} > */}
 
                 {localStorage.getItem("Address") ? (
-                  <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+                  <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: 'rgb(167,0,0)' }}>
                     <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
                   </a>
                 ) : (
@@ -243,7 +243,7 @@ function HeaderHome(props) {
             </div>
           ) : (
             localStorage.getItem("Address") ? (
-              <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+              <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: 'rgb(167,0,0)' }}>
                 <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
               </a>
             ) : (

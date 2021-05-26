@@ -56,7 +56,7 @@ function NFTCard(props) {
                                 </div>
                             </div>
                         ) : (
-                            <div class="mainDiv">
+                            <div className="mainDiv">
                                 <div className="square" onMouseEnter={() => {
                                     setHide(true);
                                     // setTimeout(() => , 1000);
