@@ -8,18 +8,10 @@ import {
 } from '@material-ui/core/';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import { makeStyles } from '@material-ui/core/styles';
-import ViewListIcon from '@material-ui/icons/ViewList';
-import ViewModuleIcon from '@material-ui/icons/ViewModule';
-import ToggleButton from '@material-ui/lab/ToggleButton';
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import axios from "axios";
 import Cookies from "js-cookie";
-import React, { useEffect, useState } from "react";
-import { Row } from 'react-bootstrap';
-import { Col } from 'react-bootstrap';
-import NumberFormat from 'react-number-format';
-import CollectionCard from '../../../../components/Cards/CollectionCard';
 import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import { Link } from 'react-router-dom';
 const useStyles = makeStyles({
@@ -48,12 +40,12 @@ const useStyles = makeStyles({
 });
 
 
-function MyCollection(props) {
+function MyCollection(props) {// eslint-disable-next-line
     const { enqueueSnackbar } = useSnackbar();
-    let [collections, setCollections] = useState([]);
+    let [collections, setCollections] = useState([]);// eslint-disable-next-line
     let [collection, setCollection] = useState("");
     const [rowsPerPage, setRowsPerPage] = React.useState(8);
-    const [page, setPage] = React.useState(0);
+    const [page, setPage] = React.useState(0);// eslint-disable-next-line
     let [isCreating, setIsCreating] = useState(false);
     let [open, setOpen] = useState(false);
 
@@ -86,29 +78,29 @@ function MyCollection(props) {
             });
     };
 
-    let createCollections = () => {
-        setIsCreating(true);
-        let CollectionData = {
-            collectiontitle: collection
-        }
-        axios
-            .post(`/collection/createcollection`, CollectionData)
-            .then((response) => {
-                setIsCreating(false);
-                console.log("response.data", response);
-                setCollection("response.data.Collectiondata");
+    // let createCollections = () => {
+    //     setIsCreating(true);
+    //     let CollectionData = {
+    //         collectiontitle: collection
+    //     }
+    //     axios
+    //         .post(`/collection/createcollection`, CollectionData)
+    //         .then((response) => {
+    //             setIsCreating(false);
+    //             console.log("response.data", response);
+    //             setCollection("response.data.Collectiondata");
 
-                let variant = "success";
-                enqueueSnackbar('Collection Created Successfully .', { variant });
-                getCollections()
-            })
-            .catch((error) => {
-                console.log(error.response);
-                setIsCreating(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Create Collection .', { variant });
-            });
-    };
+    //             let variant = "success";
+    //             enqueueSnackbar('Collection Created Successfully .', { variant });
+    //             getCollections()
+    //         })
+    //         .catch((error) => {
+    //             console.log(error.response);
+    //             setIsCreating(false);
+    //             let variant = "error";
+    //             enqueueSnackbar('Unable to Create Collection .', { variant });
+    //         });
+    // };
     const handleChangePage = (event, newPage) => {
         console.log("newPage", newPage);
         setPage(newPage);

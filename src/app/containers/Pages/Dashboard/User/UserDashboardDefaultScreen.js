@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from "react";
+// eslint-disable-next-line
+import axios from "axios";// eslint-disable-next-line
+import React, { useEffect, useState } from "react";
 
-import axios from "axios";
-import { Link } from "react-router-dom";
 
 function UserDashboardDefaultScreen(props) {
-  let [approved, setApproved] = useState(0);
-  let [pending, setPending] = useState(0);
-  let [disputed, setDisputed] = useState(0);
+  // let [approved, setApproved] = useState(0);
+  // let [pending, setPending] = useState(0);
+  // let [disputed, setDisputed] = useState(0);
 
-  let getCounts = () => {
-    axios
-      .get("/api/v1/admin/getCounts")
-      .then((response) => {
-        console.log(response);
-        setApproved(response.data.approved);
-        setPending(response.data.pending);
-        setDisputed(response.data.UnderDisputed)
-      })
-      .catch((error) => {
-        console.log(error);
-        console.log(error.response);
-      });
-  };
+  // let getCounts = () => {
+  //   axios
+  //     .get("/api/v1/admin/getCounts")
+  //     .then((response) => {
+  //       console.log(response);
+  //       setApproved(response.data.approved);
+  //       setPending(response.data.pending);
+  //       setDisputed(response.data.UnderDisputed)
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //       console.log(error.response);
+  //     });
+  // };
 
   useEffect(() => {
     props.setActiveTab({
@@ -34,8 +34,7 @@ function UserDashboardDefaultScreen(props) {
       referralEarnings:"",
       settings: "",
       changePassword: "",
-    });
-    // getCounts();// eslint-disable-next-line
+    });// eslint-disable-next-line
   }, []);
 
   return (

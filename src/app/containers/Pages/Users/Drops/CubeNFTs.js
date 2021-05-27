@@ -1,40 +1,35 @@
 import { Grid } from '@material-ui/core/';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import Avatar from '@material-ui/core/Avatar';
+import Backdrop from '@material-ui/core/Backdrop';
 import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
-import { NavLink, useHistory } from "react-router-dom";
 import CardMedia from '@material-ui/core/CardMedia';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import axios from 'axios';
-import React, { useEffect, useState } from "react";
-import Cookies from "js-cookie";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { Spinner } from "react-bootstrap";
-import Chip from '@material-ui/core/Chip';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import { Row } from "react-bootstrap";
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import Countdown from 'react-countdown';
-import { useSnackbar } from 'notistack';
-import { useParams } from "react-router-dom";
-import HeaderHome from '../../../../components/Headers/Header';
-import LoginErrorModal from '../../../../components/Modals/LoginErrorModal';
-import ConfirmBidModal from '../../../../components/Modals/ConfirmBidModal';
-import Web3 from 'web3';
-import { Minimize } from '@material-ui/icons';
-import jwtDecode from "jwt-decode";
-import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
-import { Button } from 'react-bootstrap';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import axios from 'axios';
+import Cookies from "js-cookie";
+import jwtDecode from "jwt-decode";
+import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
+import { Button, Row, Spinner } from "react-bootstrap";
+import Countdown from 'react-countdown';
+import { useHistory, useParams } from "react-router-dom";
+import Web3 from 'web3';
+import r1 from '../../../../assets/img/patients/patient.jpg';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import WethContract from '../../../../components/blockchain/Abis/WethContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import HeaderHome from '../../../../components/Headers/Header';
+import ConfirmBidModal from '../../../../components/Modals/ConfirmBidModal';
+import LoginErrorModal from '../../../../components/Modals/LoginErrorModal';
+import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 import WethModal from '../../../../components/Modals/WethModal';
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -90,14 +85,12 @@ function CubeNFTs(props) {
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
     const [nonOwnerAudio, setNonOwnerAudio] = useState(new Audio());
     const [isClaiming, setIsClaiming] = useState(false);
-    const [isClaimingWeth, setIsClaimingWeth] = useState(false);
+    const [isClaimingWeth] = useState(false);
     const [weth, setWeth] = useState(0);
     const [enableWethButton, setEnableWethButton] = useState(false);
     const [isConfirmingWeth, setIsConfirmingWeth] = useState(false);
-    const [wethBalance, setWethBalance] = useState(0);
 
     useEffect(() => {
-
         (async () => {
             ownerAudio.addEventListener('ended', () => ownerAudio.pause());
             nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
@@ -105,8 +98,7 @@ function CubeNFTs(props) {
                 ownerAudio.removeEventListener('ended', () => ownerAudio.pause());
                 nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
             };
-        })();
-
+        })();// eslint-disable-next-line
     }, []);
 
     const { enqueueSnackbar } = useSnackbar();
@@ -115,7 +107,6 @@ function CubeNFTs(props) {
     const [tokenList, setTokenList] = useState([]);
     const [cubeData, setCubeData] = useState({});
     const [dropData, setDropData] = useState({});
-    const [minBid, setMinBid] = useState(0);
     const [bidByUser, setBidByUser] = useState(0);
     const [highestBid, setHighestBid] = useState(0);
     const [bid, setBid] = useState(null);
@@ -125,8 +116,6 @@ function CubeNFTs(props) {
     const [network, setNetwork] = useState("");
     const [transactionHistory, setTransactionHistory] = useState([]);
     const [bidHistory, setBidHistory] = useState([]);
-    // if(bidHistory.length!==0)
-    // console.log("bidHistory.findIndex(i => i.userId === jwtDecoded.userId)",);
     const [openWeth, setOpenWeth] = useState(false);
     const handleCloseWeth = () => {
         setOpenWeth(false);
@@ -209,68 +198,69 @@ function CubeNFTs(props) {
             handleShow();
         }
     }
-    let claimFunds = async (e) => {
-        e.preventDefault();
+    // eslint-disable-next-line
+    // let claimFunds = async (e) => {
+    //     e.preventDefault();
 
-        setIsClaiming(true);
-        await loadWeb3();
-        const web3 = window.web3
-        const accounts = await web3.eth.getAccounts();
-        const network = await web3.eth.net.getNetworkType()
-        if (network !== 'ropsten') {
-            setNetwork(network);
-            setIsClaiming(false);
-            handleShowNetwork();
-        }
-        else {
-            handleShowBackdrop();
-            const address = Addresses.AuctionAddress;
-            const abi = CreateAuctionContract;
-            var myContractInstance = await new web3.eth.Contract(abi, address);
-            console.log("myContractInstance", myContractInstance);
-            console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
-            let receipt = await myContractInstance.methods.claimFunds(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
-                console.log('get transaction', err, response);
-                if (err !== null) {
-                    console.log("err", err);
-                    let variant = "error";
-                    enqueueSnackbar('User Canceled Transaction', { variant });
-                    handleCloseBackdrop();
-                    setIsClaiming(false);
-                }
-            })
-            console.log("receipt", receipt);
-            let ClaimData = {
-                dropId: dropId,
-                tokenId: cubeId,
-                address: accounts[0],
-                claimFunds: true,
-                claimNft: true,
-                withdraw: true,
-            }
-            axios.put("dropcubehistory/claimhistory", ClaimData).then(
-                (response) => {
-                    console.log('response', response);
-                    setIsClaiming(false);
-                    handleCloseBackdrop();
-                    getCubeNFTs();
-                    let variant = "success";
-                    enqueueSnackbar('Cube transferred Successfully.', { variant });
-                },
-                (error) => {
-                    if (process.env.NODE_ENV === "development") {
-                        console.log(error);
-                        console.log(error.response);
-                    }
-                    setIsClaiming(false);
-                    handleCloseBackdrop();
+    //     setIsClaiming(true);
+    //     await loadWeb3();
+    //     const web3 = window.web3
+    //     const accounts = await web3.eth.getAccounts();
+    //     const network = await web3.eth.net.getNetworkType()
+    //     if (network !== 'ropsten') {
+    //         setNetwork(network);
+    //         setIsClaiming(false);
+    //         handleShowNetwork();
+    //     }
+    //     else {
+    //         handleShowBackdrop();
+    //         const address = Addresses.AuctionAddress;
+    //         const abi = CreateAuctionContract;
+    //         var myContractInstance = await new web3.eth.Contract(abi, address);
+    //         console.log("myContractInstance", myContractInstance);
+    //         console.log("dropData.dropId, cubeData.tokenId", dropData.dropId, cubeData.tokenId);
+    //         let receipt = await myContractInstance.methods.claimFunds(dropData.dropId, cubeData.tokenId).send({ from: accounts[0] }, (err, response) => {
+    //             console.log('get transaction', err, response);
+    //             if (err !== null) {
+    //                 console.log("err", err);
+    //                 let variant = "error";
+    //                 enqueueSnackbar('User Canceled Transaction', { variant });
+    //                 handleCloseBackdrop();
+    //                 setIsClaiming(false);
+    //             }
+    //         })
+    //         console.log("receipt", receipt);
+    //         let ClaimData = {
+    //             dropId: dropId,
+    //             tokenId: cubeId,
+    //             address: accounts[0],
+    //             claimFunds: true,
+    //             claimNft: true,
+    //             withdraw: true,
+    //         }
+    //         axios.put("dropcubehistory/claimhistory", ClaimData).then(
+    //             (response) => {
+    //                 console.log('response', response);
+    //                 setIsClaiming(false);
+    //                 handleCloseBackdrop();
+    //                 getCubeNFTs();
+    //                 let variant = "success";
+    //                 enqueueSnackbar('Cube transferred Successfully.', { variant });
+    //             },
+    //             (error) => {
+    //                 if (process.env.NODE_ENV === "development") {
+    //                     console.log(error);
+    //                     console.log(error.response);
+    //                 }
+    //                 setIsClaiming(false);
+    //                 handleCloseBackdrop();
 
-                    let variant = "error";
-                    enqueueSnackbar('Unable to transfer Cube.', { variant });
-                }
-            );
-        }
-    }
+    //                 let variant = "error";
+    //                 enqueueSnackbar('Unable to transfer Cube.', { variant });
+    //             }
+    //         );
+    //     }
+    // }
 
     let claimCube = async (e) => {
         if (cubeData.adminclaimfunds) {
@@ -487,7 +477,7 @@ function CubeNFTs(props) {
                     setEnableWethButton(false);
                     const address = Addresses.AuctionAddress;
                     const abi = CreateAuctionContract;
-                    let wethReceipt = await myWethContractInstance.methods.approve(address, (bid * 10 ** 18).toString()).send({ from: accounts[0] }, (err, response) => {
+                    await myWethContractInstance.methods.approve(address, (bid * 10 ** 18).toString()).send({ from: accounts[0] }, (err, response) => {
                         console.log('get transaction', err, response);
                         if (err !== null) {
                             console.log("err", err);
@@ -668,9 +658,7 @@ function CubeNFTs(props) {
             let wethReceipt = await myWethContractInstance.methods.balanceOf(accounts[0]).call();
             console.log("balance", (wethReceipt / 10 ** 18).toString(),);
             setBalance(balance);
-            setWethBalance(wethReceipt)
-        })();
-
+        })();// eslint-disable-next-line
     }, []);
     let getWeth = () => {
         // console.log("GET");
@@ -683,7 +671,6 @@ function CubeNFTs(props) {
         const web3 = window.web3
         const wethAddress = Addresses.WethAddress;
         const wethAbi = WethContract;
-        const address = Addresses.AuctionAddress;
         const accounts = await web3.eth.getAccounts();
         var myWethContractInstance = await new web3.eth.Contract(wethAbi, wethAddress);
         let wethReceipt = await myWethContractInstance.methods.deposit().send({ from: accounts[0], value: weth * 10 ** 18 }, (err, response) => {
@@ -737,8 +724,8 @@ function CubeNFTs(props) {
                                                                 image=""
                                                             >
                                                                 {hide ? (
-                                                                    <div class="wrapper">
-                                                                        <div class="cube-box">
+                                                                    <div className="wrapper">
+                                                                        <div className="cube-box">
                                                                             {tokenList.map((j, jindex) => (
                                                                                 <img src={j[0].artwork} key={jindex} style={{ border: j[0].type === "Mastercraft" ? '4px solid #ff0000' : j[0].type === "Legendary" ? '4px solid #FFD700' : j[0].type === "Epic" ? '4px solid #9400D3' : j[0].type === "Rare" ? '4px solid #0000FF' : j[0].type === "Uncommon" ? '4px solid #008000' : j[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
                                                                             ))}
@@ -1041,7 +1028,7 @@ function CubeNFTs(props) {
                                                                     title={i[0].title}
                                                                 />
                                                                 <CardMedia
-                                                                    style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                                    variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                                     className={classes.media}
                                                                     image={i[0].artwork}
 
@@ -1119,7 +1106,7 @@ function CubeNFTs(props) {
                                                             spacing={2}
                                                             direction="row"
                                                             justify="flex-start"
-            
+
                                                         >
                                                             {transactionHistory.slice(0).reverse().map((i, index) => (
                                                                 <Grid item xs={12} sm={12} md={12} key={index}>

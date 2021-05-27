@@ -1,26 +1,18 @@
-import React, { useState, useEffect } from "react";
-import {
-  Redirect,
-  Route,
-  Switch,
-  useRouteMatch,
-  withRouter,
-  Link,
-} from "react-router-dom";
-// import {  } from "react-router-dom";
-
-import "../../assets/css/bootstrap.min.css";
-import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import "../../assets/plugins/fontawesome/css/all.min.css";
-import "../../assets/css/style.css";
-import "../../assets/css/adminStyle.css";
 import Cookies from "js-cookie";
-import logo from "../../assets/img/logo3.png";
-import patient from "../../assets/img/patients/patient.jpg";
-import logoSmall from "../../assets/img/logo3.png";
-import Dropdown, { DropdownHeader } from "react-bootstrap/Dropdown";
-import axios from "axios";
+import React, { useState } from "react";
+import Dropdown from "react-bootstrap/Dropdown";
 import { connect } from "react-redux";
+import {
+  Link,
+  withRouter
+} from "react-router-dom";
+import "../../assets/css/adminStyle.css";
+// import {  } from "react-router-dom";
+import "../../assets/css/bootstrap.min.css";
+import "../../assets/css/style.css";
+import patient from "../../assets/img/patients/patient.jpg";
+import "../../assets/plugins/fontawesome/css/all.min.css";
+import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 
 const mapStateToProps = (state) => {
   return {
@@ -29,15 +21,12 @@ const mapStateToProps = (state) => {
 };
 
 function ProfileHeader(props) {
-  let { path } = useRouteMatch();
   let [menuOpenedClass, setMenuOpenedClass] = useState();
-  let [tab, setTab] = useState();
-  let [logout, setLogout] = useState(false);
   let [slideNavClass, setSlideNavClass] = useState();
 
   let handleSlideNav = (e) => {
     e.preventDefault();
-    if (slideNavClass != "" && menuOpenedClass != "") {
+    if (slideNavClass !== "" && menuOpenedClass !== "") {
       setMenuOpenedClass("");
       setSlideNavClass("");
     } else {
@@ -45,10 +34,6 @@ function ProfileHeader(props) {
       setSlideNavClass("slide-nav");
     }
   };
-
-  let [isGettingUserData, setIsGettingUserData] = useState(true);
-  let [userData, setUserData] = useState({});
-
   return (
     <div
     //  className={`main-wrapper ${slideNavClass}`}
@@ -81,7 +66,7 @@ function ProfileHeader(props) {
 
         {/* <!-- Mobile Menu Toggle --> */}
 
-        <a className="mobile_btn" id="mobile_btn" onClick={handleSlideNav}>
+        <a href="/" className="mobile_btn" id="mobile_btn" onClick={handleSlideNav}>
           <i className="fa fa-bars"></i>
         </a>
         {/* <!-- /Mobile Menu Toggle --> */}
@@ -128,11 +113,11 @@ function ProfileHeader(props) {
                   <div className="admin-header">
                     <div className="avatar avatar-sm">
                       {/* {props.userData.pictureURL !== undefined ? ( */}
-                      <img
+                      {/* <img
                         // src={props.userData.pictureURL}
                         alt="Image"
                         className="avatar-img rounded-circle"
-                      />
+                      /> */}
                       {/* ) : ( */}
                       <img
                         className="avatar-sm rounded-circle"

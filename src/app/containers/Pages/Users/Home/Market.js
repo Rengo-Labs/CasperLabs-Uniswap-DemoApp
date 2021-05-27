@@ -78,7 +78,7 @@ function MarketPlace(props) {
     }
 
     useEffect(() => {
-        getCubes(0, 4);
+        getCubes(0, 4);// eslint-disable-next-line
     }, []);
 
     return (

@@ -1,4 +1,5 @@
 import { CardHeader, Grid } from '@material-ui/core/';
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
@@ -10,12 +11,10 @@ import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import Cookies from "js-cookie";
-import Button from '@material-ui/core/Button';
-import jwtDecode from "jwt-decode";
-import Countdown from 'react-countdown';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
+import Countdown from 'react-countdown';
 import { Scrollbars } from 'react-custom-scrollbars';
 import r1 from '../../../../assets/img/patients/patient.jpg';
 
@@ -58,7 +57,6 @@ function NewSeason(props) {
     const [inputList, setInputList] = useState([]);
     let [isSaving, setIsSaving] = useState(false);
     let [image, setImage] = useState(r1);
-    let [drops, setDrops] = useState();
     let [isUploading, setIsUploading] = useState();
     let [name, setName] = useState("");
     let [description, setDescription] = useState("");
@@ -94,7 +92,7 @@ function NewSeason(props) {
             newNFT: "",
             newDrop: "",
             newSeason: "active",
-            mySeason:"",
+            mySeason: "",
             myNFTs: "",
             myCubes: "",
             myDrops: "",
@@ -106,7 +104,7 @@ function NewSeason(props) {
             termsandconditions: "",
             changePassword: "",
             newRandomDrop: ""
-        });
+        });// eslint-disable-next-line
     }, []);
     const handleRemoveClick = (index) => {
         console.log("index", index);
@@ -127,12 +125,7 @@ function NewSeason(props) {
 
     const handleSubmitEvent = (event) => {
         event.preventDefault();
-
         setIsSaving(true);
-
-        let jwt = Cookies.get("Authorization");
-        let jwtDecoded = jwtDecode(jwt);
-        let exporter = jwtDecoded.id;
         let dropList = [];
         for (let i = 0; i < types.length; i++) {
             dropList.push(types[i]._id);

@@ -1,19 +1,17 @@
-import { Avatar, CardHeader, Grid } from '@material-ui/core/';
+import { CardHeader, Grid } from '@material-ui/core/';
 import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import { Link } from 'react-router-dom';
-import { useParams } from "react-router-dom";
+import { Link, useParams } from 'react-router-dom';
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -50,9 +48,7 @@ const useStyles = makeStyles((theme) => ({
 function SeasonDrops(props) {
     const { seasonId } = useParams();
     const classes = useStyles();
-    const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
-    const [imageData, setImageData] = useState([]);
 
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
@@ -102,7 +98,7 @@ function SeasonDrops(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
 
     return (

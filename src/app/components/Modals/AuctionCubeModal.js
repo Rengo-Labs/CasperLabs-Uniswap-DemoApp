@@ -1,21 +1,18 @@
-import { Typography } from "@material-ui/core";
 import React, { useState } from "react";
-import { Col } from "react-bootstrap";
-import { Row } from "react-bootstrap";
-import { Modal, Spinner, Button } from "react-bootstrap";
-import "../../assets/css/bootstrap.min.css";
+import { Button, Modal, Spinner } from "react-bootstrap";
 import DateTimePicker from 'react-datetime-picker';
+import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 
-function AuctionCubeModal(props) {
-    const [time, setTime] = useState(new Date());
-    const [timeStamp, setTimeStamp] = useState(time.getTime() / 1000);
+function AuctionCubeModal(props) {// eslint-disable-next-line
+    const [time, setTime] = useState(new Date());// eslint-disable-next-line
+    const [timeStamp, setTimeStamp] = useState(time.getTime() / 1000);// eslint-disable-next-line
     const [price, setPrice] = useState();
     let [minimumBid, setMinimumBid] = useState();
     let [bidDelta, setBidDelta] = useState();
-    
+
     const [startTime, setStartTime] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date());
     const [startTimeStamp, setStartTimeStamp] = useState(startTime.getTime() / 1000);
@@ -64,10 +61,13 @@ function AuctionCubeModal(props) {
                                     placeholder="Enter Total Supply"
                                     required
                                     value={minimumBid}
-                                    placeholder=""
                                     className="form-control"
                                     onChange={(e) => {
-                                        setMinimumBid(e.target.value);
+                                        if (e.target.value < 0) {
+                                            setMinimumBid(0);
+                                        } else {
+                                            setMinimumBid(e.target.value);
+                                        }
                                     }}
                                 />
                             </div>
@@ -80,10 +80,13 @@ function AuctionCubeModal(props) {
                                     placeholder=""
                                     required
                                     value={bidDelta}
-                                    placeholder=""
                                     className="form-control"
                                     onChange={(e) => {
-                                        setBidDelta(e.target.value);
+                                        if (e.target.value < 0) {
+                                            setBidDelta(0);
+                                        } else {
+                                            setBidDelta(e.target.value);
+                                        }
                                     }}
                                 />
                             </div>
@@ -108,7 +111,7 @@ function AuctionCubeModal(props) {
                         <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                     </div>
                 ) : (
-                    <Button variant="primary" onClick={() => props.putOnAuction(minimumBid,bidDelta,startTime,endTime, startTimeStamp, endTimeStamp)}>
+                    <Button variant="primary" onClick={() => props.putOnAuction(minimumBid, bidDelta, startTime, endTime, startTimeStamp, endTimeStamp)}>
                         Yes, Proceed!
                     </Button>
                 )}

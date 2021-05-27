@@ -736,8 +736,8 @@ function AuctionCubeNFTs(props) {
                                                                 image=""
                                                             >
                                                                 {hide ? (
-                                                                    <div class="wrapper">
-                                                                        <div class="cube-box">
+                                                                    <div className="wrapper">
+                                                                        <div className="cube-box">
                                                                             {tokenList.map((j, jindex) => (
                                                                                 <img src={j[0].artwork} key={jindex} style={{ border: j[0].type === "Mastercraft" ? '4px solid #ff0000' : j[0].type === "Legendary" ? '4px solid #FFD700' : j[0].type === "Epic" ? '4px solid #9400D3' : j[0].type === "Rare" ? '4px solid #0000FF' : j[0].type === "Uncommon" ? '4px solid #008000' : j[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
                                                                             ))}

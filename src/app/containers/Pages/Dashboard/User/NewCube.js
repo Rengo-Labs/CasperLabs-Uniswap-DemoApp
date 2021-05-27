@@ -3,42 +3,32 @@ import {
     CardContent, Grid
 } from '@material-ui/core/';
 import Avatar from '@material-ui/core/Avatar';
-// import CardContent from '@material-ui/core/CardContent';
-import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
-import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import Backdrop from '@material-ui/core/Backdrop';
 import Button from '@material-ui/core/Button';
 import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
-import FormControl from '@material-ui/core/FormControl';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import axios from 'axios';
 import Cookies from "js-cookie";
 import jwtDecode from "jwt-decode";
-import { Scrollbars } from 'react-custom-scrollbars';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
+import { Scrollbars } from 'react-custom-scrollbars';
+import Web3 from 'web3';
 import logo from "../../../../assets/img/img-04.jpg";
 import r1 from '../../../../assets/img/patients/patient.jpg';
-import robot1 from '../../../../assets/img/r1.jpg';
-import robot2 from '../../../../assets/img/r2.jpg';
-import robot3 from '../../../../assets/img/r3.jpg';
-import robot4 from '../../../../assets/img/r4.jpg';
-import robot5 from '../../../../assets/img/r5.jpg';
-import robot6 from '../../../../assets/img/r6.jpg';
-import SixNFTsErrorModal from '../../../../components/Modals/SixNFTsErrorModal';
-import axios from 'axios';
-import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Web3 from 'web3';
+// import CardContent from '@material-ui/core/CardContent';
+import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
+import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
 import ipfs from '../../../../components/IPFS/ipfs';
+import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
+import SixNFTsErrorModal from '../../../../components/Modals/SixNFTsErrorModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -55,7 +45,10 @@ const useStyles = makeStyles((theme) => ({
         zIndex: theme.zIndex.drawer + 1,
         color: '#fff',
     },
-
+    media: {
+        height: 0,
+        paddingTop: '100%', // 16:9
+    },
     card: {
         minWidth: 250,
     },
@@ -85,21 +78,10 @@ function NewCube(props) {
     let [aboutTheTrack, setAboutTheTrack] = useState("");
     let [salePrice, setSalePrice] = useState();
     let [artistTypes, setArtistTypes] = useState([]);
-
-    let [artistType, setArtistType] = useState("New");
     let [artist, setArtist] = useState('');
-    let [nftName, setNFTName] = useState();
-    let [buffer, setBuffer] = useState('');
-
     let [musicOwner, setMusicOwner] = useState("");
     let [musicNonOwner, setMusicNonOwner] = useState("");
     let [artistImage, setArtistImage] = useState(logo);
-
-    // let jwt = Cookies.get("Authorization");
-    // let jwtDecoded = jwtDecode(jwt);
-    // let exporter = jwtDecoded;
-    // console.log("exporter", exporter);
-    let [isUploadingArtist, setIsUploadingArtist] = useState(false);
     let [network, setNetwork] = useState(false);
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
@@ -117,6 +99,9 @@ function NewCube(props) {
         setOpen(true);
     };
     let getProfileData = () => {
+        axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
+            "Authorization"
+        )}`;
         axios.get("/profile/createprofile").then(
             (response) => {
                 console.log("response", response);
@@ -198,9 +183,12 @@ function NewCube(props) {
             newDrop: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
     let getMyNFTs = () => {
+        axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
+            "Authorization"
+        )}`;
         axios.get("/nft/createnft").then(
             (response) => {
                 console.log("response", response);
@@ -240,7 +228,6 @@ function NewCube(props) {
         let jwtDecoded = jwtDecode(jwt);
         let exporter = jwtDecoded.id;
         console.log("exporter", exporter);
-        let fileData = new FormData();
         if (selectedNFTList.length === 0) {
             let variant = "error";
             enqueueSnackbar('Please Select Nfts first', { variant });
@@ -321,7 +308,6 @@ function NewCube(props) {
                 console.log("blob", blob);
                 reader.readAsArrayBuffer(blob);
                 reader.onloadend = () => {
-                    setBuffer(Buffer(reader.result));
                     ipfs.add(Buffer(reader.result), async (err, result) => {
                         if (err) {
                             console.log(err);
@@ -362,11 +348,9 @@ function NewCube(props) {
                                     MusicArtistName: artist,
                                     MusicArtistAbout: aboutTheTrack,
                                     MusicArtistProfile: artistImage,
-                                    musicartisttype: artistType,
                                     SalePrice: salePrice * 10 ** 18,
                                     address: accounts[0]
                                 }
-                                console.log("cubeData", cubeData);
                                 axios.post("/token/TokenIds", cubeData).then(
                                     (response) => {
 
@@ -380,7 +364,6 @@ function NewCube(props) {
                                         setArtist('');
                                         setAboutTheTrack('');
                                         setArtistImage(logo)
-                                        setArtistType('New')
                                         setSalePrice();
                                         let variant = "success";
                                         enqueueSnackbar('Cube Created Successfully.', { variant });
@@ -420,11 +403,7 @@ function NewCube(props) {
 
                 }
             }
-
-
-
         }
-
     };
     const handleRemoveClick = (index, newNFT) => {
         console.log("index", index);
@@ -433,8 +412,6 @@ function NewCube(props) {
         setSelectedNFTList(list);
         setTokenList(tokenList => [...tokenList, newNFT])
     };
-
-    // handle click event of the Add button
     const handleAddClick = (nft) => {
         console.log("selectedNFTList.length", selectedNFTList.length);
         if (selectedNFTList.length + 1 <= 6) {
@@ -442,7 +419,6 @@ function NewCube(props) {
             var index = list.findIndex(i => i._id === nft._id);
             list.splice(index, 1);
             setTokenList(list);
-            // setTokenList([...tokenList, {}]);
             setSelectedNFTList([...selectedNFTList, nft]);
         }
         else {
@@ -450,30 +426,6 @@ function NewCube(props) {
         }
 
     };
-    let onChangeArtistHandler = (e) => {
-        setIsUploadingArtist(true);
-        let fileData = new FormData();
-        fileData.append("image", e.target.files[0]);
-        axios.post("upload/uploadtos3", fileData).then(
-            (response) => {
-                console.log("response", response);
-                setArtistImage(response.data.url);
-                setIsUploadingArtist(false);
-                let variant = "success";
-                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
-            },
-            (error) => {
-                if (process.env.NODE_ENV === "development") {
-                    console.log(error);
-                    console.log(error.response);
-                }
-                setIsUploadingArtist(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
-
-            }
-        );
-    }
 
     return (
         <div className="card">
@@ -494,17 +446,12 @@ function NewCube(props) {
                                         id="combo-dox-demo"
                                         required
                                         options={tokenList}
-                                        // value={nftName}
-                                        // disabled={isDisabledImporter}
                                         getOptionLabel={(option) =>
                                             option.title + "," + option.type + ',' + option.tokensupply
                                         }
                                         onChange={(event, value) => {
-                                            if (value == null)
-                                                setNFTName("");
-                                            else {
+                                            if (value !== null) {
                                                 console.log(value);
-                                                setNFTName(value.title)
                                                 handleAddClick(value);
                                             }
                                         }}
@@ -552,8 +499,7 @@ function NewCube(props) {
                                                 type="number"
                                                 placeholder="Enter Total Supply"
                                                 required
-                                                value={salePrice}
-                                                placeholder=""
+                                                defaultValue={salePrice}
                                                 className="form-control"
                                                 onChange={(e) => {
                                                     if (e.target.value >= 0) {
@@ -566,7 +512,6 @@ function NewCube(props) {
                                             />
                                         </div>
                                     </div>
-
                                     <div className="form-group">
                                         <label>Upload Music for Owner</label>{" "}
                                     </div>
@@ -578,7 +523,6 @@ function NewCube(props) {
                                             accept=".mp3"
                                             className="form-control"
                                             onChange={(e) => uploadMusicOwnerHandler(e)}
-
                                         />
                                     </div>
                                     <div className="form-group">
@@ -592,158 +536,50 @@ function NewCube(props) {
                                             accept=".mp3"
                                             className="form-control"
                                             onChange={(e) => uploadMusicNonOwnerHandler(e)}
-
                                         />
                                     </div>
-                                    {/* <FormControl component="fieldset">
-                                        <lable component="legend">Select to add Music Artist </lable>
-                                        <RadioGroup row aria-label="position" name="position" defaultValue="top">
-                                            <FormControlLabel style={{ color: 'black' }} value="New Artist" onChange={() => setArtistType("New")} checked={artistType === 'New'} control={<Radio color="secondary" />} label="New Artist" />
-                                            <FormControlLabel style={{ color: 'black' }} value="Existing Artist" onChange={() => setArtistType("Existing")} checked={artistType === 'Existing'} control={<Radio color="secondary" />} label="Existing Artist" />
-                                        </RadioGroup>
-                                    </FormControl> */}
-                                    {/* {artistType === 'New' ? (
-                                        <>
-                                            <div className="form-group">
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={artist}
-                                                    placeholder="Enter Music Artist Name"
-                                                    className="form-control"
-                                                    onChange={(e) => {
-                                                        setArtist(e.target.value)
-                                                    }}
-                                                />
-                                            </div>
-                                            <label className="focus-label">Artist Profile Photo</label>
-                                            <div className="form-group">
-                                                <div className="change-avatar">
-                                                    <div className="profile-img">
-                                                        <div
-                                                            style={{
-                                                                background: "#E9ECEF",
-                                                                width: "100px",
-                                                                height: "100px",
-                                                            }}
-                                                        >
-                                                            <img src={artistImage} alt="Selfie" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="upload-img">
-                                                        <div
-                                                            className="change-photo-btn"
-                                                            style={{ backgroundColor: "rgb(167,0,0)" }}
-                                                        >
-                                                            {isUploadingArtist ? (
-                                                                <div className="text-center">
-                                                                    <Spinner
-                                                                        animation="border"
-                                                                        role="status"
-                                                                        style={{ color: "#fff" }}
-                                                                    >
-                                                                    </Spinner>
-                                                                </div>
-                                                            ) : (
-                                                                <span><i className="fa fa-upload"></i>Upload photo</span>
-                                                            )}
-                                                            <input
-                                                                name="sampleFile"
-                                                                type="file"
-                                                                className="upload"
-                                                                accept=".png,.jpg,.jpeg,.gif"
-                                                                onChange={onChangeArtistHandler}
-                                                            />
-                                                        </div>
-                                                        <small className="form-text text-muted">
-                                                            Allowed JPG, JPEG, PNG, GIF. Max size of 5MB
-                      </small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="form-group">
-                                                <textarea
-                                                    type="text"
-                                                    required
-                                                    rows="4"
-                                                    value={aboutTheTrack}
-                                                    placeholder="About the Track"
-                                                    className="form-control"
-                                                    onChange={(e) => {
-                                                        setAboutTheTrack(e.target.value)
-                                                    }}
-                                                />
-                                            </div>
-                                        </>
-                                    ) : ( */}
-                                        <div className="form-group">
-
-                                            <label>Select Artist</label>
-                                            <div className="filter-widget">
-                                                <Autocomplete
-                                                    id="combo-dox-demo"
-                                                    required
-                                                    options={artistTypes}
-                                                    // disabled={isDisabledImporter}
-                                                    getOptionLabel={(option) =>
-                                                        option.Name
+                                    <div className="form-group">
+                                        <label>Select Artist</label>
+                                        <div className="filter-widget">
+                                            <Autocomplete
+                                                id="combo-dox-demo"
+                                                required
+                                                options={artistTypes}
+                                                getOptionLabel={(option) =>
+                                                    option.Name
+                                                }
+                                                onChange={(event, value) => {
+                                                    if (value == null) setArtist("");
+                                                    else {
+                                                        console.log(value);
+                                                        setArtist(value.Name);
+                                                        setAboutTheTrack(value.About);
+                                                        setArtistImage(value.Profile)
                                                     }
-                                                    onChange={(event, value) => {
-                                                        if (value == null) setArtist("");
-                                                        else {
-                                                            console.log(value);
-                                                            setArtist(value.Name);
-                                                            setAboutTheTrack(value.About);
-                                                            setArtistImage(value.Profile)
-                                                            // Profile
-
-                                                        }
-                                                    }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            {...params}
-                                                            label="Artists"
-                                                            variant="outlined"
-                                                        />
-                                                    )}
-                                                />
-                                            </div>
+                                                }}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Artists"
+                                                        variant="outlined"
+                                                    />
+                                                )}
+                                            />
                                         </div>
-
-                                    {/* )} */}
-
-                                    {/* {title === '' || description === '' || tokenSupply === '' || fileData === '' ? (
-                                        <button
-                                            className="btn"
-                                            type="submit"
-                                            disabled
-                                        >
-                                            <i className="fa fa-upload"></i>{' '}Upload to IPFS
-                                        </button>
-                                    ) : (
-                                        <button
-                                            className="btn"
-                                            type="submit"
-                                            onClick={handleAddClick}
-                                        >
-                                            <i className="fa fa-upload"></i>{' '} Upload to IPFS
-                                        </button>
-                                    )} */}
+                                    </div>
                                 </div>
                             </div>
                         </form>
-
                     </div>
                     <div className="col-md-12 col-lg-6">
-                        {/* <!-- Change Password Form --> */}
                         <div className="App">
-                            <div class="wrapper">
-                                <div class="cube-box1">
+                            <div className="wrapper">
+                                <div className="cube-box1">
                                     {selectedNFTList.map((i, index) => (
-                                        <img src={i.artwork} style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
+                                        <img key={index} src={i.artwork} style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
                                     ))}
                                     {new Array(6 - selectedNFTList.length).fill(0).map((_, index) => (
-                                        < img src={r1} alt="" />
+                                        < img src={r1} key={index} alt="" />
                                     ))}
 
                                 </div>
@@ -753,13 +589,11 @@ function NewCube(props) {
                             <Scrollbars style={{ height: 650 }}>
                                 <div className="form-group">
                                     <div >
-
                                         <Grid
                                             container
                                             spacing={2}
                                             direction="row"
                                             justify="flex-start"
-                                        // alignItems="flex-start"
                                         >
                                             {selectedNFTList.map((i, index) => (
                                                 <Grid item xs={12} sm={6} md={6} key={index}>
@@ -768,10 +602,9 @@ function NewCube(props) {
                                                             title={i.title}
                                                         />
                                                         <CardMedia
-                                                            style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                            variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                             className={classes.media}
-                                                            // image={i.artwork}
-
+                                                            image={i.artwork}
                                                             title="NFT Image"
                                                         />
                                                         <CardContent>
@@ -815,9 +648,6 @@ function NewCube(props) {
                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                                 <strong>Other: </strong>{i.other}
                                                             </Typography>
-                                                            {/* <Typography variant="body2" color="textSecondary" component="p">
-                                                            <strong>Collection: </strong>{i.collectiontitle}
-                                                        </Typography> */}
                                                         </CardContent>
 
                                                         <CardActions>
@@ -856,20 +686,11 @@ function NewCube(props) {
                         </Spinner>
                     </div>
                 ) : (
-                    // selectedNFTList.length === 0 || salePrice === undefined || description === "" || name === "" || artist === "" || artistImage === logo || aboutTheTrack === "" || musicNonOwner === "" || musicOwner === "" ? (
-                    //     <div className="submit-section">
-                    //         <button type="button" disabled className="btn submit-btn">
-                    //             Create Cube
-                    // </button>
-                    //     </div>
-                    // ) : (
                     <div className="submit-section">
                         <button type="button" onClick={(e) => handleSubmitEvent(e)} className="btn submit-btn">
                             Create Cube
                   </button>
                     </div>
-                    // )
-
                 )}
             </div>
             <SixNFTsErrorModal show={show} handleClose={handleClose} />

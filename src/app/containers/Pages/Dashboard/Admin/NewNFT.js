@@ -1,37 +1,33 @@
 import { Grid } from '@material-ui/core/';
 import Avatar from '@material-ui/core/Avatar';
+import Backdrop from '@material-ui/core/Backdrop';
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import IconButton from '@material-ui/core/IconButton';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
-import Web3 from 'web3';
-import { Scrollbars } from 'react-custom-scrollbars';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import axios from 'axios';
 import Cookies from "js-cookie";
-import jwtDecode from "jwt-decode";
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
+import { Scrollbars } from 'react-custom-scrollbars';
+import Web3 from 'web3';
 import r1 from '../../../../assets/img/patients/patient.jpg';
-// import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
-import Button from '@material-ui/core/Button';
-import ipfs from '../../../../components/IPFS/ipfs';
 import CreateNFTContract from '../../../../components/blockchain/Abis/CreateNFTContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
-import axios from 'axios';
+import ipfs from '../../../../components/IPFS/ipfs';
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -99,7 +95,7 @@ function NewNFT(props) {
     let [executiveInspirationForThePiece, setExecutiveInspirationForThePiece] = useState("");
     let [fanInspirationForThePiece, setFanInspirationForThePiece] = useState("");
 
-    let [rarities, setRarities] = useState(["Mastercraft", "Legendary", "Epic", "Rare", "Uncommon", "Common"]);
+    let [rarities] = useState(["Mastercraft", "Legendary", "Epic", "Rare", "Uncommon", "Common"]);
     let [supplyType, setSupplyType] = useState("Single");
     let [imageArtistTypes, setImageArtistTypes] = useState([]);
     let [executiveProducerTypes, setExecutiveProducerTypes] = useState([]);
@@ -114,10 +110,10 @@ function NewNFT(props) {
     let [producer, setProducer] = useState('');
     let [tokenSupply, setTokenSupply] = useState("1");
     let [isUploadingIPFS, setIsUploadingIPFS] = useState(false);
-    let [isUploadingExecutiveProducer, setIsUploadingExecutiveProducer] = useState(false);
-    let [isUploadingProducer, setIsUploadingProducer] = useState(false);
-    let [isUploadingFan, setIsUploadingFan] = useState(false);
-    let [isUploadingImageArtist, setIsUploadingImageArtist] = useState(false);
+    // let [isUploadingExecutiveProducer, setIsUploadingExecutiveProducer] = useState(false);
+    // let [isUploadingProducer, setIsUploadingProducer] = useState(false);
+    // let [isUploadingFan, setIsUploadingFan] = useState(false);
+    // let [isUploadingImageArtist, setIsUploadingImageArtist] = useState(false);
     let [rarity, setRarity] = useState('');
     let [fan, setFan] = useState('');
     let [other, setOther] = useState('');
@@ -200,7 +196,7 @@ function NewNFT(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
     let loadWeb3 = async () => {
         if (window.ethereum) {
@@ -225,13 +221,6 @@ function NewNFT(props) {
             setIsSaving(false);
         }
         else {
-
-
-            let jwt = Cookies.get("Authorization");
-            let jwtDecoded = jwtDecode(jwt);
-            let exporter = jwtDecoded.id;
-            let fileData = new FormData();
-
             await loadWeb3();
             const web3 = window.web3
             const accounts = await web3.eth.getAccounts();
@@ -516,102 +505,102 @@ function NewNFT(props) {
         );
 
     }
-    let onChangeSelfieHandler = (e) => {
-        setIsUploadingImageArtist(true);
-        let fileData = new FormData();
-        fileData.append("image", e.target.files[0]);
-        axios.post("upload/uploadtos3", fileData).then(
-            (response) => {
-                console.log("response", response);
-                setArtistImage(response.data.url);
-                setIsUploadingImageArtist(false);
-                let variant = "success";
-                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
-            },
-            (error) => {
-                if (process.env.NODE_ENV === "development") {
-                    console.log(error);
-                    console.log(error.response);
-                }
-                setIsUploadingImageArtist(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+    // let onChangeSelfieHandler = (e) => {
+    //     setIsUploadingImageArtist(true);
+    //     let fileData = new FormData();
+    //     fileData.append("image", e.target.files[0]);
+    //     axios.post("upload/uploadtos3", fileData).then(
+    //         (response) => {
+    //             console.log("response", response);
+    //             setArtistImage(response.data.url);
+    //             setIsUploadingImageArtist(false);
+    //             let variant = "success";
+    //             enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+    //         },
+    //         (error) => {
+    //             if (process.env.NODE_ENV === "development") {
+    //                 console.log(error);
+    //                 console.log(error.response);
+    //             }
+    //             setIsUploadingImageArtist(false);
+    //             let variant = "error";
+    //             enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
 
-            }
-        );
-    }
-    let onChangeProducerHandler = (e) => {
-        setIsUploadingProducer(true);
-        let fileData = new FormData();
-        fileData.append("image", e.target.files[0]);
-        axios.post("upload/uploadtos3", fileData).then(
-            (response) => {
-                console.log("response", response);
-                setProducerImage(response.data.url);
-                setIsUploadingProducer(false);
-                let variant = "success";
-                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
-            },
-            (error) => {
-                if (process.env.NODE_ENV === "development") {
-                    console.log(error);
-                    console.log(error.response);
-                }
-                setIsUploadingProducer(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+    //         }
+    //     );
+    // }
+    // let onChangeProducerHandler = (e) => {
+    //     setIsUploadingProducer(true);
+    //     let fileData = new FormData();
+    //     fileData.append("image", e.target.files[0]);
+    //     axios.post("upload/uploadtos3", fileData).then(
+    //         (response) => {
+    //             console.log("response", response);
+    //             setProducerImage(response.data.url);
+    //             setIsUploadingProducer(false);
+    //             let variant = "success";
+    //             enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+    //         },
+    //         (error) => {
+    //             if (process.env.NODE_ENV === "development") {
+    //                 console.log(error);
+    //                 console.log(error.response);
+    //             }
+    //             setIsUploadingProducer(false);
+    //             let variant = "error";
+    //             enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
 
-            }
-        );
-    }
-    let onChangeExecutiveProducerHandler = (e) => {
-        setIsUploadingExecutiveProducer(true);
-        let fileData = new FormData();
-        fileData.append("image", e.target.files[0]);
-        axios.post("upload/uploadtos3", fileData).then(
-            (response) => {
-                console.log("response", response);
-                setExecutiveProducerImage(response.data.url);
-                setIsUploadingExecutiveProducer(false);
-                let variant = "success";
-                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
-            },
-            (error) => {
-                if (process.env.NODE_ENV === "development") {
-                    console.log(error);
-                    console.log(error.response);
-                }
-                setIsUploadingExecutiveProducer(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+    //         }
+    //     );
+    // }
+    // let onChangeExecutiveProducerHandler = (e) => {
+    //     setIsUploadingExecutiveProducer(true);
+    //     let fileData = new FormData();
+    //     fileData.append("image", e.target.files[0]);
+    //     axios.post("upload/uploadtos3", fileData).then(
+    //         (response) => {
+    //             console.log("response", response);
+    //             setExecutiveProducerImage(response.data.url);
+    //             setIsUploadingExecutiveProducer(false);
+    //             let variant = "success";
+    //             enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+    //         },
+    //         (error) => {
+    //             if (process.env.NODE_ENV === "development") {
+    //                 console.log(error);
+    //                 console.log(error.response);
+    //             }
+    //             setIsUploadingExecutiveProducer(false);
+    //             let variant = "error";
+    //             enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
 
-            }
-        );
-    }
-    let onChangeFanHandler = (e) => {
-        setIsUploadingFan(true);
-        let fileData = new FormData();
-        fileData.append("image", e.target.files[0]);
-        axios.post("upload/uploadtos3", fileData).then(
-            (response) => {
-                console.log("response", response);
-                setFanImage(response.data.url);
-                setIsUploadingFan(false);
-                let variant = "success";
-                enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
-            },
-            (error) => {
-                if (process.env.NODE_ENV === "development") {
-                    console.log(error);
-                    console.log(error.response);
-                }
-                setIsUploadingFan(false);
-                let variant = "error";
-                enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
+    //         }
+    //     );
+    // }
+    // let onChangeFanHandler = (e) => {
+    //     setIsUploadingFan(true);
+    //     let fileData = new FormData();
+    //     fileData.append("image", e.target.files[0]);
+    //     axios.post("upload/uploadtos3", fileData).then(
+    //         (response) => {
+    //             console.log("response", response);
+    //             setFanImage(response.data.url);
+    //             setIsUploadingFan(false);
+    //             let variant = "success";
+    //             enqueueSnackbar('Image Uploaded to S3 Successfully', { variant });
+    //         },
+    //         (error) => {
+    //             if (process.env.NODE_ENV === "development") {
+    //                 console.log(error);
+    //                 console.log(error.response);
+    //             }
+    //             setIsUploadingFan(false);
+    //             let variant = "error";
+    //             enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
 
-            }
-        );
-    }
+    //         }
+    //     );
+    // }
     return (
         <div className="card">
             <ul className="breadcrumb" style={{ backgroundColor: "rgb(167,0,0)" }}>
@@ -753,12 +742,8 @@ function NewNFT(props) {
                                                     type="number"
                                                     required
                                                     value={tokenSupply}
-                                                    placeholder=""
                                                     className="form-control"
                                                     disabled
-                                                // onChange={(e) => {
-                                                //     setTokenSupply(e.target.value);
-                                                // }}
                                                 />
                                             </div>
                                         </div>
@@ -771,7 +756,6 @@ function NewNFT(props) {
                                                     placeholder="Enter Token price(USD)"
                                                     required
                                                     value={tokenSupply}
-                                                    placeholder=""
                                                     className="form-control"
                                                     onChange={(e) => {
                                                         if (e.target.value > 0)
@@ -1381,7 +1365,7 @@ function NewNFT(props) {
                                                             title={i.title}
                                                         />
                                                         <CardMedia
-                                                            style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                            variant="outlined" style={{height: "100%", border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                             className={classes.media}
                                                             image={i.artwork}
 

@@ -1,32 +1,29 @@
 import { Grid } from '@material-ui/core/';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import Avatar from '@material-ui/core/Avatar';
+import Backdrop from '@material-ui/core/Backdrop';
 import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import axios from 'axios';
-import React, { useEffect, useState } from "react";
-import { Button } from 'react-bootstrap';
-import { useSnackbar } from 'notistack';
-import Cookies from "js-cookie";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { Spinner } from "react-bootstrap";
-import Chip from '@material-ui/core/Chip';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import { Row } from "react-bootstrap";
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import Countdown from 'react-countdown';
-import Web3 from 'web3';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import axios from 'axios';
+import Cookies from "js-cookie";
+import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
+import { Button, Spinner } from 'react-bootstrap';
+import Countdown from 'react-countdown';
+import { useParams } from "react-router-dom";
+import Web3 from 'web3';
+import r1 from '../../../../assets/img/patients/patient.jpg';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
-import { useParams } from "react-router-dom";
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 
 const useStyles = makeStyles((theme) => ({
@@ -86,6 +83,7 @@ function CubeNFTs(props) {
     const [open, setOpen] = React.useState(false);
     const [isClaimFunds, setIsClaimFunds] = useState(null);
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
+    const [isPlaying, setIsPlaying] = useState(false);
     const handleCloseBackdrop = () => {
         setOpen(false);
     };
@@ -100,14 +98,12 @@ function CubeNFTs(props) {
         setOpenNetwork(true);
     };
     useEffect(() => {
-
         (async () => {
             ownerAudio.addEventListener('ended', () => ownerAudio.pause());
             return () => {
                 ownerAudio.removeEventListener('ended', () => ownerAudio.pause());
             };
-        })();
-
+        })();// eslint-disable-next-line
     }, []);
 
     let getCubeNFTs = () => {
@@ -315,7 +311,7 @@ function CubeNFTs(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
 
     return (
@@ -340,12 +336,18 @@ function CubeNFTs(props) {
                                                     title=""
                                                     image=""
                                                     onClick={() => {
-                                                        ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                        ownerAudio.play();
+                                                        setIsPlaying(!isPlaying)
+                                                        if (!isPlaying) {
+                                                            ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                            ownerAudio.play();
+                                                        } else {
+                                                            ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                            ownerAudio.pause();
+                                                        }
                                                     }}
                                                 >
-                                                    <div class="wrapper">
-                                                        <div class="cube-box">
+                                                    <div className="wrapper">
+                                                        <div className="cube-box">
                                                             {tokenList.map((j, jindex) => (
                                                                 <img src={j[0].artwork} key={jindex} style={{ border: j[0].type === "Mastercraft" ? '4px solid #ff0000' : j[0].type === "Legendary" ? '4px solid #FFD700' : j[0].type === "Epic" ? '4px solid #9400D3' : j[0].type === "Rare" ? '4px solid #0000FF' : j[0].type === "Uncommon" ? '4px solid #008000' : j[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
                                                             ))}

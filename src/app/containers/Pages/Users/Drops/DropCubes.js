@@ -1,20 +1,18 @@
 import { Avatar, CardHeader, Grid } from '@material-ui/core/';
 import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import { Link } from 'react-router-dom';
-import { useParams } from "react-router-dom";
+import { Link, useParams } from 'react-router-dom';
 import HeaderHome from '../../../../components/Headers/Header';
+
 const useStyles = makeStyles((theme) => ({
     root: {
         maxWidth: 345,
@@ -50,7 +48,6 @@ function DropCubes(props) {
     const { dropId } = useParams();
     const classes = useStyles();
     const [tokenList, setTokenList] = useState([]);
-    const [imageData, setImageData] = useState([]);
     const [cubeData, setCubeData] = useState([]);
 
 
@@ -71,7 +68,6 @@ function DropCubes(props) {
                 console.log("response", response);
                 setTokenList(response.data.Dropdata);
                 setCubeData(response.data.Tokensdata);
-                setImageData(response.data.Nftdata);
                 handleCloseBackdrop();
             },
             (error) => {
@@ -84,7 +80,7 @@ function DropCubes(props) {
     }
 
     useEffect(() => {
-        getDropCubes();
+        getDropCubes();// eslint-disable-next-line
     }, []);
 
     return (
@@ -158,8 +154,8 @@ function DropCubes(props) {
                                                             // image={img}
                                                             title=""
                                                         >
-                                                            {/* <div class="wrapper">
-                                                                <div class="cube-box">
+                                                            {/* <div className="wrapper">
+                                                                <div className="cube-box">
                                                                     {console.log("imageData", imageData)}
                                                                     {imageData[index].map((j, jindex) => (
                                                                         <>

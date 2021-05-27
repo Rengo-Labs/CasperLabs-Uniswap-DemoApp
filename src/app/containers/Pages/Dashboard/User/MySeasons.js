@@ -1,19 +1,16 @@
-import { Avatar, CardHeader, Grid, TablePagination } from '@material-ui/core/';
+import { CardHeader, Grid, TablePagination } from '@material-ui/core/';
 import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-
 import CardActionArea from '@material-ui/core/CardActionArea';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
+import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import Cookies from "js-cookie";
-import Countdown from 'react-countdown';
-import r1 from '../../../../assets/img/patients/patient.jpg';
 import { Link } from 'react-router-dom';
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -49,14 +46,11 @@ const useStyles = makeStyles((theme) => ({
 
 function MySeasons(props) {
     const classes = useStyles();
-    const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
     const [page, setPage] = useState(0);
-
-    const [rowsPerPage, setRowsPerPage] = React.useState(8);
-    const [totalSeasons, setTotalseasons] = React.useState(0);
-
-    const [open, setOpen] = React.useState(false);
+    const [rowsPerPage, setRowsPerPage] = useState(8);
+    const [totalSeasons, setTotalseasons] =useState(0);
+    const [open, setOpen] = useState(false);
     const handleCloseBackdrop = () => {
         setOpen(false);
     };
@@ -65,6 +59,9 @@ function MySeasons(props) {
     };
     let getMySeasons = (start, end) => {
         handleShowBackdrop();
+        axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
+            "Authorization"
+        )}`;
         axios.get(`/season/seasons/${start}/${end}`).then(
             (response) => {
                 console.log("response", response);
@@ -94,7 +91,6 @@ function MySeasons(props) {
         console.log("End", newPage * rowsPerPage + rowsPerPage);
         getMySeasons(newPage * rowsPerPage, newPage * rowsPerPage + rowsPerPage);
     };
-
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         getMySeasons(0, parseInt(event.target.value, 10));
@@ -102,8 +98,6 @@ function MySeasons(props) {
     };
     useEffect(() => {
         getMySeasons(0, rowsPerPage);
-        // getCollections();?
-
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
@@ -120,7 +114,7 @@ function MySeasons(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
 
     return (
@@ -133,7 +127,6 @@ function MySeasons(props) {
             </ul>
             <div className="card-body">
                 <div className="form-group">
-
                     {open ? (
                         <div align="center" className="text-center">
                             <Spinner
@@ -154,7 +147,6 @@ function MySeasons(props) {
                             spacing={2}
                             direction="row"
                             justify="flex-start"
-                        // alignItems="flex-start"
                         >
                             {tokenList.map((i, index) => (
                                 <Grid item xs={12} sm={6} md={3} key={index}>
@@ -174,12 +166,8 @@ function MySeasons(props) {
                                                     <Typography variant="body2" color="textSecondary" component="p">
                                                         <strong>Season Description: </strong>{i.description}
                                                     </Typography>
-
                                                 </CardContent>
                                             </CardActionArea>
-                                            <CardActions>
-
-                                            </CardActions>
                                         </Card>
                                     </Link>
                                 </Grid >

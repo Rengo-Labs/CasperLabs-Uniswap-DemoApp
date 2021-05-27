@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Spinner, Button } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
 import "../../assets/plugins/fontawesome/css/all.min.css";

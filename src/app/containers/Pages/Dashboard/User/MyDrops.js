@@ -1,20 +1,18 @@
-import { Avatar, CardHeader, Grid } from '@material-ui/core/';
+import { CardHeader, Grid } from '@material-ui/core/';
 import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-
 import CardActionArea from '@material-ui/core/CardActionArea';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
+import TablePagination from '@material-ui/core/TablePagination';
+import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import TablePagination from '@material-ui/core/TablePagination';
 import { Link } from 'react-router-dom';
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -46,14 +44,9 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-
-
 function MyDrops(props) {
     const classes = useStyles();
-    const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
-    const [imageData, setImageData] = useState([]);
-
     const [rowsPerPage, setRowsPerPage] = React.useState(8);
     const [totalDrops, setTotalDrops] = React.useState(0);
     const [page, setPage] = React.useState(0);
@@ -66,6 +59,9 @@ function MyDrops(props) {
     };
     let getMyDrops = (start, end) => {
         handleShowBackdrop();
+        axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
+            "Authorization"
+        )}`;
         axios.get(`/drop/drops/${start}/${end}`).then(
             (response) => {
                 console.log("response", response);
@@ -91,7 +87,6 @@ function MyDrops(props) {
 
     useEffect(() => {
         getMyDrops(0, rowsPerPage);
-        // getCollections();?
 
         props.setActiveTab({
             dashboard: "",
@@ -109,7 +104,7 @@ function MyDrops(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
     const handleChangePage = (event, newPage) => {
         console.log("newPage", newPage);
@@ -156,7 +151,6 @@ function MyDrops(props) {
                             spacing={2}
                             direction="row"
                             justify="flex-start"
-                        // alignItems="flex-start"
                         >
                             {tokenList.map((i, index) => (
 
@@ -207,9 +201,6 @@ function MyDrops(props) {
                                                     </Typography>
                                                 </CardContent>
                                             </CardActionArea>
-                                            <CardActions>
-
-                                            </CardActions>
                                         </Card>
                                     </Link>
                                 </Grid >
@@ -228,7 +219,6 @@ function MyDrops(props) {
                 onChangeRowsPerPage={handleChangeRowsPerPage}
             />
         </div >
-
     );
 }
 

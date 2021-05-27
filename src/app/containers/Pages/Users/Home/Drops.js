@@ -3,16 +3,14 @@ import {
     CardContent, CardHeader, Grid
 } from '@material-ui/core/';
 import CardActionArea from '@material-ui/core/CardActionArea';
-import CardActions from '@material-ui/core/CardActions';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import React, { useEffect, useState } from "react";
-import { Container, Spinner } from 'react-bootstrap';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Spinner } from 'react-bootstrap';
 import Countdown from 'react-countdown';
-
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -45,41 +43,33 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Drops() {
-    const [hide, setHide] = useState(false);
     const [tokenList, setTokenList] = useState([]);
-    const [imageData, setImageData] = useState([]);
-
-    const [rowsPerPage, setRowsPerPage] = React.useState(4);
-    const [totalDrops, setTotalDrops] = React.useState(0);
-    const [page, setPage] = React.useState(0);
-    const [open, setOpen] = React.useState(false);
+    const [rowsPerPage] = useState(4);
+    const [open, setOpen] = useState(false);
     const classes = useStyles();
     let getMyDrops = (start, end) => {
+        setOpen(true)
         axios.get(`/drop/drops/${start}/${end}`).then(
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.Dropdata);
-                setTotalDrops(response.data.Dropscount);
+                setOpen(false)
             },
             (error) => {
                 if (process.env.NODE_ENV === "development") {
                     console.log(error);
                     console.log(error.response);
                 }
+                setOpen(false)
             })
     }
     useEffect(() => {
-        getMyDrops(0, rowsPerPage);
+        getMyDrops(0, rowsPerPage);// eslint-disable-next-line
     }, []);
     return (
-
         <>
-
             <div className="container-fluid">
-                {/* <!-- Page Header --> */}
                 <div className="page-header">
-                    {/* <Container> */}
-
                     <div className="card-body">
                         <h3><pre>Drops<Link to="/auctionDrops" style={{ float: 'right', color: "#ff0000" }}>View All </Link></pre></h3>
                         <hr></hr>
@@ -104,7 +94,6 @@ function Drops() {
                                     spacing={2}
                                     direction="row"
                                     justify="flex-start"
-                                // alignItems="flex-start"
                                 >
                                     {tokenList.map((i, index) => (
 
@@ -135,13 +124,11 @@ function Drops() {
                                                                         <Typography variant="body2" color="textSecondary" component="p">
                                                                             <strong>Auction Starts At:</strong>
                                                                         </Typography>
-                                                                        {/* {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionStartsAt))} */}
                                                                         <Countdown daysInHours date={new Date(i.AuctionStartsAt)}>
                                                                         </Countdown>
                                                                     </div>
                                                                 ) : new Date() > new Date(i.AuctionStartsAt) && new Date() < new Date(i.AuctionEndsAt) ? (
                                                                     <div style={{ color: "#FF0000" }}>
-                                                                        {/* {console.log("Date(i.AuctionStartsAt)", Date(i.AuctionEndsAt.toLoca))} */}
                                                                         <Typography variant="body2" color="textSecondary" component="p">
                                                                             <strong>Auction Ends At:</strong>
                                                                         </Typography>
@@ -163,11 +150,8 @@ function Drops() {
                             )}
                         </div>
                     </div >
-                    {/* </Container> */}
-
                 </div>
             </div >
-
         </>
     );
 }

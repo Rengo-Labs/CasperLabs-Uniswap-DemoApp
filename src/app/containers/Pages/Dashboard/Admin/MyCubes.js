@@ -104,7 +104,7 @@ function MyCubes(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
     const handleChangePage = (event, newPage) => {
         console.log("newPage", newPage);
@@ -170,8 +170,8 @@ function MyCubes(props) {
                                                     >
 
 
-                                                        <div class="wrapper">
-                                                            <div class="cube-box">
+                                                        <div className="wrapper">
+                                                            <div className="cube-box">
                                                                 {imageData[index].map((j, jindex) => (
                                                                     <>
                                                                         {/* {console.log(j)} */}

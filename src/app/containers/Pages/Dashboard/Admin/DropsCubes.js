@@ -102,7 +102,7 @@ function DropCubes(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
 
     return (
@@ -182,8 +182,8 @@ function DropCubes(props) {
                                                     // image={img}
                                                     title=""
                                                 >
-                                                    <div class="wrapper">
-                                                        <div class="cube-box">
+                                                    <div className="wrapper">
+                                                        <div className="cube-box">
                                                             {console.log("imageData", imageData)}
                                                             {imageData[index].map((j, jindex) => (
                                                                 <>

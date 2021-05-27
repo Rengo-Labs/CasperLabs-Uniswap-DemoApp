@@ -5,15 +5,12 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
+import TablePagination from '@material-ui/core/TablePagination';
 import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
-import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import Pagination from '@material-ui/lab/Pagination';
-import TablePagination from '@material-ui/core/TablePagination';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -115,7 +112,7 @@ function MyNFTs(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
     const handleChangePage = (event, newPage) => {
         console.log("newPage", newPage);
@@ -174,7 +171,7 @@ function MyNFTs(props) {
                                                 title={i.title}
                                             />
                                             <CardMedia
-                                                style={{ height: "100%" }} variant="outlined" style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Mastercraft" ? '4px solid ##ff0000' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                variant="outlined" style={{height: "100%", border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                 className={classes.media}
                                                 image={i.artwork}
                                                 title="NFT Image"

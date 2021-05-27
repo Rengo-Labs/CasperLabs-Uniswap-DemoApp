@@ -1,14 +1,7 @@
-import {
-  Card,
-  CardContent, Grid
-} from '@material-ui/core/';
-import Button from '@material-ui/core/Button';
-import CardActions from '@material-ui/core/CardActions';
-import Typography from '@material-ui/core/Typography';
-import React from 'react';
-import { Spinner } from 'react-bootstrap';
+import { Grid } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
-import { Container } from 'react-bootstrap'
+import React from 'react';
+import { Container } from 'react-bootstrap';
 import CollectionCard from '../../../../components/Cards/CollectionCard';
 
 const useStyles = makeStyles((theme) => ({

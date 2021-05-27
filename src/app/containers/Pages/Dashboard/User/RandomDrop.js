@@ -1,58 +1,22 @@
 import { Grid } from '@material-ui/core/';
-import { makeStyles } from '@material-ui/core/styles';
-import TextField from "@material-ui/core/TextField";
-import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import Cookies from "js-cookie";
 import jwtDecode from "jwt-decode";
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
+import { Scrollbars } from 'react-custom-scrollbars';
 import DateTimePicker from 'react-datetime-picker';
 import NewNFTCards from '../../../../components/Cards/NewNFTCards';
-import { Scrollbars } from 'react-custom-scrollbars';
-const useStyles = makeStyles((theme) => ({
-    root: {
-        flexGrow: 1,
-        width: '100%',
-        backgroundColor: theme.palette.background.paper,
-    },
-    badge: {
-        '& > *': {
-            margin: theme.spacing(1),
-        },
-    },
-    card: {
-        minWidth: 250,
-    },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
-    },
-    title: {
-        fontSize: 14,
-    },
-    pos: {
-        marginBottom: 12,
-    },
-}));
-
-
 
 function RandomDrop(props) {
 
     const { enqueueSnackbar } = useSnackbar();
-    const classes = useStyles();
     const [startTime, setStartTime] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date());
-    const [inputList, setInputList] = useState([{ id: 0, name: "Robot", price: "20" }, { id: 1, name: "Robot Cube", price: "2" }, { id: 2, name: "Cube", price: "15" }]);
     let [isSaving, setIsSaving] = useState(false);
-    let [supply, setSupply] = useState("");
     let [salePrice, setSalePrice] = useState();
     let [minimumBid, setMinimumBid] = useState();
-
-    let [type, setType] = useState();
     let [types, setTypes] = useState([]);
 
 
@@ -73,28 +37,16 @@ function RandomDrop(props) {
             termsandconditions: "",
             changePassword: "",
             newSupefNFT:"",
-        });
+        });// eslint-disable-next-line
     }, []);
     const handleRemoveClick = (index) => {
         console.log("index", index);
         console.log("inputList", types);
-
         const list = [...types];
         console.log("list", list);
         list.splice(index, 1);
-
         setTypes(list);
     };
-    const handleAddClick = (value) => {
-
-        setTypes([...types, { id: value.id, name: value.name, price: value.price }]);
-        setType("");
-        // setCategory('');
-        // setDescription('');
-        // setFileData('');
-    };
-
-
     const handleSubmitEvent = (event) => {
         event.preventDefault();
         setIsSaving(true);
@@ -130,7 +82,6 @@ function RandomDrop(props) {
                 setIsSaving(false);
                 let variant = "error";
                 enqueueSnackbar('Unable to Add Order.', { variant });
-
             }
         );
     };
@@ -149,36 +100,7 @@ function RandomDrop(props) {
                         <form onSubmit={handleSubmitEvent}>
                             <div className="form-group">
 
-                                {/* <label>Select NFTs</label>
-                                <div className="filter-widget">
-                                    <Autocomplete
-                                        id="combo-dox-demo"
-                                        required
-                                        options={inputList}
-                                        value={type}
-                                        // disabled={isDisabledImporter}
-                                        getOptionLabel={(option) =>
-                                            option.name
-                                        }
-                                        onChange={(event, value) => {
-                                            if (value == null)
-                                                setType("");
-                                            else {
-                                                console.log(value);
-                                                setType(value.name)
-                                                handleAddClick(value);
-                                            }
-                                        }}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                label="NFTs"
-                                                variant="outlined"
-                                            />
-                                        )}
-                                    />
-                                </div>
- */}
+                                
                                 <div className="form-group">
                                     <label>Sale Price (ETH)</label>
                                     <div className="filter-widget">
@@ -187,7 +109,6 @@ function RandomDrop(props) {
                                             placeholder="Enter Total Supply"
                                             required
                                             value={salePrice}
-                                            placeholder=""
                                             className="form-control"
                                             onChange={(e) => {
                                                 setSalePrice(e.target.value);
@@ -195,33 +116,6 @@ function RandomDrop(props) {
                                         />
                                     </div>
                                 </div>
-                                {/* <label>Select Supply Type</label>
-                                <div className="filter-widget">
-                                    <Autocomplete
-                                        id="combo-dox-demo"
-                                        required
-                                        // options={supplies}
-                                        // disabled={isDisabledImporter}
-                                        getOptionLabel={(option) =>
-                                            option
-                                        }
-                                        onChange={(event, value) => {
-                                            if (value == null) setType("");
-                                            else {
-                                                console.log(value);
-                                                // setSupply(value)
-                                            }
-                                        }}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                label="Supply Type"
-                                                variant="outlined"
-                                            />
-                                        )}
-                                    />
-                                </div> */}
-
                                 <div className="form-group">
                                     <label>Auction Starts At</label>
                                     <div className="form-group">
@@ -247,10 +141,13 @@ function RandomDrop(props) {
                                                 placeholder="Enter Total Supply"
                                                 required
                                                 value={minimumBid}
-                                                placeholder=""
                                                 className="form-control"
                                                 onChange={(e) => {
-                                                    setMinimumBid(e.target.value);
+                                                    if (e.target.value < 0) {
+                                                        setMinimumBid(0);
+                                                    } else {
+                                                        setMinimumBid(e.target.value);
+                                                    }
                                                 }}
                                             />
                                         </div>

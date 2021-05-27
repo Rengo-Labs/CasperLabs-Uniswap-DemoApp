@@ -45,8 +45,8 @@ function NFTCard(props) {
                         title=""
                     >
                         {hide ? (
-                            <div class="wrapper">
-                                <div class="cube-box" onMouseOut={() => setHide(false)}>
+                            <div className="wrapper">
+                                <div className="cube-box" onMouseOut={() => setHide(false)}>
                                     <img src={r1} alt="" />
                                     <img src={r2} alt="" />
                                     <img src={r3} alt="" />

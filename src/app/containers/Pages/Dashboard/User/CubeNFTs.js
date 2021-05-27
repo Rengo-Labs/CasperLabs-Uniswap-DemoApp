@@ -1,39 +1,33 @@
 import { Grid } from '@material-ui/core/';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import Avatar from '@material-ui/core/Avatar';
+import Backdrop from '@material-ui/core/Backdrop';
 import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
-
 import CardMedia from '@material-ui/core/CardMedia';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import axios from 'axios';
-import React, { useEffect, useState } from "react";
-import { Button, Col } from 'react-bootstrap';
-import { useSnackbar } from 'notistack';
-import Cookies from "js-cookie";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { Spinner } from "react-bootstrap";
-import Chip from '@material-ui/core/Chip';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import { Row } from "react-bootstrap";
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import Countdown from 'react-countdown';
-import Web3 from 'web3';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
-import MarketPlaceContract from '../../../../components/blockchain/Abis/MarketPlaceContract.json';
-import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
-
-import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import axios from 'axios';
+import Cookies from "js-cookie";
+import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
+import { Button, Row, Spinner } from 'react-bootstrap';
+import Countdown from 'react-countdown';
 import { useParams } from "react-router-dom";
+import Web3 from 'web3';
+import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
+import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
+import MarketPlaceContract from '../../../../components/blockchain/Abis/MarketPlaceContract.json';
+import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import AuctionCubeModal from '../../../../components/Modals/AuctionCubeModal';
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 import SaleCubeModal from '../../../../components/Modals/SaleCubeModal';
-import AuctionCubeModal from '../../../../components/Modals/AuctionCubeModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -74,32 +68,25 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-
-
 function CubeNFTs(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
     const { dropId, cubeId, } = useParams();
-    // console.log("dropId", dropId);
     const [tokenList, setTokenList] = useState([]);
     const [cubeData, setCubeData] = useState({});
     const [dropData, setDropData] = useState({});
     const [transactionHistory, setTransactionHistory] = useState([]);
-    const [bidHistory, setBidHistory] = useState([]);
     const [isClaiming, setIsClaiming] = useState(false);
     const [network, setNetwork] = useState("");
     const [open, setOpen] = React.useState(false);
     const [openNFTData, setOpenNFTData] = React.useState(false);
-    
     const [isPuttingOnSale, setIsPuttingOnSale] = useState(false);
     const [isPuttingOnAuction, setIsPuttingOnAuction] = useState(false);
     const [isClaimFunds, setIsClaimFunds] = useState(null);
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
-    // const [time, setTime] = useState(new Date());
-    // const [timeStamp, setTimeStamp] = useState(time.getTime() / 1000);
-    // const [price, setPrice] = useState(0);
-    const [isConfirmingSale, setIsConfirmingSale] = useState(false);
+    const [isConfirmingSale] = useState(false);
     const [openModal, setOpenModal] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
     const handleClose = () => {
         setOpenModal(false);
     };
@@ -133,18 +120,16 @@ function CubeNFTs(props) {
         setOpenNetwork(true);
     };
     useEffect(() => {
-
         (async () => {
             ownerAudio.addEventListener('ended', () => ownerAudio.pause());
             return () => {
                 ownerAudio.removeEventListener('ended', () => ownerAudio.pause());
             };
-        })();
-
+        })();// eslint-disable-next-line
     }, []);
     let getCubeNFTs = () => {
         handleShowNFTData();
-
+        console.log("dropId", dropId);
         let Data = {
             tokenId: cubeId,
             check: "notdrop"
@@ -178,8 +163,6 @@ function CubeNFTs(props) {
                     }
                     handleCloseNFTData();
                 })
-
-                // handleCloseBackdrop();
             },
             (error) => {
                 if (process.env.NODE_ENV === "development") {
@@ -282,19 +265,15 @@ function CubeNFTs(props) {
             console.log("res", res);
             if (res.data.success)
                 setIsClaimFunds(res.data.Adminclaimfundsresult)
-
-            // handleCloseBackdrop();
         }, (error) => {
             if (process.env.NODE_ENV === "development") {
                 console.log(error);
                 console.log(error.response);
 
             }
-            // handleCloseBackdrop();
         })
     }
     let putOnSale = async (price, time, timeStamp) => {
-        // e.preventDefault();
         handleShowBackdrop();
         handleClose();
         console.log("price", price);
@@ -309,8 +288,6 @@ function CubeNFTs(props) {
             handleShowNetwork();
         }
         else {
-            // const web3 = window.web3
-            // const accounts = await web3.eth.getAccounts();
             const address = Addresses.MarketPlaceAddress;
             const abi = MarketPlaceContract;
             const CubeAddress = Addresses.CreateCubeAddress;
@@ -331,14 +308,13 @@ function CubeNFTs(props) {
             var myContractInstance = await new web3.eth.Contract(abi, address);
             console.log("myContractInstance", myContractInstance);
             console.log("cubeData.tokenId", cubeData.tokenId);
-            let receipt1 = await myContractInstance.methods.createOrder(CubeAddress, cubeData.tokenId, (price * 10 ** 18).toString(), timeStamp.toString()).send({ from: accounts[0] }, (err, response) => {
+            await myContractInstance.methods.createOrder(CubeAddress, cubeData.tokenId, (price * 10 ** 18).toString(), timeStamp.toString()).send({ from: accounts[0] }, (err, response) => {
                 console.log('get transaction', err, response);
                 if (err !== null) {
                     console.log("err", err);
                     let variant = "error";
                     enqueueSnackbar('User Canceled Transaction', { variant });
                     handleCloseBackdrop();
-                    // setIsClaiming(false);
                     setIsPuttingOnSale(false);
                 }
             })
@@ -349,9 +325,7 @@ function CubeNFTs(props) {
             }
             axios.post(`auction/createsale`, SaleData).then((res) => {
                 console.log("res", res);
-
                 handleCloseBackdrop();
-                // setIsClaiming(false);
                 setIsPuttingOnSale(false);
                 let variant = "success";
                 enqueueSnackbar('Successfully Allowed Exchange to Sale.', { variant });
@@ -364,18 +338,14 @@ function CubeNFTs(props) {
                 let variant = "error";
                 enqueueSnackbar('Unable to Allow Exchange to Sale.', { variant });
                 handleCloseBackdrop();
-                // setIsClaiming(false);
                 setIsPuttingOnSale(false);
             })
-
-            // setIsPuttingOnSale(false);
         }
     }
     let putOnAuction = async (minimumBid, bidDelta, startTime, endTime, startTimeStamp, endTimeStamp) => {
-        // e.preventDefault();
         handleCloseAuction();
         handleShowBackdrop();
-        // console.log("price", price);
+
         setIsPuttingOnAuction(true);
         await loadWeb3();
         const web3 = window.web3
@@ -387,17 +357,12 @@ function CubeNFTs(props) {
             handleShowNetwork();
         }
         else {
-            // await loadWeb3();
-            // const web3 = window.web3
-            // const accounts = await web3.eth.getAccounts();
             const address = Addresses.AuctionAddress;
             const abi = CreateAuctionContract;
             let tokenId = [];
             tokenId.push(cubeData.tokenId);
-            // }
             var myContractInstance = await new web3.eth.Contract(abi, address);
             console.log("myContractInstance", myContractInstance);
-            const minBid = minimumBid * 10 ** 18;
             console.log("minimumBid * 10 ** 18", startTimeStamp.toString(), endTimeStamp.toString());
             var receipt = await myContractInstance.methods.newAuction(startTimeStamp.toString(), endTimeStamp.toString(), (minimumBid * 10 ** 18).toString(), tokenId).send({ from: accounts[0] }, (err, response) => {
                 console.log('get transaction', err, response);
@@ -469,7 +434,7 @@ function CubeNFTs(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
 
     return (
@@ -494,17 +459,20 @@ function CubeNFTs(props) {
                                                     title=""
                                                     image=""
                                                     onClick={() => {
-                                                        ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                        ownerAudio.play();
+                                                        setIsPlaying(!isPlaying)
+                                                        if (!isPlaying) {
+                                                            ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                            ownerAudio.play();
+                                                        } else {
+                                                            ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                            ownerAudio.pause();
+                                                        }
                                                     }}
                                                 >
-                                                    <div class="wrapper">
-                                                        <div class="cube-box">
+                                                    <div className="wrapper">
+                                                        <div className="cube-box">
                                                             {tokenList.map((j, jindex) => (
                                                                 <img src={j[0].artwork} key={jindex} style={{ border: j[0].type === "Mastercraft" ? '4px solid #ff0000' : j[0].type === "Legendary" ? '4px solid #FFD700' : j[0].type === "Epic" ? '4px solid #9400D3' : j[0].type === "Rare" ? '4px solid #0000FF' : j[0].type === "Uncommon" ? '4px solid #008000' : j[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
-                                                            ))}
-                                                            {new Array(6 - tokenList.length).fill(0).map((_, index) => (
-                                                                < img src={r1} alt="" />
                                                             ))}
                                                         </div>
                                                     </div>
@@ -684,10 +652,9 @@ function CubeNFTs(props) {
                                                         title={i[0].title}
                                                     />
                                                     <CardMedia
-                                                        style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                        variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                         className={classes.media}
                                                         image={i[0].artwork}
-
                                                         title="NFT Image"
                                                     />
                                                     <CardContent>
@@ -727,13 +694,9 @@ function CubeNFTs(props) {
                                                             title={i[0].FanName}
                                                             subheader={i[0].FanInspiration}
                                                         />
-
                                                         <Typography variant="body2" color="textSecondary" component="p">
                                                             <strong>Other: </strong>{i[0].other}
                                                         </Typography>
-                                                        {/* <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Collection: </strong>{i[0].collectiontitle}
-                                                </Typography> */}
                                                     </CardContent>
                                                 </Card>
                                             </Grid>
@@ -749,7 +712,6 @@ function CubeNFTs(props) {
                                                 aria-controls="panel1a-content"
                                                 id="panel1a-header"
                                             >
-
                                                 <Typography variant="h6" gutterBottom>Tx History</Typography>
                                             </AccordionSummary>
                                             <AccordionDetails>
@@ -763,7 +725,6 @@ function CubeNFTs(props) {
                                                     spacing={2}
                                                     direction="row"
                                                     justify="flex-start"
-    
                                                 >
                                                     {transactionHistory.slice(0).reverse().map((i, index) => (
                                                         <Grid item xs={12} sm={12} md={12} key={index}>
@@ -784,52 +745,12 @@ function CubeNFTs(props) {
                                                                 </CardActionArea>
                                                             </Card>
                                                         </Grid>
-
                                                     ))}
                                                 </Grid>
                                             </AccordionDetails>
                                         </Accordion>
-                                        {/* <Accordion>
-                                            <AccordionSummary
-                                                expandIcon={<ExpandMoreIcon />}
-                                                aria-controls="panel2a-content"
-                                                id="panel2a-header"
-                                            >
-                                                <Typography variant="h6" gutterBottom>Bidding History</Typography>
-                                            </AccordionSummary>
-                                            <AccordionDetails>
-                                                {bidHistory.length === 0 ? (
-                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                        <strong>No Bidding History Found </strong>
-                                                    </Typography>
-                                                ) : (null)}
-                                                <Grid
-                                                    container
-                                                    spacing={2}
-                                                    direction="row"
-                                                    justify="flex-start"
-                                                >
-                                                    {bidHistory.slice(0).reverse().map((i, index) => (
-                                                        <Grid item xs={12} sm={12} md={12} key={index}>
-                                                            <Card className={classes.root} >
-                                                                <CardActionArea style={{ margin: '5px' }}>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Address : </strong>{i.address}
-                                                                    </Typography>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{i.Bid / 10 ** 18} WETH</span>
-                                                                    </Typography>
-                                                                </CardActionArea>
-                                                            </Card>
-                                                        </Grid>
-                                                    ))}
-                                                </Grid>
-                                            </AccordionDetails>
-                                        </Accordion>
-                                     */}
                                     </div>
                                 </div>
-
                             </div>
                         )}
                     </div>

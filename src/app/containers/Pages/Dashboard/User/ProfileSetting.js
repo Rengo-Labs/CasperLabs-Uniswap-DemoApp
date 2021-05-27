@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Spinner, Form } from "react-bootstrap";
-import Modal from "react-bootstrap/Modal";
-import Cookies from "js-cookie";
-import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import { useSnackbar } from 'notistack';
 import { Container } from "@material-ui/core";
+import Paper from '@material-ui/core/Paper';
+import { makeStyles } from '@material-ui/core/styles';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+import axios from "axios";
+import Cookies from "js-cookie";
+import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
+import { Spinner } from "react-bootstrap";
+import r1 from '../../../../assets/img/patients/patient.jpg';
 const useStyles = makeStyles({
   root: {
     flexGrow: 1,
@@ -32,7 +31,6 @@ function ProfileSetting(props) {
   let [isUploadingProducer, setIsUploadingProducer] = useState(false);
   let [isUploadingFan, setIsUploadingFan] = useState(false);
   let [isUploadingImageArtist, setIsUploadingImageArtist] = useState(false);
-
   let [fan, setFan] = useState('');
   let [artistImage, setArtistImage] = useState(r1);
   let [producerImage, setProducerImage] = useState(r1);
@@ -43,8 +41,6 @@ function ProfileSetting(props) {
   let [isProducer, setIsProducer] = useState(null);
   let [isExecutiveProducer, setIsExecutiveProducer] = useState(null);
   let [isFan, setIsFan] = useState(null);
-
-
   let [executiveProducer, setExecutiveProducer] = useState('');
   let [musicArtistImage, setMusicArtistImage] = useState(r1);
 
@@ -56,19 +52,7 @@ function ProfileSetting(props) {
     console.log("newValue", newValue);
     setValue(newValue);
   };
-
-  let [isImageSelected, setIsImageSelected] = useState(false);
-  let [imageData, setImageData] = useState();
-  let [mobileInput, setMobileInput] = useState();
   let [isSavingChanges, setIsSavingChanges] = useState(false);
-  let [isFieldsChanged, setIsFieldChanged] = useState(false);
-  let [check, setCheck] = useState(false);
-
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const handleCloseSuccessModal = () => setShowSuccessModal(false);
-  const handleShowSuccessModal = () => setShowSuccessModal(true);
-  let [fileType, setFileType] = useState();
-  let [fileName, setFileName] = useState();
 
   let enableImageArtist = (e) => {
     setIsSavingChanges(true)
@@ -1061,7 +1045,7 @@ function ProfileSetting(props) {
                             height: "100px",
                           }}
                         >
-                          <img src={executiveProducerImage} alt="Selfie" />
+                          <img src={isExecutiveProducer.Profile} alt="Selfie" />
                         </div>
                       </div>
                       <div className="upload-img">
@@ -1230,7 +1214,7 @@ function ProfileSetting(props) {
                             height: "100px",
                           }}
                         >
-                          <img src={fanImage} alt="Selfie" />
+                          <img src={isFan.Profile} alt="Selfie" />
                         </div>
                       </div>
                       <div className="upload-img">
@@ -1281,12 +1265,6 @@ function ProfileSetting(props) {
           ) : (
             null
           )}
-
-          <Modal show={showSuccessModal} onHide={handleCloseSuccessModal}>
-            <Modal.Header closeButton>
-              <Modal.Title>Successfully Updated</Modal.Title>
-            </Modal.Header>
-          </Modal>
         </div >
       </div >
     </>

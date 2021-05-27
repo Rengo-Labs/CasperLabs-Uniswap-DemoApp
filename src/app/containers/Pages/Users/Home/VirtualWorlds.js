@@ -1,24 +1,10 @@
-import {
-    Card,
-    CardContent, Grid
-} from '@material-ui/core/';
-import Button from '@material-ui/core/Button';
-import CardActions from '@material-ui/core/CardActions';
-import Typography from '@material-ui/core/Typography';
-import React from 'react';
-import { Spinner } from 'react-bootstrap';
+import { Grid } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
-import { Container } from 'react-bootstrap'
-import NFTCard from '../../../../components/Cards/NFTCard';
-
-import r1 from '../../../../assets/img/r1.jpg';
-
-import r2 from '../../../../assets/img/r2.jpg';
-import r3 from '../../../../assets/img/r3.jpg';
-import r4 from '../../../../assets/img/r4.jpg';
-import r5 from '../../../../assets/img/r5.jpg';
-import r6 from '../../../../assets/img/r6.jpg';
+import React from 'react';
+import { Container } from 'react-bootstrap';
 import NFTCube from '../../../../components/Cards/NFTCube';
+
+
 
 const useStyles = makeStyles((theme) => ({
     root: {

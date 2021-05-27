@@ -1,4 +1,5 @@
 import { CardHeader, Grid } from '@material-ui/core/';
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
@@ -10,15 +11,12 @@ import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import Cookies from "js-cookie";
-import Button from '@material-ui/core/Button';
-import jwtDecode from "jwt-decode";
-import Countdown from 'react-countdown';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
+import Countdown from 'react-countdown';
 import { Scrollbars } from 'react-custom-scrollbars';
 import r1 from '../../../../assets/img/patients/patient.jpg';
-
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -48,9 +46,6 @@ const useStyles = makeStyles((theme) => ({
         marginBottom: 12,
     },
 }));
-
-
-
 function NewSeason(props) {
 
     const { enqueueSnackbar } = useSnackbar();
@@ -58,19 +53,19 @@ function NewSeason(props) {
     const [inputList, setInputList] = useState([]);
     let [isSaving, setIsSaving] = useState(false);
     let [image, setImage] = useState(r1);
-    let [drops, setDrops] = useState();
     let [isUploading, setIsUploading] = useState();
     let [name, setName] = useState("");
     let [description, setDescription] = useState("");
-
     let [type, setType] = useState();
     let [types, setTypes] = useState([]);
     let getMyDrops = () => {
+        axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
+            "Authorization"
+        )}`;
         axios.get("/drop/drops").then(
             (response) => {
                 console.log("response", response);
                 setInputList(response.data.Dropdata);
-                // setImageData(response.data.nftsdata);
             },
             (error) => {
                 if (process.env.NODE_ENV === "development") {
@@ -86,7 +81,6 @@ function NewSeason(props) {
                 }
             })
     }
-
     useEffect(() => {
         getMyDrops();
         props.setActiveTab({
@@ -106,38 +100,25 @@ function NewSeason(props) {
             termsandconditions: "",
             changePassword: "",
             newRandomDrop: ""
-        });
+        });// eslint-disable-next-line
     }, []);
     const handleRemoveClick = (index) => {
-        console.log("index", index);
-        console.log("inputList", types);
-
         const list = [...types];
         console.log("list", list);
         list.splice(index, 1);
-
         setTypes(list);
     };
     const handleAddClick = (value) => {
-
         setTypes([...types, value]);
         setType("");
     };
-
-
     const handleSubmitEvent = (event) => {
         event.preventDefault();
-
         setIsSaving(true);
-
-        let jwt = Cookies.get("Authorization");
-        let jwtDecoded = jwtDecode(jwt);
-        let exporter = jwtDecoded.id;
         let dropList = [];
         for (let i = 0; i < types.length; i++) {
             dropList.push(types[i]._id);
         }
-
         let SeasonData = {
             title: name,
             description: description,
@@ -152,7 +133,7 @@ function NewSeason(props) {
                 setName("");
                 setDescription("");
                 setImage(r1);
-                types([]);
+                setTypes([]);
                 let variant = "success";
                 enqueueSnackbar('New Season Created Successfully.', { variant });
             },
@@ -166,7 +147,6 @@ function NewSeason(props) {
                 enqueueSnackbar('Unable to Create New Season.', { variant });
             }
         );
-
     };
 
     let onChangeFile = (e) => {
@@ -190,12 +170,9 @@ function NewSeason(props) {
                 setIsUploading(false);
                 let variant = "error";
                 enqueueSnackbar('Unable to Upload Image to S3 .', { variant });
-
             }
         );
-
     }
-
     return (
         <div className="card">
             <ul className="breadcrumb" style={{ backgroundColor: "rgb(167,0,0)" }}>
@@ -209,7 +186,6 @@ function NewSeason(props) {
                     <div className="col-md-12 col-lg-6">
                         <form onSubmit={handleSubmitEvent}>
                             <div className="form-group">
-
                                 <label>Select Drops</label>
                                 <div className="filter-widget">
                                     <Autocomplete
@@ -217,7 +193,6 @@ function NewSeason(props) {
                                         required
                                         options={inputList}
                                         value={type}
-                                        // disabled={isDisabledImporter}
                                         getOptionLabel={(option) =>
                                             option.title
                                         }
@@ -326,7 +301,6 @@ function NewSeason(props) {
                     <div className="col-md-12 col-lg-6">
                         {types.length > 0 ? (
                             <Scrollbars style={{ height: 600 }}>
-                                {/* <!-- Change Password Form --> */}
                                 <div className="form-group">
                                     <div >
                                         <Grid
@@ -334,11 +308,9 @@ function NewSeason(props) {
                                             spacing={3}
                                             direction="row"
                                             justify="flex-start"
-                                        // alignItems="flex-start"
                                         >
                                             {types.map((i, index) =>
                                                 <Grid item xs={12} sm={6} md={6} key={index}>
-                                                    {/* <Link to={"myDrops/cubes/" + i._id}> */}
                                                     <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                         <CardActionArea>
                                                             <CardHeader className="text-center"
@@ -360,7 +332,6 @@ function NewSeason(props) {
                                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
                                                                     {new Date() < new Date(i.AuctionStartsAt) ? (
                                                                         <div style={{ color: "#00FF00" }} >
-
                                                                             <Typography variant="body2" color="textSecondary" component="p">
                                                                                 <strong>Auction Starts At:</strong>
                                                                             </Typography>
@@ -391,13 +362,11 @@ function NewSeason(props) {
                                                                     handleRemoveClick(index);
                                                                 }}
                                                                 className="btn btn-sm bg-danger-light btn-block"
-
                                                             >
                                                                 Remove Drop
     </Button>
                                                         </CardActions>
                                                     </Card>
-                                                    {/* </Link> */}
                                                 </Grid >
                                             )}
                                         </Grid>
@@ -406,7 +375,6 @@ function NewSeason(props) {
                             </Scrollbars>
                         ) : (null)}
                     </div>
-
                 </div>
                 {isSaving ? (
                     <div className="text-center">
@@ -433,7 +401,6 @@ function NewSeason(props) {
                         </div>)
                 )}
             </div>
-
         </div>
 
     );

@@ -1,26 +1,18 @@
-import { Typography } from "@material-ui/core";
+import axios from "axios";
+import { useSnackbar } from 'notistack';
 import React, { useState } from "react";
-import { Col } from "react-bootstrap";
-import { Row } from "react-bootstrap";
-import { Modal, Spinner, Button } from "react-bootstrap";
+import { Button, Modal, Spinner } from "react-bootstrap";
 import "../../assets/css/bootstrap.min.css";
-import DateTimePicker from 'react-datetime-picker';
 import "../../assets/css/style.css";
+import r1 from '../../assets/img/patients/patient.jpg';
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import r1 from '../../assets/img/patients/patient.jpg';
-import { useSnackbar } from 'notistack';
-import axios from "axios";
 
 function CreateNewCollectionModal(props) {
     const { enqueueSnackbar } = useSnackbar();
     let [collectionTitle, setCollectionTitle] = useState();
     let [collectionImage, setCollectionImage] = useState(r1);
     let [isUploadingCollectionImage, setIsUploadingCollectionImage] = useState(false);
-
-    const [startTime, setStartTime] = useState(new Date());
-    const [endTime, setEndTime] = useState(new Date());
-
     let onChangeImageHandler = (e) => {
         setIsUploadingCollectionImage(true);
         let fileData = new FormData();
@@ -50,7 +42,6 @@ function CreateNewCollectionModal(props) {
             <Modal.Header closeButton>
                 <Modal.Title>Create New Collection</Modal.Title>
             </Modal.Header>
-            {/* <Modal.Body className="text-center"> <i className="fas fa-exclamation-circle fa-10x"></i></Modal.Body> */}
             <Modal.Body>
                 <div className="container">
                     <div className="form-group">
@@ -61,7 +52,7 @@ function CreateNewCollectionModal(props) {
                                 <input
                                     type="text"
                                     required
-                                    value={collectionTitle}
+                                    defaultValue={collectionTitle}
                                     placeholder=""
                                     className="form-control"
                                     onChange={(e) => {

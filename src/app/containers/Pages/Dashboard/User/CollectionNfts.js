@@ -8,8 +8,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import { Spinner } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
 const useStyles = makeStyles((theme) => ({
@@ -63,10 +61,8 @@ function CollectionNfts(props) {
     };
     let getCollectionNfts = () => {
         handleShowBackdrop();
-        let CollectioId={
-            collectionId:collectionId
-        }
-        axios.post("/collection/collections",CollectioId).then(
+
+        axios.get("/collection/collections/" + collectionId).then(
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.Nftsdata);
@@ -83,17 +79,15 @@ function CollectionNfts(props) {
 
     useEffect(() => {
         getCollectionNfts();
-        // getCollections();?
-
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
             orders: "",
             myNFTs: "",
-            myCubes:"",
+            myCubes: "",
             myDrops: "",
             settings: "",
-            mySeason:"",
+            mySeason: "",
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",
@@ -101,7 +95,7 @@ function CollectionNfts(props) {
             newSupefNFT: "",
             newCollection: "active",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
 
     return (
@@ -146,7 +140,7 @@ function CollectionNfts(props) {
                                                 title={i[0].title}
                                             />
                                             <CardMedia
-                                                style={{ height: "100%" }} variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                                                variant="outlined" style={{ border: i[0].type === "Mastercraft" ? '4px solid #ff0000' : i[0].type === "Legendary" ? '4px solid #FFD700' : i[0].type === "Epic" ? '4px solid #9400D3' : i[0].type === "Rare" ? '4px solid #0000FF' : i[0].type === "Uncommon" ? '4px solid #008000' : i[0].type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                                                 className={classes.media}
                                                 image={i[0].artwork}
 
@@ -193,9 +187,6 @@ function CollectionNfts(props) {
                                                 <Typography variant="body2" color="textSecondary" component="p">
                                                     <strong>Other: </strong>{i[0].other}
                                                 </Typography>
-                                                {/* <Typography variant="body2" color="textSecondary" component="p">
-                                                    <strong>Collection: </strong>{i[0].collectiontitle}
-                                                </Typography> */}
                                             </CardContent>
                                         </Card>
                                     </Grid>
@@ -205,9 +196,6 @@ function CollectionNfts(props) {
                     </div>
                 </form>
             </div >
-            {/* <Backdrop className={classes.backdrop} open={open} >
-                <CircularProgress color="inherit" />
-            </Backdrop> */}
         </div >
 
     );

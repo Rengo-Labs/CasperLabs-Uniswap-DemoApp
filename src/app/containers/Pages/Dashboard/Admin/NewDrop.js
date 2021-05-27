@@ -1,24 +1,18 @@
 import { Avatar, CardHeader, Grid } from '@material-ui/core/';
+import Backdrop from '@material-ui/core/Backdrop';
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import Button from '@material-ui/core/Button';
 import axios from "axios";
-
 import Cookies from "js-cookie";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
-import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
-import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
-
-import jwtDecode from "jwt-decode";
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
@@ -26,9 +20,9 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import DateTimePicker from 'react-datetime-picker';
 import Web3 from 'web3';
 import r1 from '../../../../assets/img/patients/patient.jpg';
-import ipfs from '../../../../components/IPFS/ipfs';
-
-
+import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
+import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -74,18 +68,16 @@ function NewDrop(props) {
     const [endTimeStamp, setEndTimeStamp] = useState(endTime.getTime() / 1000);
     const [inputList, setInputList] = useState([]);
     const [imageData, setImageData] = useState([]);
-    const [error, setError] = useState("");
     let [name, setName] = useState("");
     let [description, setDescription] = useState("");
     let [image, setImage] = useState(r1);
 
     let [isUploading, setIsUploading] = useState();
-    // { id: 0, name: "Robot", price: "20" }, { id: 1, name: "Robot Cube", price: "2" }, { id: 2, name: "Cube", price: "15" }
     let [isSaving, setIsSaving] = useState(false);
     let [minimumBid, setMinimumBid] = useState();
     let [bidDelta, setBidDelta] = useState();
 
-
+// eslint-disable-next-line
     let [type, setType] = useState();
     let [types, setTypes] = useState([]);
     const [typesImages, setTypesImages] = useState([]);
@@ -142,7 +134,7 @@ function NewDrop(props) {
             termsandconditions: "",
             changePassword: "",
             newRandomDrop: ""
-        });
+        });// eslint-disable-next-line
     }, []);
     const handleRemoveClick = (index, newCube) => {
         console.log("index", index);
@@ -179,13 +171,7 @@ function NewDrop(props) {
 
     const handleSubmitEvent = async (e) => {
         e.preventDefault();
-
         setIsSaving(true);
-
-        let jwt = Cookies.get("Authorization");
-        let jwtDecoded = jwtDecode(jwt);
-        let exporter = jwtDecoded.id;
-
         await loadWeb3();
         const web3 = window.web3
         const accounts = await web3.eth.getAccounts();
@@ -250,10 +236,6 @@ function NewDrop(props) {
                     tokenId.push(types[i].tokenId);
                 }
                 var myContractInstance = await new web3.eth.Contract(abi, address);
-                console.log("myContractInstance", myContractInstance);
-                const minBid = minimumBid * 10 ** 18;
-                // console.log("minimumBid",minimumBid );
-                console.log("minimumBid * 10 ** 18", startTimeStamp.toString(), endTimeStamp.toString());
                 var receipt = await myContractInstance.methods.newAuction(startTimeStamp.toString(), endTimeStamp.toString(), (minimumBid * 10 ** 18).toString(), tokenId).send({ from: accounts[0] }, (err, response) => {
                     console.log('get transaction', err, response);
                     if (err !== null) {
@@ -507,7 +489,6 @@ function NewDrop(props) {
                                                 placeholder="Enter Total Supply"
                                                 required
                                                 value={minimumBid}
-                                                placeholder=""
                                                 className="form-control"
                                                 onChange={(e) => {
                                                     if (e.target.value > 0) {
@@ -524,10 +505,8 @@ function NewDrop(props) {
                                         <div className="filter-widget">
                                             <input
                                                 type="number"
-                                                placeholder=""
                                                 required
                                                 value={bidDelta}
-                                                placeholder=""
                                                 className="form-control"
                                                 onChange={(e) => {
                                                     if (e.target.value > 0) {
@@ -568,8 +547,8 @@ function NewDrop(props) {
                                                                 // image={img}
                                                                 title=""
                                                             >
-                                                                <div class="wrapper">
-                                                                    <div class="cube-box">
+                                                                <div className="wrapper">
+                                                                    <div className="cube-box">
                                                                         {typesImages[index].map((j, jindex) => (
                                                                             <>
                                                                                 {/* {console.log(j)} */}

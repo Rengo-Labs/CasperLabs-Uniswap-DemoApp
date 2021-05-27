@@ -1,37 +1,26 @@
+import Avatar from '@material-ui/core/Avatar';
+import Cookies from "js-cookie";
 import React, { useState } from "react";
+import { Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
 import Logo from "../../assets/img/logo.png";
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import {
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem
-} from "reactstrap";
-import { Modal, Button, Spinner } from "react-bootstrap";
-import Avatar from '@material-ui/core/Avatar';
-import Axios from "axios";
-import Web3 from "web3";
-import jwtDecode from "jwt-decode";
-import Cookies from "js-cookie";
 import NetworkErrorModal from "../Modals/NetworkErrorModal";
 
 
 function HeaderHome(props) {
   let [menuOpenedClass, setMenuOpenedClass] = useState();
-  let [dropdownOpen1, setDropdownOpen1] = useState(false);
-  let [isLoading, setIsLoading] = useState(false);
+  let [isLoading] = useState(false);
 
 
-  let [network, setNetwork] = useState(false);
+  let [network] = useState(false);
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
+ 
   const selectedStyling = {
     border: "2px solid 'rgb(167,0,0)'",
     padding: "10px 20px",
@@ -56,57 +45,6 @@ function HeaderHome(props) {
     create: props.selectedNav === "create" ? selectedStyling : defaultStyling,
   };
 
-  let Login = async () => {
-    setIsLoading(true);
-    if (window.ethereum) {
-      window.web3 = new Web3(window.ethereum)
-      await window.ethereum.enable()
-    }
-    else if (window.web3) {
-      window.web3 = new Web3(window.web3.currentProvider)
-    }
-    else {
-      window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
-    }
-
-    const web3 = window.web3
-    const accounts = await web3.eth.getAccounts();
-    const network = await web3.eth.net.getNetworkType()
-    console.log("Account test: ", accounts[0], network);
-    if (network !== 'ropsten') {
-      setNetwork(network);
-      setIsLoading(false);
-
-      handleShow();
-    }
-    else {
-      let loginData = {
-        address: accounts[0],
-        network: network,
-        // roles: 'admin'
-      }
-      Axios.post("user/auth/login", loginData).then(
-        (response) => {
-          console.log("response", response);
-          Cookies.set("Authorization", response.data.token, {
-          });
-          if (response.data.roles === "user") {
-            localStorage.setItem("Address", accounts[0]);
-          }
-          setIsLoading(false);
-          window.location.reload();
-
-        },
-        (error) => {
-          if (process.env.NODE_ENV === "development") {
-            console.log(error);
-            console.log(error.response);
-          }
-          setIsLoading(false);
-        })
-    }
-
-  }
   let Logout = (e) => {
     console.log("akjdf");
     Cookies.remove("Authorization");

@@ -1,19 +1,17 @@
 import { Avatar, CardHeader, Grid } from '@material-ui/core/';
 import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
-import r1 from '../../../../assets/img/patients/patient.jpg';
-import { Link } from 'react-router-dom';
-import { useParams } from "react-router-dom";
+import { Link, useParams } from 'react-router-dom';
+
 const useStyles = makeStyles((theme) => ({
     root: {
         maxWidth: 345,
@@ -51,8 +49,6 @@ function DropCubes(props) {
     const [tokenList, setTokenList] = useState([]);
     const [imageData, setImageData] = useState([]);
     const [cubeData, setCubeData] = useState([]);
-
-
     const [open, setOpen] = React.useState(false);
     const handleCloseBackdrop = () => {
         setOpen(false);
@@ -102,7 +98,7 @@ function DropCubes(props) {
             newSupefNFT: "",
             newCollection: "",
             newRandomDrop: "",
-        });
+        });// eslint-disable-next-line
     }, []);
 
     return (
@@ -111,7 +107,6 @@ function DropCubes(props) {
                 <li className="breadcrumb-item">
                     <a href="/">Dashboard</a>
                 </li>
-
                 <li className="breadcrumb-item">
                     <Link to="/dashboard/myDrops">My Drops</Link>
                 </li>
@@ -128,7 +123,7 @@ function DropCubes(props) {
                     <Typography variant="body2" color="textSecondary" component="p">
                         <strong>Minimum Bid: </strong>{tokenList.MinimumBid / 10 ** 18} WETH
                     </Typography>
-                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-left">
+                    {/* <Typography variant="h6" gutterBottom color="textSecondary" className="text-left"> */}
                         {new Date() < new Date(tokenList.AuctionStartsAt) ? (
                             <Typography variant="h5" gutterBottom color="textSecondary">
                                 <strong>Auction Starts At:</strong>
@@ -152,7 +147,7 @@ function DropCubes(props) {
                                 <strong>Auction Ended</strong>
                             </Typography>
                         )}
-                    </Typography>
+                    {/* </Typography> */}
                     {open ? (
                         <div align="center" className="text-center">
                             <Spinner
@@ -182,17 +177,11 @@ function DropCubes(props) {
                                                     // image={img}
                                                     title=""
                                                 >
-                                                    <div class="wrapper">
-                                                        <div class="cube-box">
+                                                    <div className="wrapper">
+                                                        <div className="cube-box">
                                                             {console.log("imageData", imageData)}
                                                             {imageData[index].map((j, jindex) => (
-                                                                <>
-                                                                    {console.log(j)}
-                                                                    <img src={j.artwork} style={{ border: j.type === "Mastercraft" ? '4px solid #ff0000' : j.type === "Legendary" ? '4px solid #FFD700' : j.type === "Epic" ? '4px solid #9400D3' : j.type === "Rare" ? '4px solid #0000FF' : j.type === "Uncommon" ? '4px solid #008000' : j.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
-                                                                </>
-                                                            ))}
-                                                            {new Array(6 - imageData[index].length).fill(0).map((_, index) => (
-                                                                < img src={r1} alt="" />
+                                                                <img src={j.artwork} key={jindex} style={{ border: j.type === "Mastercraft" ? '4px solid #ff0000' : j.type === "Legendary" ? '4px solid #FFD700' : j.type === "Epic" ? '4px solid #9400D3' : j.type === "Rare" ? '4px solid #0000FF' : j.type === "Uncommon" ? '4px solid #008000' : j.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
                                                             ))}
                                                         </div>
                                                     </div>

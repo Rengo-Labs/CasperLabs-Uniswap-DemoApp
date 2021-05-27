@@ -8,22 +8,14 @@ import {
 } from '@material-ui/core/';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import { makeStyles } from '@material-ui/core/styles';
-import ViewListIcon from '@material-ui/icons/ViewList';
-import ViewModuleIcon from '@material-ui/icons/ViewModule';
-import ToggleButton from '@material-ui/lab/ToggleButton';
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import axios from "axios";
 import Cookies from "js-cookie";
-import React, { useEffect, useState } from "react";
-import { Row } from 'react-bootstrap';
-import { Col } from 'react-bootstrap';
-import NumberFormat from 'react-number-format';
-import CollectionCard from '../../../../components/Cards/CollectionCard';
 import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import { Link } from 'react-router-dom';
-import CreateNewCollectionModal from '../../../../components/Modals/CreateNewCollectionModal';
 import r1 from '../../../../assets/img/patients/patient.jpg';
+import CreateNewCollectionModal from '../../../../components/Modals/CreateNewCollectionModal';
 const useStyles = makeStyles({
     root: {
         minWidth: 250,
@@ -53,7 +45,6 @@ const useStyles = makeStyles({
 function MyCollection(props) {
     const { enqueueSnackbar } = useSnackbar();
     let [collections, setCollections] = useState([]);
-    let [collection, setCollection] = useState("");
     const [rowsPerPage, setRowsPerPage] = React.useState(8);
     const [page, setPage] = React.useState(0);
     let [isCreating, setIsCreating] = useState(false);
@@ -84,13 +75,13 @@ function MyCollection(props) {
             })
             .catch((error) => {
                 console.log(error.response.data);
-                // if (error.response.data !== undefined) {
-                //     if (error.response.data === "Unauthorized access (invalid token) !!") {
-                //         Cookies.remove("Authorization");
-                //         localStorage.removeItem("Address")
-                //         window.location.reload();
-                //     }
-                // }
+                if (error.response.data !== undefined) {
+                    if (error.response.data === "Unauthorized access (invalid token) !!") {
+                        Cookies.remove("Authorization");
+                        localStorage.removeItem("Address")
+                        window.location.reload();
+                    }
+                }
                 setOpen(false);
             });
     };
@@ -110,7 +101,7 @@ function MyCollection(props) {
         else {
             let CollectionData = {
                 collectiontitle: collectionTitle,
-                collectionImage: collectionImage
+                artwork: collectionImage
 
             }
             axios
@@ -118,11 +109,10 @@ function MyCollection(props) {
                 .then((response) => {
                     setIsCreating(false);
                     console.log("response.data", response);
-                    setCollection("response.data.Collectiondata");
-
                     let variant = "success";
                     enqueueSnackbar('Collection Created Successfully .', { variant });
-                    getCollections()
+                    getCollections(0, rowsPerPage);
+                    handleCloseCollectionModal();
                 })
                 .catch((error) => {
                     console.log(error.response);
@@ -202,8 +192,8 @@ function MyCollection(props) {
                                             <CardActionArea>
                                                 <CardMedia
                                                     className={classes.media}
-                                                    image={i.image}
-                                                    title="Contemplative Reptile"
+                                                    image={i.artwork}
+                                                    title="Collection Image"
                                                 />
                                                 <CardContent>
                                                     <Typography gutterBottom variant="h5" className="text-center" component="h2">

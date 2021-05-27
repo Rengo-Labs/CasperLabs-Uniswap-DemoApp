@@ -1,9 +1,8 @@
 import axios from 'axios';
 import React, { Component } from 'react';
 import { Spinner } from 'react-bootstrap';
-import IntlTelInput from 'react-intl-tel-input';
 import 'react-intl-tel-input/dist/main.css';
-import { Link, Redirect } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 
 
@@ -143,7 +142,6 @@ class PersonalDetails extends Component {
         }
     }
     render() {
-        const { values } = this.props
         return (
             <form onSubmit={this.saveAndContinue} >
                 <div className="row">

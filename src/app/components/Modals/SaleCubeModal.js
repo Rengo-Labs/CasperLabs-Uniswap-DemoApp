@@ -1,10 +1,8 @@
 import { Typography } from "@material-ui/core";
 import React, { useState } from "react";
-import { Col } from "react-bootstrap";
-import { Row } from "react-bootstrap";
-import { Modal, Spinner, Button } from "react-bootstrap";
-import "../../assets/css/bootstrap.min.css";
+import { Button, Modal, Row, Spinner } from "react-bootstrap";
 import DateTimePicker from 'react-datetime-picker';
+import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
