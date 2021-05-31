@@ -1,101 +1,123 @@
 
 import { Grid } from '@material-ui/core';
+import Avatar from '@material-ui/core/Avatar';
 import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import React, { useState } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
-import r1 from '../../assets/img/r1.jpg';
-import r2 from '../../assets/img/r2.jpg';
-import r3 from '../../assets/img/r3.jpg';
-import r4 from '../../assets/img/r4.jpg';
-import r5 from '../../assets/img/r5.jpg';
-import r6 from '../../assets/img/r6.jpg';
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 
 
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
     root: {
-        maxWidth: 345,
+        flexGrow: 1,
+        width: '100%',
+        backgroundColor: theme.palette.background.paper,
+    },
+    badge: {
+        '& > *': {
+            margin: theme.spacing(1),
+        },
+    },
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
+    },
+
+    card: {
+        minWidth: 250,
     },
     media: {
-        height: 300,
+        height: 0,
+        paddingTop: '100%', // 16:9
     },
-});
+    bullet: {
+        display: 'inline-block',
+        margin: '0 2px',
+        transform: 'scale(0.8)',
+    },
+    title: {
+        fontSize: 14,
+    },
+    pos: {
+        marginBottom: 12,
+    },
+}));
 
 function NFTCard(props) {
     const classes = useStyles();
-    const [hide, setHide] = useState(false);
     return (
-        <Grid item xs={12} sm={6} md={3}>
-            <Card className={classes.root}>
-                {/* style={{ height: "100%" }} variant="outlined" */}
-                <CardActionArea>
+        <Grid item xs={12} sm={6} md={3} >
+            <Card style={{ height: "100%" }} variant="outlined">
+                <CardHeader className="text-center"
+                    title={props.data.title}
+                />
+                <CardMedia
+                    variant="outlined" style={{ border: props.data.type === "Mastercraft" ? '4px solid #ff0000' : props.data.type === "Legendary" ? '4px solid #FFD700' : props.data.type === "Epic" ? '4px solid #9400D3' : props.data.type === "Rare" ? '4px solid #0000FF' : props.data.type === "Uncommon" ? '4px solid #008000' : props.data.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                    className={classes.media}
+                    image={props.data.artwork}
+                    title="NFT Image"
+                />
+                <CardContent>
+                    <Typography variant="body2" color="textSecondary" component="p">
+                        <strong>Artwork Description: </strong>{props.data.description}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" component="p">
+                        <strong>Token Rarity: </strong>{props.data.type}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" component="p">
+                        <strong>Token Supply: </strong>{props.data.tokensupplyalternative}
+                    </Typography>
+                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
+                    <Link to="/User/Profile/Detail/:userId" style={{ color: '#000' }}>
+                        <CardHeader
+                            avatar={<Avatar src={props.data.ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                            title={props.data.ImageArtistName}
+                            subheader={props.data.ImageArtistAbout}
+                        />
+                    </Link>
+                    <Typography variant="body2" color="textSecondary" component="p">
+                        <strong>Website URL: </strong>{props.data.ImageArtistWebsite}
+                    </Typography>
+                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
+                    <Link to="/User/Profile/Detail/:userId" style={{ color: '#000' }}>
+                        <CardHeader
+                            avatar={<Avatar src={props.data.ProducerProfile} aria-label="Producer" className={classes.avatar} />}
+                            title={props.data.ProducerName}
+                            subheader={props.data.ProducerInspiration}
+                        />
+                    </Link>
+                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
+                    <Link to="/User/Profile/Detail/:userId" style={{ color: '#000' }}>
+                        <CardHeader
+                            avatar={<Avatar src={props.data.ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
+                            title={props.data.ExecutiveProducerName}
+                            subheader={props.data.ExecutiveProducerInspiration}
+                        />
+                    </Link>
+                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
+                    <Link to="/User/Profile/Detail/:userId" style={{ color: '#000' }}>
+                        <CardHeader
+                            avatar={<Avatar src={props.data.FanProfile} aria-label="Fan" className={classes.avatar} />}
+                            title={props.data.FanName}
+                            subheader={props.data.FanInspiration}
+                        />
+                    </Link>
 
-                    <CardMedia
-                        className={classes.media}
-                        // image={img}
-                        title=""
-                    >
-                        {hide ? (
-                            <div className="wrapper">
-                                <div className="cube-box" onMouseOut={() => setHide(false)}>
-                                    <img src={r1} alt="" />
-                                    <img src={r2} alt="" />
-                                    <img src={r3} alt="" />
-                                    <img src={r4} alt="" />
-                                    <img src={r5} alt="" />
-                                    <img src={r6} alt="" />
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="mainDiv">
-                                <div className="square" onMouseEnter={() => {
-                                    setHide(true);
-                                    // setTimeout(() => , 1000);
-                                }}
-                                ></div>
-                                <div className="square2" onMouseEnter={() => {
-                                    setHide(true);
-                                    // setTimeout(() => setHide(false), 1000);
-                                }}
-                                ></div>
-                                <div className="square3" onMouseEnter={() => {
-                                    setHide(true);
-                                    // setTimeout(() => setHide(false), 1000);
-                                }}
-                                ></div>
-                            </div>
-                        )}
-
-
-                    </CardMedia>
-                    <CardContent>
-                        <Typography gutterBottom variant="h6" style={{ fontSize: '13px' }} >
-                            Name : Robot
-          </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            price:0.0 ETH
-          </Typography>
-                    </CardContent>
-                </CardActionArea>
-                <CardActions>
-                    {/* <Button size="small" color="primary">
-                        Share
-        </Button>
-                    <Button size="small" color="primary">
-                        Learn More
-        </Button> */}
-                </CardActions>
+                    <Typography variant="body2" color="textSecondary" component="p">
+                        <strong>Other: </strong>{props.data.other}
+                    </Typography>
+                </CardContent>
             </Card>
-        </Grid >
+        </Grid>
     );
 }
 

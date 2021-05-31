@@ -22,10 +22,10 @@ import { Spinner } from "react-bootstrap";
 import { Scrollbars } from 'react-custom-scrollbars';
 import Web3 from 'web3';
 import logo from "../../../../assets/img/img-04.jpg";
-import r1 from '../../../../assets/img/patients/patient.jpg';
 // import CardContent from '@material-ui/core/CardContent';
 import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import NewCubeComponent from '../../../../components/Cube/NewCubeComponent';
 import ipfs from '../../../../components/IPFS/ipfs';
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 import SixNFTsErrorModal from '../../../../components/Modals/SixNFTsErrorModal';
@@ -79,6 +79,7 @@ function NewCube(props) {
     let [salePrice, setSalePrice] = useState();
     let [artistTypes, setArtistTypes] = useState([]);
     let [artist, setArtist] = useState('');
+    let [artistId, setArtistId] = useState('');
     let [musicOwner, setMusicOwner] = useState("");
     let [musicNonOwner, setMusicNonOwner] = useState("");
     let [artistImage, setArtistImage] = useState(logo);
@@ -346,6 +347,7 @@ function NewCube(props) {
                                     ownermusicfile: musicOwner,
                                     nonownermusicfile: musicNonOwner,
                                     MusicArtistName: artist,
+                                    MusicArtistId: artistId,
                                     MusicArtistAbout: aboutTheTrack,
                                     MusicArtistProfile: artistImage,
                                     SalePrice: salePrice * 10 ** 18,
@@ -447,7 +449,7 @@ function NewCube(props) {
                                         required
                                         options={tokenList}
                                         getOptionLabel={(option) =>
-                                            option.title + "," + option.type + ',' + option.tokensupply
+                                            option.title + "," + option.type + ',' + option.tokensupplyalternative
                                         }
                                         onChange={(event, value) => {
                                             if (value !== null) {
@@ -497,9 +499,8 @@ function NewCube(props) {
                                         <div className="filter-widget">
                                             <input
                                                 type="number"
-                                                placeholder="Enter Total Supply"
                                                 required
-                                                defaultValue={salePrice}
+                                                value={salePrice}
                                                 className="form-control"
                                                 onChange={(e) => {
                                                     if (e.target.value >= 0) {
@@ -552,6 +553,7 @@ function NewCube(props) {
                                                     if (value == null) setArtist("");
                                                     else {
                                                         console.log(value);
+                                                        setArtistId(value.userId)
                                                         setArtist(value.Name);
                                                         setAboutTheTrack(value.About);
                                                         setArtistImage(value.Profile)
@@ -573,17 +575,7 @@ function NewCube(props) {
                     </div>
                     <div className="col-md-12 col-lg-6">
                         <div className="App">
-                            <div className="wrapper">
-                                <div className="cube-box1">
-                                    {selectedNFTList.map((i, index) => (
-                                        <img key={index} src={i.artwork} style={{ border: i.type === "Mastercraft" ? '4px solid #ff0000' : i.type === "Legendary" ? '4px solid #FFD700' : i.type === "Epic" ? '4px solid #9400D3' : i.type === "Rare" ? '4px solid #0000FF' : i.type === "Uncommon" ? '4px solid #008000' : i.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
-                                    ))}
-                                    {new Array(6 - selectedNFTList.length).fill(0).map((_, index) => (
-                                        < img src={r1} key={index} alt="" />
-                                    ))}
-
-                                </div>
-                            </div>
+                            <NewCubeComponent data={selectedNFTList} />
                         </div>
                         <form >
                             <Scrollbars style={{ height: 650 }}>
@@ -615,7 +607,7 @@ function NewCube(props) {
                                                                 <strong>Token Rarity: </strong>{i.type}
                                                             </Typography>
                                                             <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Token Supply: </strong>{i.tokensupply}
+                                                                <strong>Token Supply: </strong>{i.tokensupplyalternative}
                                                             </Typography>
                                                             <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
                                                             <CardHeader

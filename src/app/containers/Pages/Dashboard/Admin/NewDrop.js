@@ -22,6 +22,7 @@ import Web3 from 'web3';
 import r1 from '../../../../assets/img/patients/patient.jpg';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import * as Addresses from '../../../../components/blockchain/Addresses/Addresses';
+import CubeComponent1 from '../../../../components/Cube/CubeComponent1';
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 
 const useStyles = makeStyles((theme) => ({
@@ -77,7 +78,7 @@ function NewDrop(props) {
     let [minimumBid, setMinimumBid] = useState();
     let [bidDelta, setBidDelta] = useState();
 
-// eslint-disable-next-line
+    // eslint-disable-next-line
     let [type, setType] = useState();
     let [types, setTypes] = useState([]);
     const [typesImages, setTypesImages] = useState([]);
@@ -547,19 +548,7 @@ function NewDrop(props) {
                                                                 // image={img}
                                                                 title=""
                                                             >
-                                                                <div className="wrapper">
-                                                                    <div className="cube-box">
-                                                                        {typesImages[index].map((j, jindex) => (
-                                                                            <>
-                                                                                {/* {console.log(j)} */}
-                                                                                <img src={j.artwork} style={{ border: j.type === "Mastercraft" ? '4px solid #ff0000' : j.type === "Legendary" ? '4px solid #FFD700' : j.type === "Epic" ? '4px solid #9400D3' : j.type === "Rare" ? '4px solid #0000FF' : j.type === "Uncommon" ? '4px solid #008000' : j.type === "Common" ? '4px solid #FFFFFF' : 'none' }} alt="" />
-                                                                            </>
-                                                                        ))}
-                                                                        {new Array(6 - typesImages.length).fill(0).map((_, index) => (
-                                                                            < img src={r1} alt="" />
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
+                                                                <CubeComponent1 data={typesImages} index={index} />
                                                             </CardMedia>
                                                             <CardContent>
                                                                 <Typography variant="body2" color="textSecondary" component="p">

@@ -454,7 +454,7 @@ function NewCube(props) {
                                         // value={nftName}
                                         // disabled={isDisabledImporter}
                                         getOptionLabel={(option) =>
-                                            option.title + "," + option.type + ',' + option.tokensupply
+                                            option.title + "," + option.type + ',' + option.tokensupplyalternative
                                         }
                                         onChange={(event, value) => {
                                             if (value == null) {
@@ -714,7 +714,7 @@ function NewCube(props) {
                                                                 <strong>Token Rarity: </strong>{i.type}
                                                             </Typography>
                                                             <Typography variant="body2" color="textSecondary" component="p">
-                                                                <strong>Token Supply: </strong>{i.tokensupply}
+                                                                <strong>Token Supply: </strong>{i.tokensupplyalternative}
                                                             </Typography>
                                                             <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
                                                             <CardHeader

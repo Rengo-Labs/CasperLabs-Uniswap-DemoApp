@@ -98,13 +98,18 @@ function NewNFT(props) {
     let [fans, setFanTypes] = useState([]);
     let [producerTypes, setProducerTypes] = useState([]);
     let [imageArtist, setImageArtist] = useState('');
+    let [imageArtistId, setImageArtistId] = useState('');
     let [collectionTypes, setCollectionTypes] = useState([]);
     let [collection, setCollection] = useState('');
     let [producer, setProducer] = useState('');
+    let [producerId, setProducerId] = useState('');
+
     let [tokenSupply, setTokenSupply] = useState("1");
     let [isUploadingIPFS, setIsUploadingIPFS] = useState(false);
     let [rarity, setRarity] = useState('');
     let [fan, setFan] = useState('');
+    let [fanId, setFanId] = useState('');
+
     let [other, setOther] = useState('');
     let [image, setImage] = useState(r1);
     let [artistImage, setArtistImage] = useState(r1);
@@ -113,6 +118,8 @@ function NewNFT(props) {
     let [fanImage, setFanImage] = useState(r1);
     let [collectionId, setCollectionId] = useState('');
     let [executiveProducer, setExecutiveProducer] = useState('');
+    let [executiveProducerId, setExecutiveProducerId] = useState('');
+
 
     let getProfileData = () => {
         axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
@@ -387,16 +394,20 @@ function NewNFT(props) {
                 description: description,
                 type: rarity,
                 tokensupply: tokenSupply,
+                ImageArtistId: imageArtistId,
                 ImageArtistName: imageArtist,
                 ImageArtistAbout: aboutTheArt,
                 ImageArtistWebsite: website,
                 ImageArtistProfile: artistImage,
+                ProducerId: producerId,
                 ProducerName: producer,
                 ProducerInspiration: inspirationForThePiece,
                 ProducerProfile: producerImage,
+                ExecutiveProducerId: executiveProducerId,
                 ExecutiveProducerName: executiveProducer,
                 ExecutiveProducerInspiration: executiveInspirationForThePiece,
                 ExecutiveProducerProfile: executiveProducerImage,
+                FanId: fanId,
                 FanName: fan,
                 FanInspiration: fanInspirationForThePiece,
                 FanProfile: fanImage,
@@ -587,8 +598,8 @@ function NewNFT(props) {
                                             onChange={(event, value) => {
                                                 // if (value == null) setRarity("");
                                                 // else {
-                                                    console.log(value);
-                                                    setRarity(value)
+                                                console.log(value);
+                                                setRarity(value)
                                                 // }
                                             }}
                                             // inputValue={rarity}
@@ -671,11 +682,12 @@ function NewNFT(props) {
                                                     //     setArtistImage("");
                                                     // }
                                                     // else {
-                                                        console.log(value);
-                                                        setImageArtist(value.Name);
-                                                        setWebsite(value.Website);
-                                                        setAboutTheArt(value.About);
-                                                        setArtistImage(value.Profile);
+                                                    console.log(value);
+                                                    setImageArtistId(value.userId);
+                                                    setImageArtist(value.Name);
+                                                    setWebsite(value.Website);
+                                                    setAboutTheArt(value.About);
+                                                    setArtistImage(value.Profile);
                                                     // }
                                                 }}
                                                 // inputValue={imageArtist}
@@ -710,10 +722,11 @@ function NewNFT(props) {
                                                     //     setProducerImage("");
                                                     // }   
                                                     // else {
-                                                        console.log(value);
-                                                        setProducer(value.Name);
-                                                        setInspirationForThePiece(value.Inspiration);
-                                                        setProducerImage(value.Profile);
+                                                    console.log(value);
+                                                    setProducerId(value.userId)
+                                                    setProducer(value.Name);
+                                                    setInspirationForThePiece(value.Inspiration);
+                                                    setProducerImage(value.Profile);
                                                     // }
                                                 }}
                                                 // inputValue={producer}
@@ -744,10 +757,11 @@ function NewNFT(props) {
                                                 onChange={(event, value) => {
                                                     // if (value == null) setExecutiveProducer("");
                                                     // else {
-                                                        console.log(value);
-                                                        setExecutiveProducer(value.Name);
-                                                        setExecutiveInspirationForThePiece(value.Inspiration);
-                                                        setExecutiveProducerImage(value.Profile);
+                                                    console.log(value);
+                                                    setExecutiveProducerId(value.userId);
+                                                    setExecutiveProducer(value.Name);
+                                                    setExecutiveInspirationForThePiece(value.Inspiration);
+                                                    setExecutiveProducerImage(value.Profile);
                                                     // }
                                                 }}
                                                 // inputValue={executiveProducer}
@@ -777,10 +791,11 @@ function NewNFT(props) {
                                                 onChange={(event, value) => {
                                                     // if (value == null) setFan("");
                                                     // else {
-                                                        console.log(value);
-                                                        setFan(value.Name);
-                                                        setFanImage(value.Profile);
-                                                        setFanInspirationForThePiece(value.Inspiration);
+                                                    console.log(value);
+                                                    setFanId(value.userId);
+                                                    setFan(value.Name);
+                                                    setFanImage(value.Profile);
+                                                    setFanInspirationForThePiece(value.Inspiration);
                                                     // }
                                                 }}
                                                 // inputValue={fan}
@@ -825,9 +840,9 @@ function NewNFT(props) {
                                                 onChange={(event, value) => {
                                                     // if (value == null) setCollection("");
                                                     // else {
-                                                        console.log(value);
-                                                        setCollection(value.collectiontitle)
-                                                        setCollectionId(value._id)
+                                                    console.log(value);
+                                                    setCollection(value.collectiontitle)
+                                                    setCollectionId(value._id)
                                                     // }
                                                 }}
                                                 // inputValue={collection}

@@ -21,6 +21,7 @@ import PrivacyPolicy from "../Pages/Users/PrivacyPolicy";
 import RegisterScreen from "../Pages/Users/RegisterScreen";
 import TermsAndConditions from "../Pages/Users/TermsAndConditions";
 import UserLoginScreen from "../Pages/Users/UserLoginScreen";
+import UserProfileInfo from "../Pages/Users/UserProfileInfo";
 
 function App() {
   let isLoggedIn;
@@ -149,6 +150,7 @@ function App() {
           {/* <Route exact path="/admin-login"component={LoginScreen} /> */}
           <Route path="/termsandconditions" component={TermsAndConditions} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
+          <Route path="/User/Profile/Detail/:userId" component={UserProfileInfo} />
           {/* {jwtDecoded.roles === "user" ? (
             <Route path="/dasboard" component={UserDashboard} />
           ) : (null)} */}

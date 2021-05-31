@@ -75,7 +75,7 @@ function MyCollection(props) {
             })
             .catch((error) => {
                 console.log(error.response.data);
-                if (error.response.data !== undefined) {
+                if (error.response !== undefined && error.response.data !== undefined) {
                     if (error.response.data === "Unauthorized access (invalid token) !!") {
                         Cookies.remove("Authorization");
                         localStorage.removeItem("Address")
