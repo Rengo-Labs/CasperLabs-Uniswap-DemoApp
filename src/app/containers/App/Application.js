@@ -21,7 +21,7 @@ import PrivacyPolicy from "../Pages/Users/PrivacyPolicy";
 import RegisterScreen from "../Pages/Users/RegisterScreen";
 import TermsAndConditions from "../Pages/Users/TermsAndConditions";
 import UserLoginScreen from "../Pages/Users/UserLoginScreen";
-import UserProfileInfo from "../Pages/Users/UserProfileInfo";
+import UserProfileScreen from "../Pages/Users/UserProfileScreen";
 
 function App() {
   let isLoggedIn;
@@ -78,20 +78,7 @@ function App() {
           />
         );
       }
-      // else if (jwtDecoded.roles === "exporter") {
-      //   return (
-      //     <Route
-      //       {...rest}
-      //       render={(props) =>
-      //         isLoggedIn ? (
-      //           <ExporterDashboard {...props} jwtDecoded={jwtDecoded} />
-      //         ) : (
-      //             <Redirect to="/login" />
-      //           )
-      //       }
-      //     />
-      //   );
-      // }
+    
     }
     else {
       return <Redirect to="/" />;
@@ -150,10 +137,13 @@ function App() {
           {/* <Route exact path="/admin-login"component={LoginScreen} /> */}
           <Route path="/termsandconditions" component={TermsAndConditions} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
-          <Route path="/User/Profile/Detail/:userId" component={UserProfileInfo} />
-          {/* {jwtDecoded.roles === "user" ? (
-            <Route path="/dasboard" component={UserDashboard} />
-          ) : (null)} */}
+          
+          <Route
+            exact path="/User/Profile/Detail/:userRole/:userId/:cubeId"
+            render={(routeProps) => (
+              <UserProfileScreen {...routeProps} />
+            )}
+          />
 
           <PrivateRoute path="/dashboard" />
         </Switch>

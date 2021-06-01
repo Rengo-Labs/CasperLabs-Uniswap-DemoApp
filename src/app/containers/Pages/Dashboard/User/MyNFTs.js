@@ -7,12 +7,6 @@ import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import NFTCard from '../../../../components/Cards/NFTCard';
 
-
-
-
-
-
-
 function MyNFTs(props) {
     const [rowsPerPage, setRowsPerPage] = React.useState(8);
     const [totalNfts, setTotalNfts] = React.useState(0);
