@@ -16,6 +16,7 @@ import UserImageArtist from "./UserProfile/UserImageArtist";
 import UserMusicArtist from "./UserProfile/UserMusicArtist";
 import UserNfts from "./UserProfile/UserNfts";
 import UserProducer from "./UserProfile/UserProducer";
+import UserProfile from "./UserProfile/UserProfile";
 import UserProfileSidebar from "./UserProfile/UserProfileSidebar";
 
 
@@ -35,7 +36,8 @@ function UserProfileScreen(props) {
         }
     };
     let [activeTab, setActiveTab] = useState({
-        nfts: "active",
+        profile: "active",
+        nfts: "",
         cubes: "",
         imageArtist: "",
         musicArtist: "",
@@ -45,8 +47,21 @@ function UserProfileScreen(props) {
     });
     useEffect(() => {
         console.log("userRole", userRole);
-        if (userRole === "nfts") {
+
+        if (userRole === "profile") {
             setActiveTab({
+                profile: "active",
+                nfts: "",
+                cubes: "",
+                imageArtist: "",
+                musicArtist: "",
+                producer: "",
+                executiveProducer: "",
+                fan: "",
+            })
+        } else if (userRole === "nfts") {
+            setActiveTab({
+                profile: "",
                 nfts: "active",
                 cubes: "",
                 imageArtist: "",
@@ -57,6 +72,7 @@ function UserProfileScreen(props) {
             })
         } else if (userRole === "cubes") {
             setActiveTab({
+                profile: "",
                 nfts: "",
                 cubes: "active",
                 imageArtist: "",
@@ -67,6 +83,7 @@ function UserProfileScreen(props) {
             })
         } else if (userRole === "imageArtist") {
             setActiveTab({
+                profile: "",
                 nfts: "",
                 cubes: "",
                 imageArtist: "active",
@@ -77,6 +94,7 @@ function UserProfileScreen(props) {
             })
         } else if (userRole === "musicArtist") {
             setActiveTab({
+                profile: "",
                 nfts: "",
                 cubes: "",
                 imageArtist: "",
@@ -87,6 +105,7 @@ function UserProfileScreen(props) {
             })
         } else if (userRole === "producer") {
             setActiveTab({
+                profile: "",
                 nfts: "",
                 cubes: "",
                 imageArtist: "",
@@ -97,6 +116,7 @@ function UserProfileScreen(props) {
             })
         } else if (userRole === "executiveProducer") {
             setActiveTab({
+                profile: "",
                 nfts: "",
                 cubes: "",
                 imageArtist: "",
@@ -107,6 +127,7 @@ function UserProfileScreen(props) {
             })
         } else if (userRole === "fan") {
             setActiveTab({
+                profile: "",
                 nfts: "",
                 cubes: "",
                 imageArtist: "",
@@ -118,6 +139,7 @@ function UserProfileScreen(props) {
         }
         else if (userRole === "notdrop" && activeTab.cubes === "active") {
             setActiveTab({
+                profile: "",
                 nfts: "",
                 cubes: "active",
                 imageArtist: "",
@@ -128,6 +150,7 @@ function UserProfileScreen(props) {
             })
         } else if (userRole === "notdrop" && activeTab.musicArtist === "active") {
             setActiveTab({
+                profile: "",
                 nfts: "",
                 cubes: "",
                 imageArtist: "",
@@ -223,7 +246,9 @@ function UserProfileScreen(props) {
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
                         />
-                        {activeTab.nfts === "active" ? (
+                        {activeTab.profile === "active" ? (
+                            <UserProfile userId={userId} />
+                        ) : activeTab.nfts === "active" ? (
                             <UserNfts userId={userId} />
                         ) : activeTab.cubes === "active" ? (
                             userRole === "notdrop" ? (
