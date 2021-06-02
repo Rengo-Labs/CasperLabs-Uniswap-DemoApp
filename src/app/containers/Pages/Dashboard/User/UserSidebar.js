@@ -58,7 +58,7 @@ function AdminSidebar(props) {
             </li>
             <li className={props.activeTab.myDrops}>
               <Link to={`${props.match.url}/myDrops`}>
-                <StorageIcon></StorageIcon> <span>My Drops</span>
+                <StorageIcon/> <span>My Drops</span>
               </Link>
             </li>
             <li className={props.activeTab.newRandomDrop}>

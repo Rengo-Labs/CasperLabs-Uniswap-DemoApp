@@ -1,13 +1,9 @@
 // eslint-disable-next-line
 import CardActionArea from '@material-ui/core/CardActionArea';
-import { Link } from "react-router-dom";
-import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
-import { Grid } from '@material-ui/core/';
-import TablePagination from '@material-ui/core/TablePagination';
-import Typography from '@material-ui/core/Typography';
-import Cookies from "js-cookie";
 import axios from 'axios';
+import Cookies from "js-cookie";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 function UserProfile(props) {
     let [totalFans, setTotalFans] = useState(0);
     let [totalMusicArtists, setTotalMusicArtists] = useState(0);
@@ -16,25 +12,8 @@ function UserProfile(props) {
     let [totalExecutiveProducers, setTotalExecutiveProducers] = useState(0);
     let [totalCubes, setTotalCubes] = useState(0);
     let [totalNFTs, setTotalNFTs] = useState(0);
-
-
     let [userData, setUserData] = useState([]);
-    const [totalProducerNftsData, setTotalProducerNftsData] = useState(0);
 
-    // let getCounts = () => {
-    //   axios
-    //     .get("/api/v1/admin/getCounts")
-    //     .then((response) => {
-    //       console.log(response);
-    //       setApproved(response.data.approved);
-    //       setPending(response.data.pending);
-    //       setDisputed(response.data.UnderDisputed)
-    //     })
-    //     .catch((error) => {
-    //       console.log(error);
-    //       console.log(error.response);
-    //     });
-    // };
     let getUserData = () => {
         axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
             "Authorization"
@@ -51,7 +30,6 @@ function UserProfile(props) {
                 setTotalExecutiveProducers(response.data.ExecutiveProducerNFTcount)
                 setTotalCubes(response.data.Cubescount);
                 setTotalNFTs(response.data.NFTscount)
-                // setTotalProducerNftsData(response.data.NFTcount);
 
             },
             (error) => {
