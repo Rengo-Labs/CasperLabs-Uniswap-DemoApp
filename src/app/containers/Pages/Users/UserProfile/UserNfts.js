@@ -78,7 +78,7 @@ function UserNfts(props) {
                     <li className="breadcrumb-item" style={{ color: "#fff", cursor: 'pointer' }} onClick={() => history.goBack()}>
                             <i className="fas fa-arrow-left"></i> Back
                         </li>
-                        <li className="breadcrumb-item active"> User NFTs</li>
+                        <li className="breadcrumb-item active"> User's NFTs</li>
                     </ul>
                     <div className="card-body">
                         <form >

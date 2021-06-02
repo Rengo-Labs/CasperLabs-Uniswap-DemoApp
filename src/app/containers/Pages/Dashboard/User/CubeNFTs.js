@@ -18,7 +18,7 @@ import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Button, Row, Spinner } from 'react-bootstrap';
 import Countdown from 'react-countdown';
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Web3 from 'web3';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
@@ -555,12 +555,13 @@ function CubeNFTs(props) {
                                                 </Typography>
                                             )}
                                             <h3 className="text-muted">Music Artist</h3>
-
-                                            <CardHeader
-                                                avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                title={cubeData.MusicArtistName}
-                                                subheader={cubeData.MusicArtistAbout}
-                                            />
+                                            <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.userId + "/null"} style={{ color: '#000' }}>
+                                                <CardHeader
+                                                    avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                    title={cubeData.MusicArtistName}
+                                                    subheader={cubeData.MusicArtistAbout}
+                                                />
+                                            </Link>
                                             {/* <Row>
                                                 <button className="btn-lg btn btn-dark btn-block" >Place a bid</button>{' '}
 
@@ -574,11 +575,13 @@ function CubeNFTs(props) {
                                             <h4>Reserve Price</h4>
                                             <h2>{cubeData.SalePrice / 10 ** 18} ETH </h2>
                                             <h3 className="text-muted">Music Artist</h3>
-                                            <CardHeader
-                                                avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                title={cubeData.MusicArtistName}
-                                                subheader={cubeData.MusicArtistAbout}
-                                            />
+                                            <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.userId + "/null"} style={{ color: '#000' }}>
+                                                <CardHeader
+                                                    avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                    title={cubeData.MusicArtistName}
+                                                    subheader={cubeData.MusicArtistAbout}
+                                                />
+                                            </Link>
                                             <h4>Choose Action</h4>
                                             {cubeData.salestatus || cubeData.check === "auction" ? (
                                                 <>

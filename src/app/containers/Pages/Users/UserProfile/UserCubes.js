@@ -41,7 +41,6 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 function UserCubes(props) {
-    console.log("UserCubes props.userId", props.userId);
     const classes = useStyles();
     let history = useHistory();
     const [rowsPerPage, setRowsPerPage] = useState(8);
@@ -168,11 +167,13 @@ function UserCubes(props) {
                                                                     <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                         </Typography>
                                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                                <CardHeader
-                                                                    avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                                    title={i.MusicArtistName}
-                                                                    subheader={i.MusicArtistAbout}
-                                                                />
+                                                                <Link to={"/User/Profile/Detail/musicArtist/" + i.userId + "/null"} style={{ color: '#000' }}>
+                                                                    <CardHeader
+                                                                        avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                        title={i.MusicArtistName}
+                                                                        subheader={i.MusicArtistAbout}
+                                                                    />
+                                                                </Link>
                                                             </CardContent>
                                                         </CardActionArea>
                                                     </Card>

@@ -164,7 +164,7 @@ function MyCubes(props) {
                                                         // image={img}
                                                         title=""
                                                     >
-                                                        <CubeComponent1 data={imageData} index={index}/>
+                                                        <CubeComponent1 data={imageData} index={index} />
                                                     </CardMedia>
                                                     <CardContent>
                                                         <Typography variant="body2" color="textSecondary" component="p">
@@ -179,11 +179,13 @@ function MyCubes(props) {
                                                             <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                         </Typography>
                                                         <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                            title={i.MusicArtistName}
-                                                            subheader={i.MusicArtistAbout}
-                                                        />
+                                                        <Link to={"/User/Profile/Detail/musicArtist/" + i.userId + "/null"} style={{ color: '#000' }}>
+                                                            <CardHeader
+                                                                avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                title={i.MusicArtistName}
+                                                                subheader={i.MusicArtistAbout}
+                                                            />
+                                                        </Link>
                                                     </CardContent>
                                                 </CardActionArea>
                                                 <CardActions>

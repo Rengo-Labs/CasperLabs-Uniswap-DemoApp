@@ -19,7 +19,7 @@ import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Button, Row, Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
-import { useHistory, useParams } from "react-router-dom";
+import { Link, useHistory, useParams } from "react-router-dom";
 import Web3 from 'web3';
 import MarketPlaceContract from '../../../../components/blockchain/Abis/MarketPlaceContract.json';
 import WethContract from '../../../../components/blockchain/Abis/WethContract.json';
@@ -552,12 +552,13 @@ function SaleCubeNFTs(props) {
                                                     )}
                                                     {/* </Typography> */}
                                                     <h3 className="text-muted">Music Artist</h3>
-                                                    <CardHeader
-                                                        avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                        title={cubeData.MusicArtistName}
-                                                        subheader={cubeData.MusicArtistAbout}
-                                                    />
-
+                                                    <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.userId + "/null"} style={{ color: '#000' }}>
+                                                        <CardHeader
+                                                            avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                            title={cubeData.MusicArtistName}
+                                                            subheader={cubeData.MusicArtistAbout}
+                                                        />
+                                                    </Link>
                                                     <Row>
 
                                                         {(cubeData.SalePrice) / 10 ** 18 > balance / 10 ** 18 ? (

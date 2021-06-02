@@ -19,7 +19,7 @@ import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Button, Row, Spinner } from "react-bootstrap";
 import Countdown from 'react-countdown';
-import { useHistory, useParams } from "react-router-dom";
+import { Link, useHistory, useParams } from "react-router-dom";
 import Web3 from 'web3';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import WethContract from '../../../../components/blockchain/Abis/WethContract.json';
@@ -884,12 +884,13 @@ function CubeNFTs(props) {
                                                             </Typography>
                                                         )}
                                                         <h3 className="text-muted">Music Artist</h3>
-
-                                                        <CardHeader
-                                                            avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                            title={cubeData.MusicArtistName}
-                                                            subheader={cubeData.MusicArtistAbout}
-                                                        />
+                                                        <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.userId + "/null"} style={{ color: '#000' }}>
+                                                            <CardHeader
+                                                                avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                title={cubeData.MusicArtistName}
+                                                                subheader={cubeData.MusicArtistAbout}
+                                                            />
+                                                        </Link>
                                                         <Row>
                                                             {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                                 <>
@@ -987,11 +988,13 @@ function CubeNFTs(props) {
                                                         <Typography variant="h5" gutterBottom>Reserve Price</Typography>
                                                         <Typography variant="h5" gutterBottom>{cubeData.SalePrice / 10 ** 18} ETH </Typography>
                                                         <h3 className="text-muted">Music Artist</h3>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                            title={cubeData.MusicArtistName}
-                                                            subheader={cubeData.MusicArtistAbout}
-                                                        />
+                                                        <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.userId + "/null"} style={{ color: '#000' }}>
+                                                            <CardHeader
+                                                                avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                title={cubeData.MusicArtistName}
+                                                                subheader={cubeData.MusicArtistAbout}
+                                                            />
+                                                        </Link>
                                                     </div>
                                                 )}
 

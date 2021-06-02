@@ -18,6 +18,7 @@ import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import { Scrollbars } from 'react-custom-scrollbars';
 import DateTimePicker from 'react-datetime-picker';
+import { Link } from 'react-router-dom';
 import Web3 from 'web3';
 import r1 from '../../../../assets/img/patients/patient.jpg';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
@@ -537,11 +538,13 @@ function NewDrop(props) {
                                                                     <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                                 </Typography>
                                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
+                                                                <Link to={"/User/Profile/Detail/musicArtist/" + i.userId + "/null"} style={{ color: '#000' }}>
                                                                 <CardHeader
                                                                     avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
                                                                     title={i.MusicArtistName}
                                                                     subheader={i.MusicArtistAbout}
                                                                 />
+                                                                </Link>
                                                             </CardContent>
                                                         </CardActionArea>
                                                         <CardActions>

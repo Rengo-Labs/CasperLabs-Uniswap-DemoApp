@@ -175,12 +175,22 @@ function UserProfileScreen(props) {
                 fan: "active",
             })
         }
-        else if (userRole === "notdrop") {
+        else if (userRole === "notdrop" && activeTab.cubes === "active") {
             setActiveTab({
                 nfts: "",
                 cubes: "active",
                 imageArtist: "",
                 musicArtist: "",
+                producer: "",
+                executiveProducer: "",
+                fan: "",
+            })
+        } else if (userRole === "notdrop" && activeTab.musicArtist === "active") {
+            setActiveTab({
+                nfts: "",
+                cubes: "",
+                imageArtist: "",
+                musicArtist: "active",
                 producer: "",
                 executiveProducer: "",
                 fan: "",
@@ -295,7 +305,11 @@ function UserProfileScreen(props) {
                             ) : activeTab.imageArtist === "active" ? (
                                 <UserImageArtist userId={userId} data={data} handleChangePage={handleChangeProfilePage} handleChangeRowsPerPage={handleChangeProfileRowsPerPage} page={profilePage} rowsPerPage={profileRowsPerPage} totalUserUserNftsData={totalUserUserNftsData} />
                             ) : activeTab.musicArtist === "active" ? (
-                                <UserMusicArtist userId={userId} data={data} handleChangePage={handleChangeProfilePage} handleChangeRowsPerPage={handleChangeProfileRowsPerPage} page={profilePage} rowsPerPage={profileRowsPerPage} totalUserUserNftsData={totalUserUserNftsData} />
+                                userRole === "notdrop" ? (
+                                    <UserCubeNFTs cubeId={cubeId} data={data} />
+                                ) : (
+                                    <UserMusicArtist userId={userId} data={data} />
+                                )
                             ) : activeTab.producer === "active" ? (
                                 <UserProducer userId={userId} data={data} handleChangePage={handleChangeProfilePage} handleChangeRowsPerPage={handleChangeProfileRowsPerPage} page={profilePage} rowsPerPage={profileRowsPerPage} totalUserUserNftsData={totalUserUserNftsData} />
                             ) : activeTab.executiveProducer === "active" ? (

@@ -175,11 +175,13 @@ function MarketPlace(props) {
                                                                         <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                             </Typography>
                                                                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                                    <CardHeader
-                                                                        avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                                        title={i.MusicArtistName}
-                                                                        subheader={i.MusicArtistAbout}
-                                                                    />
+                                                                    <Link to={"/User/Profile/Detail/musicArtist/" + i.userId + "/null"} style={{ color: '#000' }}>
+                                                                        <CardHeader
+                                                                            avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                            title={i.MusicArtistName}
+                                                                            subheader={i.MusicArtistAbout}
+                                                                        />
+                                                                    </Link>
                                                                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
                                                                         {new Date() < new Date(userSaleData[index].expiresAt) ? (
                                                                             <div style={{ color: "#FF0000" }}>
@@ -248,6 +250,14 @@ function MarketPlace(props) {
                                                                     <Typography variant="body2" color="textSecondary" component="p">
                                                                         <strong>Minimum Bid: </strong>{(userAuctionData[index].minimumBid) / 10 ** 18}  WETH
                                                             </Typography>
+                                                                    <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
+                                                                    <Link to={"/User/Profile/Detail/musicArtist/" + i.userId + "/null"} style={{ color: '#000' }}>
+                                                                        <CardHeader
+                                                                            avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                            title={i.MusicArtistName}
+                                                                            subheader={i.MusicArtistAbout}
+                                                                        />
+                                                                    </Link>
                                                                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">
                                                                         {new Date() < new Date(userAuctionData[index].auctionStartsAt) ? (
                                                                             <div style={{ color: "#00FF00" }} >

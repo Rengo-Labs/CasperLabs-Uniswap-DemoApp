@@ -14,7 +14,7 @@ import axios from 'axios';
 import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { Spinner } from 'react-bootstrap';
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, Link } from "react-router-dom";
 import NewNFTCard from '../../../../components/Cards/NewNFTCards';
 import TxHistory from '../../../../components/Cards/TxHistory';
 import CubeComponent from '../../../../components/Cube/CubeComponent';
@@ -149,7 +149,7 @@ function UserCubeNFTs(props) {
                         <li className="breadcrumb-item" style={{ color: "#fff", cursor: 'pointer' }} onClick={() => history.goBack()}>
                             <i className="fas fa-arrow-left"></i> Back
                     </li>
-                        <li className="breadcrumb-item active">NFTs</li>
+                        <li className="breadcrumb-item active">Cube's NFTs</li>
                     </ul>
                     <div className="card-body">
                         <form >
@@ -189,12 +189,13 @@ function UserCubeNFTs(props) {
                                                 <h4>Reserve Price</h4>
                                                 <h2>{cubeData.SalePrice / 10 ** 18} ETH </h2>
                                                 <h3 className="text-muted">Music Artist</h3>
-                                                <CardHeader
-                                                    avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                    title={cubeData.MusicArtistName}
-                                                    subheader={cubeData.MusicArtistAbout}
-                                                />
-
+                                                <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.userId + "/null"} style={{ color: '#000' }}>
+                                                    <CardHeader
+                                                        avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                        title={cubeData.MusicArtistName}
+                                                        subheader={cubeData.MusicArtistAbout}
+                                                    />
+                                                </Link>
 
 
                                             </div>
