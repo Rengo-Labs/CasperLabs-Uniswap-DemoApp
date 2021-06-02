@@ -82,7 +82,7 @@ function UserCubes(props) {
                 console.log("response", response);
                 setTokenList(response.data.tokensdata);
                 setImageData(response.data.nftsdata);
-                setCubeCount(response.data.tokencount);
+                setCubeCount(response.data.tokenscount);
                 handleCloseBackdrop();
             },
             (error) => {
