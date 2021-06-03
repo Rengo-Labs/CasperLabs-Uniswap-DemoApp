@@ -119,6 +119,7 @@ function CubeNFTs(props) {
     const [transactionHistory, setTransactionHistory] = useState([]);
     const [bidHistory, setBidHistory] = useState([]);
     const [openWeth, setOpenWeth] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
     const handleCloseWeth = () => {
         setOpenWeth(false);
     };
@@ -733,10 +734,17 @@ function CubeNFTs(props) {
                                                                             cubeData.userId === jwtDecoded.userId ? (
                                                                                 <span onClick={(e) => {
                                                                                     e.preventDefault()
-                                                                                    setHide(true);
-                                                                                    // ownerAudio.crossOrigin = 'anonymous';
-                                                                                    ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                                    ownerAudio.play()
+                                                                                    
+                                                                                    setIsPlaying(!isPlaying)
+                                                                                    if (!isPlaying) {
+                                                                                        setHide(true);
+                                                                                        ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                        ownerAudio.play();
+                                                                                    } else {
+                                                                                        setHide(false);
+                                                                                        ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                        ownerAudio.pause();
+                                                                                    }
                                                                                 }}>
                                                                                     <div className="square"></div>
                                                                                     <div className="square2"></div>
