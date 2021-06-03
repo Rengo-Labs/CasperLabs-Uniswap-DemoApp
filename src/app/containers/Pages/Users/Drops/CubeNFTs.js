@@ -11,6 +11,7 @@ import CardMedia from '@material-ui/core/CardMedia';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import { Alert } from 'reactstrap';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import axios from 'axios';
 import Cookies from "js-cookie";
@@ -300,8 +301,13 @@ function CubeNFTs(props) {
                 let BuyData = {
                     dropId: dropId,
                     tokenId: cubeId,
+                    owneraddress: accounts[0],
                 }
-                console.log("BidData", BuyData);
+                console.log("BuyData", BuyData);
+
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${Cookies.get("Authorization")}`;
                 axios.post("token/buytoken", BuyData).then(
                     (response) => {
                         console.log('response', response);
@@ -331,6 +337,10 @@ function CubeNFTs(props) {
                     claimNft: true,
                     withdraw: true,
                 }
+
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${Cookies.get("Authorization")}`;
                 axios.put("dropcubehistory/claimhistory", ClaimData).then(
                     (response) => {
                         console.log('response', response);
@@ -357,6 +367,10 @@ function CubeNFTs(props) {
                     to: accounts[0],
                     transaction: receipt.transactionHash
                 }
+
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${Cookies.get("Authorization")}`;
 
                 axios.post("/transaction/tokenTransaction ", TrasactionData).then(
                     (response) => {
@@ -418,6 +432,10 @@ function CubeNFTs(props) {
                 claimNft: true,
                 withdraw: true,
             }
+
+            axios.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${Cookies.get("Authorization")}`;
             axios.put("dropcubehistory/claimhistory", ClaimData).then(
                 (response) => {
                     console.log('response', response);
@@ -514,6 +532,10 @@ function CubeNFTs(props) {
                         address: accounts[0],
                     }
                     console.log("BidData", BidData);
+
+                    axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
+                        "Authorization"
+                    )}`;
                     axios.post("dropcubehistory/createhistory", BidData).then(
                         (response) => {
 
@@ -560,6 +582,10 @@ function CubeNFTs(props) {
             dropId: dropId,
             tokenId: cubeId,
         }
+
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post(`/dropcubehistory/history`, bidData).then((res) => {
             console.log("res", res);
             if (res.data.success) {
@@ -580,6 +606,10 @@ function CubeNFTs(props) {
             }
             handleCloseSpinner();
         })
+
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post("/token/SingleTokenId", Data).then(
             async (response) => {
                 console.log("response", response);
@@ -614,6 +644,9 @@ function CubeNFTs(props) {
                 }
 
 
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${Cookies.get("Authorization")}`;
                 axios.get(`/transaction/tokenTransaction/${response.data.tokensdata.tokenId}`).then((res) => {
                     console.log("res", res);
                     if (res.data.success)
@@ -650,6 +683,7 @@ function CubeNFTs(props) {
     useEffect(() => {
         (async () => {
             // history.push("/auctionDrops/DropCubes/" + cubeId)
+
             getCubeNFTs();
             await loadWeb3();
             const web3 = window.web3
@@ -725,51 +759,70 @@ function CubeNFTs(props) {
                                                                 className={classes.media1}
                                                                 title=""
                                                                 image=""
+                                                                onClick={(e) => {
+                                                                    e.preventDefault()
+                                                                    setIsPlaying(!isPlaying)
+
+                                                                    if (!isPlaying) {
+                                                                        if (jwtDecoded !== undefined && jwtDecoded !== null) {
+                                                                            if (jwtDecoded.userId === cubeData.userId) {
+                                                                                console.log("Owner");
+                                                                                setHide(true)
+                                                                                ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                ownerAudio.play();
+                                                                            }
+                                                                            else {
+                                                                                console.log("NON Owner");
+                                                                                setHide(true)
+                                                                                nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                nonOwnerAudio.play();
+                                                                                setTimeout(() => {
+                                                                                    setHide(false)
+                                                                                    nonOwnerAudio.pause()
+                                                                                }, 10000);
+                                                                            }
+                                                                        } else {
+                                                                            console.log("NON Owner");
+                                                                            setTimeout(() => {
+                                                                                setHide(false)
+                                                                                nonOwnerAudio.pause()
+                                                                            }, 10000);
+                                                                            nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            nonOwnerAudio.play();
+                                                                            setHide(true)
+                                                                        }
+                                                                    } else {
+                                                                        if (jwtDecoded !== undefined && jwtDecoded !== null) {
+                                                                            if (jwtDecoded.userId === cubeData.userId) {
+                                                                                console.log("Owner Pause");
+                                                                                ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                ownerAudio.pause();
+                                                                                setHide(false)
+                                                                            }
+                                                                            else {
+                                                                                console.log("Non Owner Pause");
+                                                                                nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                nonOwnerAudio.pause();
+                                                                                setHide(false)
+                                                                            }
+                                                                        } else {
+                                                                            console.log("Non Owner Pause");
+                                                                            nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            nonOwnerAudio.pause();
+                                                                            setHide(false)
+                                                                        }
+                                                                    }
+                                                                }}
                                                             >
                                                                 {hide ? (
                                                                     <CubeComponent data={tokenList} />
                                                                 ) : (
                                                                     <div className="mainDiv">
-                                                                        {jwt ? (
-                                                                            cubeData.userId === jwtDecoded.userId ? (
-                                                                                <span onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    
-                                                                                    setIsPlaying(!isPlaying)
-                                                                                    if (!isPlaying) {
-                                                                                        setHide(true);
-                                                                                        ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                                        ownerAudio.play();
-                                                                                    } else {
-                                                                                        setHide(false);
-                                                                                        ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                                        ownerAudio.pause();
-                                                                                    }
-                                                                                }}>
-                                                                                    <div className="square"></div>
-                                                                                    <div className="square2"></div>
-                                                                                    <div className="square3"></div>
-                                                                                </span>
-
-                                                                            ) : (
-                                                                                <span onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    setHide(true);
-                                                                                    // nonOwnerAudio.crossOrigin = 'anonymous';
-                                                                                    nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                                    nonOwnerAudio.play()
-                                                                                    setTimeout(() => {
-                                                                                        setHide(false)
-                                                                                        nonOwnerAudio.pause()
-                                                                                    }, 10000);
-                                                                                }}>
-                                                                                    <div className="square"></div>
-                                                                                    <div className="square2"></div>
-                                                                                    <div className="square3"></div>
-                                                                                </span>
-                                                                            )) : (<Typography variant="body2" color="textSecondary" component="p">
-                                                                                <strong>LOGIN TO GET ACCESS </strong>
-                                                                            </Typography>)}
+                                                                        <span >
+                                                                            <div className="square"></div>
+                                                                            <div className="square2"></div>
+                                                                            <div className="square3"></div>
+                                                                        </span>
 
                                                                     </div>
                                                                 )}
@@ -903,7 +956,7 @@ function CubeNFTs(props) {
                                                             {new Date() < new Date(dropData.AuctionStartsAt) ? (
                                                                 <>
                                                                     <label> Enter Bid: (WETH)</label>
-                                                                    <input type='number' step="0.0001" diabled min={(highestBid - bidByUser) / 10 ** 18} max={balance / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
+                                                                    <input type='number' step="0.0001" diabled min={(highestBid - bidByUser) / 10 ** 18} className='form-control' style={{ marginBottom: '20px' }} value={bid} onChange={(evt) => {
 
                                                                     }} />
                                                                     <br></br>

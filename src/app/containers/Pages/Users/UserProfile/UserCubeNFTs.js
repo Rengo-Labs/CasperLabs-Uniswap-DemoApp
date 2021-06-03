@@ -181,7 +181,7 @@ function UserCubeNFTs(props) {
                                                                 setIsPlaying(!isPlaying)
 
                                                                 if (!isPlaying) {
-                                                                    if (jwtDecoded !== undefined || jwtDecoded !== null) {
+                                                                    if (jwtDecoded !== undefined && jwtDecoded !== null) {
                                                                         if (jwtDecoded.userId === cubeData.userId) {
                                                                             console.log("Owner");
                                                                             ownerAudio.setAttribute('crossorigin', 'anonymous');
@@ -198,7 +198,7 @@ function UserCubeNFTs(props) {
                                                                         nonOwnerAudio.play();
                                                                     }
                                                                 } else {
-                                                                    if (jwtDecoded !== undefined || jwtDecoded !== null) {
+                                                                    if (jwtDecoded !== undefined && jwtDecoded !== null) {
                                                                         if (jwtDecoded.userId === cubeData.userId) {
                                                                             console.log("Owner Pause");
                                                                             ownerAudio.setAttribute('crossorigin', 'anonymous');

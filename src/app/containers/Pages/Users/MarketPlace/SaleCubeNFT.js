@@ -32,7 +32,7 @@ import ConfirmBuyCubeModal from '../../../../components/Modals/ConfirmBuyCubeMod
 import LoginErrorModal from '../../../../components/Modals/LoginErrorModal';
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 import WethModal from '../../../../components/Modals/WethModal';
-
+import { Alert } from 'reactstrap';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -91,6 +91,7 @@ function SaleCubeNFTs(props) {
     const [weth, setWeth] = useState(0);
     const [enableWethButton, setEnableWethButton] = useState(false);
     const [isConfirmingWeth, setIsConfirmingWeth] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -279,9 +280,11 @@ function SaleCubeNFTs(props) {
                 // console.log("receipt", receipt);
                 let BuyData = {
                     auctionId: auctionId,
-                    tokenId: cubeId
+                    tokenId: cubeId,
+                    owneraddress: accounts[0],
+
                 }
-                console.log("BidData", BuyData);
+                console.log("BuyData", BuyData);
                 axios.post("token/buyuserToken", BuyData).then(
                     (response) => {
 
@@ -450,44 +453,70 @@ function SaleCubeNFTs(props) {
                                                                 className={classes.media1}
                                                                 title=""
                                                                 image=""
+                                                                onClick={() => {
+                                                                    setIsPlaying(!isPlaying)
+
+                                                                    if (!isPlaying) {
+                                                                        console.log("jwtDecoded", jwtDecoded);
+                                                                        if (jwtDecoded !== undefined && jwtDecoded !== null) {
+                                                                            if (jwtDecoded.userId === cubeData.userId) {
+                                                                                console.log("Owner");
+                                                                                setHide(true)
+                                                                                ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                ownerAudio.play();
+                                                                            }
+                                                                            else {
+                                                                                console.log("NON Owner");
+                                                                                setHide(true)
+                                                                                nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                nonOwnerAudio.play();
+                                                                                setTimeout(() => {
+                                                                                    setHide(false)
+                                                                                    nonOwnerAudio.pause()
+                                                                                }, 10000);
+                                                                            }
+                                                                        } else {
+                                                                            console.log("NON Owner");
+                                                                            setTimeout(() => {
+                                                                                setHide(false)
+                                                                                nonOwnerAudio.pause()
+                                                                            }, 10000);
+                                                                            nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            nonOwnerAudio.play();
+                                                                            setHide(true)
+                                                                        }
+                                                                    } else {
+                                                                        if (jwtDecoded !== undefined && jwtDecoded !== null) {
+                                                                            if (jwtDecoded.userId === cubeData.userId) {
+                                                                                console.log("Owner Pause");
+                                                                                ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                ownerAudio.pause();
+                                                                                setHide(false)
+                                                                            }
+                                                                            else {
+                                                                                console.log("Non Owner Pause");
+                                                                                nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                nonOwnerAudio.pause();
+                                                                                setHide(false)
+                                                                            }
+                                                                        } else {
+                                                                            console.log("Non Owner Pause");
+                                                                            nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            nonOwnerAudio.pause();
+                                                                            setHide(false)
+                                                                        }
+                                                                    }
+                                                                }}
                                                             >
                                                                 {hide ? (
                                                                     <CubeComponent data={tokenList} />
                                                                 ) : (
                                                                     <div className="mainDiv">
-                                                                        {jwt ? (
-                                                                            cubeData.userId === jwtDecoded.userId ? (
-                                                                                <span onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    setHide(true);
-                                                                                    // ownerAudio.crossOrigin = 'anonymous';
-                                                                                    ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                                    ownerAudio.play()
-                                                                                }}>
-                                                                                    <div className="square"></div>
-                                                                                    <div className="square2"></div>
-                                                                                    <div className="square3"></div>
-                                                                                </span>
-
-                                                                            ) : (
-                                                                                <span onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    setHide(true);
-                                                                                    nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                                    nonOwnerAudio.play()
-                                                                                    setTimeout(() => {
-                                                                                        setHide(false)
-                                                                                        nonOwnerAudio.pause()
-                                                                                    }, 10000);
-                                                                                }}>
-                                                                                    <div className="square"></div>
-                                                                                    <div className="square2"></div>
-                                                                                    <div className="square3"></div>
-                                                                                </span>
-                                                                            )) : (<Typography variant="body2" color="textSecondary" component="p">
-                                                                                <strong>LOGIN TO GET ACCESS </strong>
-                                                                            </Typography>)}
-
+                                                                        <span >
+                                                                            <div className="square"></div>
+                                                                            <div className="square2"></div>
+                                                                            <div className="square3"></div>
+                                                                        </span>
                                                                     </div>
                                                                 )}
                                                             </CardMedia>
@@ -511,6 +540,11 @@ function SaleCubeNFTs(props) {
                                                         ) : (
                                                             <Button variant="primary" onClick={(e) => getWeth(e)} style={{ float: "right" }} >Get More Weth</Button>
                                                         )) : (null)}
+                                                    {jwtDecoded === undefined || jwtDecoded === null ? (
+                                                        <Alert color="danger">
+                                                            LOGIN TO BUY CUBE
+                                                        </Alert>
+                                                    ) : (null)}
                                                     {new Date() > new Date(expiresAt) ? (
                                                         jwt ? (
                                                             <>

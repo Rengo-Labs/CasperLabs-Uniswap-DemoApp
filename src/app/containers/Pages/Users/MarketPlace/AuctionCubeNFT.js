@@ -33,6 +33,7 @@ import ConfirmBidModal from '../../../../components/Modals/ConfirmBidModal';
 import LoginErrorModal from '../../../../components/Modals/LoginErrorModal';
 import NetworkErrorModal from '../../../../components/Modals/NetworkErrorModal';
 import WethModal from '../../../../components/Modals/WethModal';
+import { Alert } from 'reactstrap';
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -118,7 +119,8 @@ function AuctionCubeNFTs(props) {
     const [network, setNetwork] = useState("");
     const [transactionHistory, setTransactionHistory] = useState([]);
     const [bidHistory, setBidHistory] = useState([]);
-    const [isRemoving, setIsRemoving] = useState(false);
+    const [isRemoving, setIsRemoving] = useState(false)
+    const [isPlaying, setIsPlaying] = useState(false);;
     // if(bidHistory.length!==0)
     // console.log("bidHistory.findIndex(i => i.userId === jwtDecoded.userId)",);
     const [openWeth, setOpenWeth] = useState(false);
@@ -329,8 +331,9 @@ function AuctionCubeNFTs(props) {
                 let BuyData = {
                     auctionId: auctionId,
                     tokenId: cubeId,
+                    owneraddress: accounts[0],
                 }
-                console.log("BidData", BuyData);
+                console.log("BuyData", BuyData);
                 axios.post("token/buytoken", BuyData).then(
                     (response) => {
                         console.log('response', response);
@@ -736,45 +739,69 @@ function AuctionCubeNFTs(props) {
                                                                 className={classes.media1}
                                                                 title=""
                                                                 image=""
+                                                                onClick={() => {
+                                                                    setIsPlaying(!isPlaying)
+
+                                                                    if (!isPlaying) {
+                                                                        if (jwtDecoded !== undefined && jwtDecoded !== null) {
+                                                                            if (jwtDecoded.userId === cubeData.userId) {
+                                                                                console.log("Owner");
+                                                                                setHide(true)
+                                                                                ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                ownerAudio.play();
+                                                                            }
+                                                                            else {
+                                                                                console.log("NON Owner");
+                                                                                setHide(true)
+                                                                                nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                nonOwnerAudio.play();
+                                                                                setTimeout(() => {
+                                                                                    setHide(false)
+                                                                                    nonOwnerAudio.pause()
+                                                                                }, 10000);
+                                                                            }
+                                                                        } else {
+                                                                            console.log("NON Owner");
+                                                                            setTimeout(() => {
+                                                                                setHide(false)
+                                                                                nonOwnerAudio.pause()
+                                                                            }, 10000);
+                                                                            nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            nonOwnerAudio.play();
+                                                                            setHide(true)
+                                                                        }
+                                                                    } else {
+                                                                        if (jwtDecoded !== undefined && jwtDecoded !== null) {
+                                                                            if (jwtDecoded.userId === cubeData.userId) {
+                                                                                console.log("Owner Pause");
+                                                                                ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                ownerAudio.pause();
+                                                                                setHide(false)
+                                                                            }
+                                                                            else {
+                                                                                console.log("Non Owner Pause");
+                                                                                nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                                nonOwnerAudio.pause();
+                                                                                setHide(false)
+                                                                            }
+                                                                        } else {
+                                                                            console.log("Non Owner Pause");
+                                                                            nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            nonOwnerAudio.pause();
+                                                                            setHide(false)
+                                                                        }
+                                                                    }
+                                                                }}
                                                             >
                                                                 {hide ? (
                                                                     <CubeComponent data={tokenList} />
                                                                 ) : (
                                                                     <div className="mainDiv">
-                                                                        {jwt ? (
-                                                                            cubeData.userId === jwtDecoded.userId ? (
-                                                                                <span onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    setHide(true);
-                                                                                    // ownerAudio.crossOrigin = 'anonymous';
-                                                                                    ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                                    ownerAudio.play()
-                                                                                }}>
-                                                                                    <div className="square"></div>
-                                                                                    <div className="square2"></div>
-                                                                                    <div className="square3"></div>
-                                                                                </span>
-
-                                                                            ) : (
-                                                                                <span onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    setHide(true);
-                                                                                    // nonOwnerAudio.crossOrigin = 'anonymous';
-                                                                                    nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                                    nonOwnerAudio.play()
-                                                                                    setTimeout(() => {
-                                                                                        setHide(false)
-                                                                                        nonOwnerAudio.pause()
-                                                                                    }, 10000);
-                                                                                }}>
-                                                                                    <div className="square"></div>
-                                                                                    <div className="square2"></div>
-                                                                                    <div className="square3"></div>
-                                                                                </span>
-                                                                            )) : (<Typography variant="body2" color="textSecondary" component="p">
-                                                                                <strong>LOGIN TO GET ACCESS </strong>
-                                                                            </Typography>)}
-
+                                                                        <span >
+                                                                            <div className="square"></div>
+                                                                            <div className="square2"></div>
+                                                                            <div className="square3"></div>
+                                                                        </span>
                                                                     </div>
                                                                 )}
                                                             </CardMedia>
@@ -799,6 +826,11 @@ function AuctionCubeNFTs(props) {
                                                             ) : (
                                                                 <Button variant="primary" onClick={(e) => getWeth(e)} style={{ float: "right" }} >Get More Weth</Button>
                                                             )) : (null)}
+                                                        {jwtDecoded === undefined || jwtDecoded === null ? (
+                                                            <Alert color="danger">
+                                                                LOGIN TO BID ON CUBE
+                                                            </Alert>
+                                                        ) : (null)}
                                                         {new Date() > new Date(auctionData.auctionEndsAt) ? (
                                                             jwt ? (
                                                                 <>
@@ -925,11 +957,11 @@ function AuctionCubeNFTs(props) {
                                                         )}
                                                         <h3 className="text-muted">Music Artist</h3>
                                                         <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.MusicArtistId + "/null"} style={{ color: '#000' }}>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                            title={cubeData.MusicArtistName}
-                                                            subheader={cubeData.MusicArtistAbout}
-                                                        />
+                                                            <CardHeader
+                                                                avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                title={cubeData.MusicArtistName}
+                                                                subheader={cubeData.MusicArtistAbout}
+                                                            />
                                                         </Link>
                                                         <Row>
                                                             {new Date() < new Date(auctionData.auctionStartsAt) ? (
@@ -1041,11 +1073,11 @@ function AuctionCubeNFTs(props) {
                                                         <Typography variant="h5" gutterBottom>{cubeData.SalePrice / 10 ** 18} ETH </Typography>
                                                         <h3 className="text-muted">Music Artist</h3>
                                                         <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.MusicArtistId + "/null"} style={{ color: '#000' }}>
-                                                        <CardHeader
-                                                            avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                            title={cubeData.MusicArtistName}
-                                                            subheader={cubeData.MusicArtistAbout}
-                                                        />
+                                                            <CardHeader
+                                                                avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                title={cubeData.MusicArtistName}
+                                                                subheader={cubeData.MusicArtistAbout}
+                                                            />
                                                         </Link>
                                                     </div>
                                                 )}

@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
+import Cookies from "js-cookie";
 import Countdown from 'react-countdown';
 import { Link, useParams } from 'react-router-dom';
 import HeaderHome from '../../../../components/Headers/Header';
@@ -63,6 +64,10 @@ function DropCubes(props) {
         let DropId = {
             dropId: dropId,
         }
+
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post("/drop/drops", DropId).then(
             (response) => {
                 console.log("response", response);
