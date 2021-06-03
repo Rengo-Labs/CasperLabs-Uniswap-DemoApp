@@ -12,6 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import axios from 'axios';
 import Cookies from "js-cookie";
+import jwtDecode from "jwt-decode";
 import React, { useEffect, useState } from "react";
 import { Spinner } from 'react-bootstrap';
 import { useParams, useHistory, Link } from "react-router-dom";
@@ -59,6 +60,14 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function UserCubeNFTs(props) {
+    let jwt = Cookies.get("Authorization");
+    let jwtDecoded;
+    if (jwt) {
+        console.log(jwtDecode(jwt));
+        // setjwtDecoded(jwtDecode(jwt));
+        jwtDecoded = jwtDecode(jwt);
+    }
+    console.log("jwtDecoded", jwtDecoded);
     const classes = useStyles();
     let history = useHistory();
     const { cubeId } = useParams();
@@ -67,6 +76,8 @@ function UserCubeNFTs(props) {
     const [transactionHistory, setTransactionHistory] = useState([]);
     const [openNFTData, setOpenNFTData] = React.useState(false);
     const [ownerAudio, setOwnerAudio] = useState(new Audio());
+    const [nonOwnerAudio, setNonOwnerAudio] = useState(new Audio());
+
     const [isPlaying, setIsPlaying] = useState(false);
 
     const handleCloseNFTData = () => {
@@ -79,8 +90,10 @@ function UserCubeNFTs(props) {
     useEffect(() => {
         (async () => {
             ownerAudio.addEventListener('ended', () => ownerAudio.pause());
+            nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
             return () => {
                 ownerAudio.removeEventListener('ended', () => ownerAudio.pause());
+                nonOwnerAudio.addEventListener('ended', () => nonOwnerAudio.pause());
             };
         })();// eslint-disable-next-line
     }, []);
@@ -99,6 +112,7 @@ function UserCubeNFTs(props) {
                 setTokenList(response.data.nftdata);
                 setCubeData(response.data.tokensdata);
                 setOwnerAudio(new Audio(response.data.tokensdata.ownermusicfile))
+                setNonOwnerAudio(new Audio(response.data.tokensdata.nonownermusicfile))
                 axios.get(`/transaction/tokenTransaction/${response.data.tokensdata.tokenId}`).then((res) => {
                     console.log("res", res);
                     setTransactionHistory(res.data.transactions)
@@ -137,7 +151,6 @@ function UserCubeNFTs(props) {
 
     useEffect(() => {
         getUserCubeNFTs();
-        // getClaimFunds();
         // eslint-disable-next-line
     }, []);
 
@@ -166,12 +179,41 @@ function UserCubeNFTs(props) {
                                                             image=""
                                                             onClick={() => {
                                                                 setIsPlaying(!isPlaying)
+
                                                                 if (!isPlaying) {
-                                                                    ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                    ownerAudio.play();
+                                                                    if (jwtDecoded !== undefined || jwtDecoded !== null) {
+                                                                        if (jwtDecoded.userId === cubeData.userId) {
+                                                                            console.log("Owner");
+                                                                            ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            ownerAudio.play();
+                                                                        }
+                                                                        else {
+                                                                            console.log("NON Owner");
+                                                                            nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            nonOwnerAudio.play();
+                                                                        }
+                                                                    } else {
+                                                                        console.log("NON Owner");
+                                                                        nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                        nonOwnerAudio.play();
+                                                                    }
                                                                 } else {
-                                                                    ownerAudio.setAttribute('crossorigin', 'anonymous');
-                                                                    ownerAudio.pause();
+                                                                    if (jwtDecoded !== undefined || jwtDecoded !== null) {
+                                                                        if (jwtDecoded.userId === cubeData.userId) {
+                                                                            console.log("Owner Pause");
+                                                                            ownerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            ownerAudio.pause();
+                                                                        }
+                                                                        else {
+                                                                            console.log("Non Owner Pause");
+                                                                            nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                            nonOwnerAudio.pause();
+                                                                        }
+                                                                    } else {
+                                                                        console.log("Non Owner Pause");
+                                                                        nonOwnerAudio.setAttribute('crossorigin', 'anonymous');
+                                                                        nonOwnerAudio.pause();
+                                                                    }
                                                                 }
                                                             }}
                                                         >
