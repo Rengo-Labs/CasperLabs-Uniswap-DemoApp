@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function NFTCard(props) {
+    console.log("props",props)
     const classes = useStyles();
     return (
         <Grid item xs={12} sm={6} md={3} >
@@ -77,7 +78,7 @@ function NFTCard(props) {
                         <strong>Token Supply: </strong>{props.data.tokensupplyalternative}
                     </Typography>
                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Image Artist</Typography>
-                    <Link to={"/User/Profile/Detail/imageArtist/" + props.data.userId + "/null"} style={{ color: '#000' }}>
+                    <Link to={"/User/Profile/Detail/imageArtist/" + props.data.ImageArtistId + "/null"} style={{ color: '#000' }}>
                         <CardHeader
                             avatar={<Avatar src={props.data.ImageArtistProfile} aria-label="Artist" className={classes.avatar} />}
                             title={props.data.ImageArtistName}
@@ -88,7 +89,7 @@ function NFTCard(props) {
                         <strong>Website URL: </strong>{props.data.ImageArtistWebsite}
                     </Typography>
                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Producer</Typography>
-                    <Link to={"/User/Profile/Detail/producer/" + props.data.userId + "/null"} style={{ color: '#000' }}>
+                    <Link to={"/User/Profile/Detail/producer/" + props.data.ProducerId + "/null"} style={{ color: '#000' }}>
                         <CardHeader
                             avatar={<Avatar src={props.data.ProducerProfile} aria-label="Producer" className={classes.avatar} />}
                             title={props.data.ProducerName}
@@ -96,7 +97,7 @@ function NFTCard(props) {
                         />
                     </Link>
                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Executive Producer</Typography>
-                    <Link to={"/User/Profile/Detail/executiveProducer/" + props.data.userId + "/null"} style={{ color: '#000' }}>
+                    <Link to={"/User/Profile/Detail/executiveProducer/" + props.data.ExecutiveProducerId + "/null"} style={{ color: '#000' }}>
                         <CardHeader
                             avatar={<Avatar src={props.data.ExecutiveProducerProfile} aria-label="Executive Producer" className={classes.avatar} />}
                             title={props.data.ExecutiveProducerName}
@@ -104,7 +105,7 @@ function NFTCard(props) {
                         />
                     </Link>
                     <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Fan</Typography>
-                    <Link to={"/User/Profile/Detail/fan/" + props.data.userId + "/null"} style={{ color: '#000' }}>
+                    <Link to={"/User/Profile/Detail/fan/" + props.data.FanId + "/null"} style={{ color: '#000' }}>
                         <CardHeader
                             avatar={<Avatar src={props.data.FanProfile} aria-label="Fan" className={classes.avatar} />}
                             title={props.data.FanName}
