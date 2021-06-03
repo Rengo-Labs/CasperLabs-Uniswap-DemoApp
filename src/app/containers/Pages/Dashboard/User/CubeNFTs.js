@@ -148,6 +148,10 @@ function CubeNFTs(props) {
                 dropId: dropId,
                 tokenId: cubeId,
             }
+            
+            axios.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${Cookies.get("Authorization")}`;
             axios.post(`/dropcubehistory/history`, bidData).then((res) => {
                 console.log("res", res);
                 if (res.data.success) {
@@ -166,6 +170,10 @@ function CubeNFTs(props) {
             })
         }
         console.log("Data", Data);
+        
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post("/token/SingleTokenId", Data).then(
             (response) => {
                 console.log("response", response);
@@ -292,6 +300,9 @@ function CubeNFTs(props) {
             tokenId: cubeId,
         }
 
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post(`/adminclaimfunds/getclaimfunds`, Data).then((res) => {
             console.log("res", res);
             if (res.data.success)
@@ -354,6 +365,10 @@ function CubeNFTs(props) {
                 salePrice: price * 10 ** 18,
                 expiresAt: time,
             }
+            
+            axios.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${Cookies.get("Authorization")}`;
             axios.post(`auction/createsale`, SaleData).then((res) => {
                 console.log("res", res);
                 handleCloseBackdrop();
@@ -420,6 +435,10 @@ function CubeNFTs(props) {
                 bidDelta: bidDelta * 10 ** 18,
             }
             console.log("AuctionData", AuctionData);
+            
+            axios.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${Cookies.get("Authorization")}`;
             axios.post("/auction/createauction", AuctionData).then(
                 (response) => {
                     console.log('response', response);

@@ -69,6 +69,7 @@ function ProfileSetting(props) {
         Website: website,
         About: aboutTheArt
       }
+      
       axios.post(`/profile/createprofile`, ImageArtistData)
         .then((response) => {
           console.log("response", response);

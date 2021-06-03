@@ -353,6 +353,10 @@ function NewCube(props) {
                                     SalePrice: salePrice * 10 ** 18,
                                     address: accounts[0]
                                 }
+
+                                axios.defaults.headers.common[
+                                    "Authorization"
+                                ] = `Bearer ${Cookies.get("Authorization")}`;
                                 axios.post("/token/TokenIds", cubeData).then(
                                     (response) => {
 
@@ -386,6 +390,10 @@ function NewCube(props) {
                                     to: receipt.events.Transfer.returnValues.to,
                                     transaction: receipt.transactionHash
                                 }
+
+                                axios.defaults.headers.common[
+                                    "Authorization"
+                                ] = `Bearer ${Cookies.get("Authorization")}`;
                                 axios.post("/transaction/tokenTransaction ", TrasactionData).then(
                                     (response) => {
                                         console.log('response', response);

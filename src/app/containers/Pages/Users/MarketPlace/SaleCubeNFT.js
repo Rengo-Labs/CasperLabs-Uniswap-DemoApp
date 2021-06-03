@@ -202,6 +202,10 @@ function SaleCubeNFTs(props) {
             tokenId: cubeId
         }
         console.log("saleData", saleData);
+        
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post("auction/deleteauction", saleData).then(
             (response) => {
                 console.log('response', response);
@@ -285,6 +289,10 @@ function SaleCubeNFTs(props) {
 
                 }
                 console.log("BuyData", BuyData);
+                
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${Cookies.get("Authorization")}`;
                 axios.post("token/buyuserToken", BuyData).then(
                     (response) => {
 
@@ -314,6 +322,9 @@ function SaleCubeNFTs(props) {
                     transaction: receipt1.transactionHash
                 }
 
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${Cookies.get("Authorization")}`;
                 axios.post("/transaction/tokenTransaction ", TrasactionData).then(
                     (response) => {
                         console.log('response', response);
@@ -339,6 +350,10 @@ function SaleCubeNFTs(props) {
             check: "notdrop"
         }
         console.log("Data", Data);
+        
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post("/token/SingleTokenId", Data).then(
             (response) => {
                 console.log("response", response);

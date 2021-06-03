@@ -274,6 +274,10 @@ function AuctionCubeNFTs(props) {
             tokenId: cubeId
         }
         console.log("saleData", saleData);
+
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post("auction/deleteauction", saleData).then(
             (response) => {
                 console.log('response', response);
@@ -334,6 +338,10 @@ function AuctionCubeNFTs(props) {
                     owneraddress: accounts[0],
                 }
                 console.log("BuyData", BuyData);
+
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${Cookies.get("Authorization")}`;
                 axios.post("token/buytoken", BuyData).then(
                     (response) => {
                         console.log('response', response);
@@ -389,6 +397,9 @@ function AuctionCubeNFTs(props) {
                     transaction: receipt.transactionHash
                 }
 
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${Cookies.get("Authorization")}`;
                 axios.post("/transaction/tokenTransaction ", TrasactionData).then(
                     (response) => {
                         console.log('response', response);
@@ -545,6 +556,10 @@ function AuctionCubeNFTs(props) {
                         address: accounts[0],
                     }
                     console.log("BidData", BidData);
+
+                    axios.defaults.headers.common[
+                        "Authorization"
+                    ] = `Bearer ${Cookies.get("Authorization")}`;
                     axios.post("usercubehistory/createhistory", BidData).then(
                         (response) => {
 
@@ -584,6 +599,10 @@ function AuctionCubeNFTs(props) {
             auctionId: auctionId,
             tokenId: cubeId,
         }
+
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post(`/usercubehistory/history`, bidData).then((res) => {
             console.log("res", res);
             if (res.data.success) {
@@ -604,6 +623,10 @@ function AuctionCubeNFTs(props) {
             }
             handleCloseSpinner();
         })
+
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post("/token/SingleTokenId", Data).then(
             async (response) => {
                 console.log("response", response);

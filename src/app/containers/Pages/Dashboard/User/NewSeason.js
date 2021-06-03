@@ -88,7 +88,7 @@ function NewSeason(props) {
             newNFT: "",
             newDrop: "",
             newSeason: "active",
-            mySeason:"",
+            mySeason: "",
             myNFTs: "",
             myCubes: "",
             myDrops: "",
@@ -126,6 +126,10 @@ function NewSeason(props) {
             dropId: dropList
         }
         console.log("cubeData", SeasonData);
+
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
         axios.post("/season/createseason", SeasonData).then(
             (response) => {
                 console.log('response', response);

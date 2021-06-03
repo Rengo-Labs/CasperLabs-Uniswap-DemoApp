@@ -262,6 +262,10 @@ function NewDrop(props) {
                     image: image
                 }
                 console.log("cubeData", DropData);
+
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${Cookies.get("Authorization")}`;
                 axios.post("/drop/createdrop", DropData).then(
                     (response) => {
                         console.log('response', response);
@@ -523,7 +527,7 @@ function NewDrop(props) {
                                                                 // image={img}
                                                                 title=""
                                                             >
-                                                                <CubeComponent1 data={typesImages} index={index}/>
+                                                                <CubeComponent1 data={typesImages} index={index} />
                                                             </CardMedia>
                                                             <CardContent>
                                                                 <Typography variant="body2" color="textSecondary" component="p">
@@ -539,11 +543,11 @@ function NewDrop(props) {
                                                                 </Typography>
                                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
                                                                 <Link to={"/User/Profile/Detail/musicArtist/" + i.MusicArtistId + "/null"} style={{ color: '#000' }}>
-                                                                <CardHeader
-                                                                    avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
-                                                                    title={i.MusicArtistName}
-                                                                    subheader={i.MusicArtistAbout}
-                                                                />
+                                                                    <CardHeader
+                                                                        avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
+                                                                        title={i.MusicArtistName}
+                                                                        subheader={i.MusicArtistAbout}
+                                                                    />
                                                                 </Link>
                                                             </CardContent>
                                                         </CardActionArea>

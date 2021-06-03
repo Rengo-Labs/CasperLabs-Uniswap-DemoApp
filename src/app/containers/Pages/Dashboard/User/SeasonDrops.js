@@ -62,6 +62,7 @@ function SeasonDrops(props) {
         let SeasonId = {
             seasonId: seasonId
         }
+        
         axios.post("/season/seasons", SeasonId).then(
             (response) => {
                 console.log("response", response);

@@ -263,6 +263,10 @@ function NewNFT(props) {
                             nftdata: tokenList
                         }
                         console.log("Data", Data);
+
+                        axios.defaults.headers.common[
+                            "Authorization"
+                        ] = `Bearer ${Cookies.get("Authorization")}`;
                         axios.post("/nft/createnft", Data).then(
                             (response) => {
                                 console.log("response", response);
