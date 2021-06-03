@@ -342,7 +342,7 @@ function AuctionCubeNFTs(props) {
                 axios.defaults.headers.common[
                     "Authorization"
                 ] = `Bearer ${Cookies.get("Authorization")}`;
-                axios.post("token/buytoken", BuyData).then(
+                axios.post("token/buyuserToken", BuyData).then(
                     (response) => {
                         console.log('response', response);
                         setIsClaiming(false);
