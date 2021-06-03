@@ -390,7 +390,7 @@ function CubeNFTs(props) {
             handleCloseBackdrop();
 
             let variant = "info";
-            enqueueSnackbar('Please wait for admin to claim Funds first.', { variant });
+            enqueueSnackbar('Please wait for Owner to claim Funds first.', { variant });
         }
     }
     let withdraw = async (e) => {
