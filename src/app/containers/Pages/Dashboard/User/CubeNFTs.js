@@ -555,7 +555,7 @@ function CubeNFTs(props) {
                                                 </Typography>
                                             )}
                                             <h3 className="text-muted">Music Artist</h3>
-                                            <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.userId + "/null"} style={{ color: '#000' }}>
+                                            <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.MusicArtistId + "/null"} style={{ color: '#000' }}>
                                                 <CardHeader
                                                     avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
                                                     title={cubeData.MusicArtistName}
@@ -575,7 +575,7 @@ function CubeNFTs(props) {
                                             <h4>Reserve Price</h4>
                                             <h2>{cubeData.SalePrice / 10 ** 18} ETH </h2>
                                             <h3 className="text-muted">Music Artist</h3>
-                                            <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.userId + "/null"} style={{ color: '#000' }}>
+                                            <Link to={"/User/Profile/Detail/musicArtist/" + cubeData.MusicArtistId + "/null"} style={{ color: '#000' }}>
                                                 <CardHeader
                                                     avatar={<Avatar src={cubeData.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
                                                     title={cubeData.MusicArtistName}

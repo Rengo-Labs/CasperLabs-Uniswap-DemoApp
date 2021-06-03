@@ -144,6 +144,7 @@ function UserCubes(props) {
                                         {tokenList.map((i, index) => (
 
                                             <Grid item xs={12} sm={6} md={3} key={index}>
+                                                {console.log("i", i)}
                                                 <Link to={"/User/Profile/Detail/notdrop/" + props.userId + '/' + i._id}>
                                                     <Card style={{ height: "100%" }} variant="outlined" className={classes.root}>
                                                         <CardActionArea>
@@ -167,7 +168,7 @@ function UserCubes(props) {
                                                                     <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                         </Typography>
                                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                                <Link to={"/User/Profile/Detail/musicArtist/" + i.userId + "/null"} style={{ color: '#000' }}>
+                                                                <Link to={"/User/Profile/Detail/musicArtist/" + i.MusicArtistId + "/null"} style={{ color: '#000' }}>
                                                                     <CardHeader
                                                                         avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
                                                                         title={i.MusicArtistName}

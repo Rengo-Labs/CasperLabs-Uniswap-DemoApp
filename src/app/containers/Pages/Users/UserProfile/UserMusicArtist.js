@@ -165,7 +165,7 @@ function UserMusicArtist(props) {
                                                                     <strong>Sale Price: </strong>{i.SalePrice / 10 ** 18} ETH
                                                         </Typography>
                                                                 <Typography variant="h6" gutterBottom color="textSecondary" className="text-center">Music Artist</Typography>
-                                                                <Link to={"/User/Profile/Detail/musicArtist/" + i.userId + "/null"} style={{ color: '#000' }}>
+                                                                <Link to={"/User/Profile/Detail/musicArtist/" + i.MusicArtistId + "/null"} style={{ color: '#000' }}>
                                                                     <CardHeader
                                                                         avatar={<Avatar src={i.MusicArtistProfile} aria-label="Artist" className={classes.avatar} />}
                                                                         title={i.MusicArtistName}
