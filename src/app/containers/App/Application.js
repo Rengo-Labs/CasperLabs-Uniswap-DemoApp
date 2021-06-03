@@ -131,7 +131,7 @@ function App() {
 
           <Route path="/forgotpassword" component={ForgotPassword} />
           <Route
-            path="/emailverification/:email/:token"
+            path="/users/emailverification/:email/:token"
             render={(routeProps) => <EmailVerification {...routeProps} />}
           />
           {/* <Route exact path="/admin-login"component={LoginScreen} /> */}

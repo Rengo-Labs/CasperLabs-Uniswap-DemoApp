@@ -41,7 +41,7 @@ function LoginScreen(props) {
       .catch((error) => {
         if (error.response !== undefined) {
           if (error.response.status === 400) {
-            setMsg("Incorrect userName or password entered");
+            setMsg(error.response.data.message);
           } else {
             setMsg("Unknown Error Occured, try again.");
           }
@@ -136,7 +136,6 @@ function LoginScreen(props) {
                             )}
                           </form>
                         </>
-
                       </div>
                     </div>
                   </div>
