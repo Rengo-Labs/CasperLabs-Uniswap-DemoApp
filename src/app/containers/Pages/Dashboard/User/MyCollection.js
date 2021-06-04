@@ -142,7 +142,7 @@ function MyCollection(props) {
             dashboard: "",
             totalUserAccount: "",
             pendingUserAccount: "",
-            newSupefNFT: "",
+            newCube: "",
             myNFTs: "",
             newCollection: "active",
             mySeason: "",

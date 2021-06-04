@@ -123,7 +123,7 @@ function NewDrop(props) {
             dashboard: "",
             newNFT: "",
             newDrop: "active",
-            newSupefNFT: "",
+            newCube: "",
             mySeason: "",
             myCubes: "",
             myDrops: "",

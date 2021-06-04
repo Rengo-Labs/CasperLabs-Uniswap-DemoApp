@@ -60,7 +60,7 @@ function UserDashboard(props) {
     settings: "",
     changePassword: "",
     newNFT: "",
-    newSupefNFT: "",
+    newCube: "",
     myDrops: "",
     newDrop: "",
     newSeason: "",
@@ -192,7 +192,7 @@ function UserDashboard(props) {
             <Route exact path={`${path}/myCubes/Nfts/:dropId/:cubeId`}>
               <CubeNFTs setActiveTab={setActiveTab} />
             </Route>
-            <Route exact path={`${path}/newSupefNFT`}>
+            <Route exact path={`${path}/newCube`}>
               <NewCube setActiveTab={setActiveTab} />
             </Route>
 

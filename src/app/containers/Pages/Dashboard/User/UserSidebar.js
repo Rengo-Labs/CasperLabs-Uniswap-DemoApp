@@ -40,8 +40,8 @@ function AdminSidebar(props) {
               </Link>
             </li>
 
-            <li className={props.activeTab.newSupefNFT}>
-              <Link to={`${props.match.url}/newSupefNFT`}>
+            <li className={props.activeTab.newCube}>
+              <Link to={`${props.match.url}/newCube`}>
                 <i className="fas fa-cube"></i> <span>New Cube</span>
               </Link>
             </li>

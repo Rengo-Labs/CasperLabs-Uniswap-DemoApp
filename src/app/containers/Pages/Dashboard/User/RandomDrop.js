@@ -36,7 +36,7 @@ function RandomDrop(props) {
             privacyPolicy: "",
             termsandconditions: "",
             changePassword: "",
-            newSupefNFT:"",
+            newCube:"",
         });// eslint-disable-next-line
     }, []);
     const handleRemoveClick = (index) => {

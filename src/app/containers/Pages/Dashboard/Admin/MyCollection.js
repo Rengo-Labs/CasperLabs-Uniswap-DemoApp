@@ -121,7 +121,7 @@ function MyCollection(props) {// eslint-disable-next-line
             dashboard: "",
             totalUserAccount: "",
             pendingUserAccount: "",
-            newSupefNFT: "",
+            newCube: "",
             myNFTs: "",
             newCollection: "active",
             mySeason: "",

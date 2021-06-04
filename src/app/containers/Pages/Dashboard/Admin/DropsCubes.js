@@ -99,7 +99,7 @@ function DropCubes(props) {
             termsandconditions: "",
             changePassword: "",
             newDrop: "",
-            newSupefNFT: "",
+            newCube: "",
             newCollection: "",
             newRandomDrop: "",
         });// eslint-disable-next-line

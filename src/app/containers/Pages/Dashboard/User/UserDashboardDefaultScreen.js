@@ -1,34 +1,39 @@
 // eslint-disable-next-line
 import axios from "axios";// eslint-disable-next-line
-// import React, { useEffect, useState } from "react";
-// import { Link } from "react-router-dom";
-import React, { useEffect } from "react";
-// import ListAltIcon from '@material-ui/icons/ListAlt';
-// import StorageIcon from '@material-ui/icons/Storage';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+// import React, { useEffect } from "react";
+import ListAltIcon from '@material-ui/icons/ListAlt';
+import StorageIcon from '@material-ui/icons/Storage';
+import Cookies from "js-cookie";
 function UserDashboardDefaultScreen(props) {
 
-  // let [totalCubes, setTotalCubes] = useState(0);
-  // let [totalNFTs, setTotalNFTs] = useState(0);
-  // let [totalDrops, setTotalDrops] = useState(0);
-  // let [totalSeasons, setTotalSeasons] = useState(0);
-  // let [totalCollections, setTotalCollections] = useState(0);
+  let [totalCubes, setTotalCubes] = useState(0);
+  let [totalNFTs, setTotalNFTs] = useState(0);
+  let [totalDrops, setTotalDrops] = useState(0);
+  let [totalSeasons, setTotalSeasons] = useState(0);
+  let [totalCollections, setTotalCollections] = useState(0);
 
-  // let getCounts = () => {
-  //   axios
-  //     .get("/api/v1/admin/getCounts")
-  //     .then((response) => {
-  //       console.log(response);
-  //       // setTotalCubes(response.data.approved);
-  //       // setTotalNFTs(response.data.pending);
-  //       // setTotalDrops(response.data.UnderDisputed);
-  //       // setTotalSeasons(0);
-  //       // setTotalCollections(0);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //       console.log(error.response);
-  //     });
-  // };
+  let getCounts = () => {
+
+    axios.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${Cookies.get("Authorization")}`;
+    axios
+      .get("users/getcounts")
+      .then((response) => {
+        console.log(response);
+        setTotalCubes(response.data.Cubescount);
+        setTotalNFTs(response.data.NFTscount);
+        setTotalDrops(response.data.Dropscount);
+        setTotalSeasons(response.data.Seasonscount);
+        setTotalCollections(response.data.Collectionscount);
+      })
+      .catch((error) => {
+        console.log(error);
+        console.log(error.response);
+      });
+  };
 
   useEffect(() => {
     props.setActiveTab({
@@ -44,11 +49,11 @@ function UserDashboardDefaultScreen(props) {
       termsandconditions: "",
       changePassword: "",
       newDrop: "",
-      newSupefNFT: "",
+      newCube: "",
       newCollection: "",
       newRandomDrop: "",
     });
-    // getCounts();
+    getCounts();
     // eslint-disable-next-line
   }, []);
 
@@ -72,9 +77,9 @@ function UserDashboardDefaultScreen(props) {
       </div>
       {/* <!-- /Page Header --> */}
 
-      {/* <div className="row">
+      <div className="row">
         <div className="col-12 col-sm-3">
-          <Link to={`${props.match.url}/totalUserAccount`}>
+          <Link to={`${props.match.url}/myNFTs`}>
             <div className="card">
               <div className="card-body">
                 <div className="dash-widget-header">
@@ -96,12 +101,12 @@ function UserDashboardDefaultScreen(props) {
           </Link>
         </div>
         <div className="col-12 col-sm-3">
-          <Link to={`${props.match.url}/pendingUserAccount`}>
+          <Link to={`${props.match.url}/myCubes`}>
             <div className="card">
               <div className="card-body">
                 <div className="dash-widget-header">
                   <span className="dash-widget-icon text-secondary border-secondary">
-                    <i className="fas fa-cubes">
+                    <i className="fas fa-cubes" />
                   </span>
                   <div className="dash-count">
                     <h3>{totalCubes}</h3>
@@ -119,12 +124,12 @@ function UserDashboardDefaultScreen(props) {
         </div>
 
         <div className="col-12 col-sm-3">
-          <Link to={`${props.match.url}/disputedOrders`}>
+          <Link to={`${props.match.url}/myDrops`}>
             <div className="card">
               <div className="card-body">
                 <div className="dash-widget-header">
                   <span className="dash-widget-icon text-danger border-danger">
-                    <StorageIcon/>
+                    <StorageIcon />
                   </span>
                   <div className="dash-count">
                     <h3>{totalDrops}</h3>
@@ -142,7 +147,7 @@ function UserDashboardDefaultScreen(props) {
         </div>
 
         <div className="col-12 col-sm-3">
-          <Link to={`${props.match.url}/resolvedDisputedOrders`}>
+          <Link to={`${props.match.url}/mySeason`}>
             <div className="card">
               <div className="card-body">
                 <div className="dash-widget-header">
@@ -164,7 +169,7 @@ function UserDashboardDefaultScreen(props) {
           </Link>
         </div>
         <div className="col-12 col-sm-3">
-          <Link to={`${props.match.url}/tradeListOrders`}>
+          <Link to={`${props.match.url}/newCollection`}>
             <div className="card">
               <div className="card-body">
                 <div className="dash-widget-header">
@@ -185,7 +190,7 @@ function UserDashboardDefaultScreen(props) {
             </div>
           </Link>
         </div>
-      </div> */}
+      </div>
 
     </>
   );

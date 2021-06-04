@@ -169,7 +169,7 @@ function NewCube(props) {
         props.setActiveTab({
             dashboard: "",
             newNFT: "",
-            newSupefNFT: "active",
+            newCube: "active",
             myCubes: "",
             mySeason: "",
             myNFTs: "",

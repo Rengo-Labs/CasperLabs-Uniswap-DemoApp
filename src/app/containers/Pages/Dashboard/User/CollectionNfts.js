@@ -48,7 +48,7 @@ function CollectionNfts(props) {
             termsandconditions: "",
             changePassword: "",
             newDrop: "",
-            newSupefNFT: "",
+            newCube: "",
             newCollection: "active",
             newRandomDrop: "",
         });// eslint-disable-next-line

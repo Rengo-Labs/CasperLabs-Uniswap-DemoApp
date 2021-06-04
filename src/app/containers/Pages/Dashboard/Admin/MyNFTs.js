@@ -63,7 +63,7 @@ function MyNFTs(props) {
             termsandconditions: "",
             changePassword: "",
             newDrop: "",
-            newSupefNFT: "",
+            newCube: "",
             newCollection: "",
             newRandomDrop: "",
         });// eslint-disable-next-line
