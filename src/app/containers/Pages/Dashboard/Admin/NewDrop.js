@@ -487,7 +487,6 @@ function NewDrop(props) {
                                         <div className="filter-widget">
                                             <input
                                                 type="number"
-                                                placeholder="Enter Total Supply"
                                                 required
                                                 value={minimumBid}
                                                 className="form-control"

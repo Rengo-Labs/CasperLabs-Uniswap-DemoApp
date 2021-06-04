@@ -62,7 +62,7 @@ function MyDrops(props) {
         axios.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
             "Authorization"
         )}`;
-        axios.get(`/drop/drops/${start}/${end}`).then(
+        axios.get(`/drop/mydrops/${start}/${end}`).then(
             (response) => {
                 console.log("response", response);
                 setTokenList(response.data.Dropdata);

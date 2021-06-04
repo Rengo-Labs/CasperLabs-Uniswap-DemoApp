@@ -58,7 +58,6 @@ function AuctionCubeModal(props) {// eslint-disable-next-line
                             <div className="filter-widget">
                                 <input
                                     type="number"
-                                    placeholder="Enter Total Supply"
                                     required
                                     value={minimumBid}
                                     className="form-control"

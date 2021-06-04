@@ -505,7 +505,6 @@ function NewCube(props) {
                                         <div className="filter-widget">
                                             <input
                                                 type="number"
-                                                placeholder="Enter Total Supply"
                                                 required
                                                 value={salePrice}
                                                 className="form-control"

@@ -18,7 +18,7 @@ import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Button, Row, Spinner } from 'react-bootstrap';
 import Countdown from 'react-countdown';
-import { useParams, Link } from "react-router-dom";
+import { useParams, useHistory, Link } from "react-router-dom";
 import Web3 from 'web3';
 import CreateAuctionContract from '../../../../components/blockchain/Abis/CreateAuctionContract.json';
 import CreateCubeContract from '../../../../components/blockchain/Abis/CreateCubeContract.json';
@@ -73,6 +73,7 @@ const useStyles = makeStyles((theme) => ({
 
 function CubeNFTs(props) {
     const classes = useStyles();
+    let history = useHistory();
     const { enqueueSnackbar } = useSnackbar();
     const { dropId, cubeId, } = useParams();
     const [tokenList, setTokenList] = useState([]);
@@ -91,6 +92,7 @@ function CubeNFTs(props) {
     const [openModal, setOpenModal] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [bidHistory, setBidHistory] = useState([]);
+    const [isRemoving, setIsRemoving] = useState(false)
     const handleClose = () => {
         setOpenModal(false);
     };
@@ -148,7 +150,7 @@ function CubeNFTs(props) {
                 dropId: dropId,
                 tokenId: cubeId,
             }
-            
+
             axios.defaults.headers.common[
                 "Authorization"
             ] = `Bearer ${Cookies.get("Authorization")}`;
@@ -170,7 +172,7 @@ function CubeNFTs(props) {
             })
         }
         console.log("Data", Data);
-        
+
         axios.defaults.headers.common[
             "Authorization"
         ] = `Bearer ${Cookies.get("Authorization")}`;
@@ -365,7 +367,7 @@ function CubeNFTs(props) {
                 salePrice: price * 10 ** 18,
                 expiresAt: time,
             }
-            
+
             axios.defaults.headers.common[
                 "Authorization"
             ] = `Bearer ${Cookies.get("Authorization")}`;
@@ -435,7 +437,7 @@ function CubeNFTs(props) {
                 bidDelta: bidDelta * 10 ** 18,
             }
             console.log("AuctionData", AuctionData);
-            
+
             axios.defaults.headers.common[
                 "Authorization"
             ] = `Bearer ${Cookies.get("Authorization")}`;
@@ -463,7 +465,38 @@ function CubeNFTs(props) {
 
         }
     }
+    let removeFromAuction = () => {
+        setIsRemoving(true);
+        let saleData = {
+            dropId: dropId,
+            tokenId: cubeId
+        }
+        console.log("saleData", saleData);
 
+        axios.defaults.headers.common[
+            "Authorization"
+        ] = `Bearer ${Cookies.get("Authorization")}`;
+        axios.post("drop/deletedrop", saleData).then(
+            (response) => {
+                console.log('response', response);
+                setIsRemoving(false);
+
+                // getAuctionCubeNFTs();
+                let variant = "success";
+                enqueueSnackbar('Removed from Auction Successfully.', { variant });
+                history.push("/dashboard/myDrops")
+            },
+            (error) => {
+                if (process.env.NODE_ENV === "development") {
+                    console.log(error);
+                    console.log(error.response);
+                }
+                setIsRemoving(false);
+                let variant = "error";
+                enqueueSnackbar('Unable to Remove from Auction.', { variant });
+            }
+        );
+    }
     useEffect(() => {
         getCubeNFTs();
         // getClaimFunds();
@@ -529,24 +562,40 @@ function CubeNFTs(props) {
                                         <div className="col-md-12 col-lg-6">
                                             {/* <Chip clickable style={{ marginTop: '20px' }}
                                                 color="" label="@UserName" /> */}
+
                                             {new Date() > new Date(dropData.AuctionEndsAt) ? (
-                                                isClaiming ? (
-                                                    <div align="center" className="text-center">
-                                                        <Spinner
-                                                            animation="border"
-                                                            role="status"
-                                                            style={{ color: "#ff0000" }}
-                                                        >
-
-                                                        </Spinner>
-                                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                                                    </div>
+                                                bidHistory.length === 0 ? (
+                                                    isRemoving ? (
+                                                        <div align="center" className="text-center">
+                                                            <Spinner
+                                                                animation="border"
+                                                                role="status"
+                                                                style={{ color: "#ff0000" }}
+                                                            >
+                                                            </Spinner>
+                                                            <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <Button variant="primary" style={{ float: 'right' }} onClick={removeFromAuction}>Remove from Auction</Button>
+                                                    )
                                                 ) : (
-                                                    isClaimFunds === null ? (
-                                                        <Button variant="primary" onClick={(e) => claimFunds(e)} style={{ float: "right" }} >Claim Funds</Button>
-                                                    ) : (<Button variant="primary" disabled style={{ float: "right" }} >Claim Funds</Button>)
+                                                    isClaiming ? (
+                                                        <div align="center" className="text-center">
+                                                            <Spinner
+                                                                animation="border"
+                                                                role="status"
+                                                                style={{ color: "#ff0000" }}
+                                                            >
+                                                            </Spinner>
+                                                            <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                                        </div>
+                                                    ) : (
+                                                        isClaimFunds === null ? (
+                                                            <Button variant="primary" onClick={(e) => claimFunds(e)} style={{ float: "right" }} >Claim Funds</Button>
+                                                        ) : (<Button variant="primary" disabled style={{ float: "right" }} >Claim Funds</Button>)
 
-                                                )) : (null)}
+                                                    ))
+                                            ) : (null)}
                                             <h1>{cubeData.title} </h1>
                                             <h2>Minimum Bid : {(dropData.MinimumBid + dropData.bidDelta) / 10 ** 18} WETH </h2>
                                             <h2>Bid Delta : {dropData.bidDelta / 10 ** 18} WETH </h2>

@@ -142,7 +142,6 @@ function RandomDrop(props) {
                                     <div className="filter-widget">
                                         <input
                                             type="number"
-                                            placeholder="Enter Total Supply"
                                             required
                                             value={salePrice}
                                             className="form-control"
@@ -205,7 +204,6 @@ function RandomDrop(props) {
                                         <div className="filter-widget">
                                             <input
                                                 type="number"
-                                                placeholder="Enter Total Supply"
                                                 required
                                                 value={minimumBid}
                                                 className="form-control"

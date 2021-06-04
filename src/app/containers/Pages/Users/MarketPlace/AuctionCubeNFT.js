@@ -120,7 +120,7 @@ function AuctionCubeNFTs(props) {
     const [transactionHistory, setTransactionHistory] = useState([]);
     const [bidHistory, setBidHistory] = useState([]);
     const [isRemoving, setIsRemoving] = useState(false)
-    const [isPlaying, setIsPlaying] = useState(false);;
+    const [isPlaying, setIsPlaying] = useState(false);
     // if(bidHistory.length!==0)
     // console.log("bidHistory.findIndex(i => i.userId === jwtDecoded.userId)",);
     const [openWeth, setOpenWeth] = useState(false);
@@ -285,7 +285,7 @@ function AuctionCubeNFTs(props) {
 
                 // getAuctionCubeNFTs();
                 let variant = "success";
-                enqueueSnackbar('Removed from Sale Successfully.', { variant });
+                enqueueSnackbar('Removed from Auction Successfully.', { variant });
                 history.push("/")
             },
             (error) => {
@@ -295,7 +295,7 @@ function AuctionCubeNFTs(props) {
                 }
                 setIsRemoving(false);
                 let variant = "error";
-                enqueueSnackbar('Unable to Remove from Sale.', { variant });
+                enqueueSnackbar('Unable to Remove from Auction.', { variant });
             }
         );
     }
@@ -869,7 +869,7 @@ function AuctionCubeNFTs(props) {
                                                                                 <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                                                             </div>
                                                                         ) : (
-                                                                            <Button variant="primary" style={{ float: 'right' }} onClick={removeFromAuction}>Remove from Sale</Button>
+                                                                            <Button variant="primary" style={{ float: 'right' }} onClick={removeFromAuction}>Remove from Auction</Button>
                                                                         )
                                                                     ) : (null)}
                                                                 </>
