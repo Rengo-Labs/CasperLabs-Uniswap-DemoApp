@@ -49,7 +49,7 @@ function MySeasons(props) {
     const [tokenList, setTokenList] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(8);
-    const [totalSeasons, setTotalseasons] =useState(0);
+    const [totalSeasons, setTotalseasons] = useState(0);
     const [open, setOpen] = useState(false);
     const handleCloseBackdrop = () => {
         setOpen(false);
@@ -138,9 +138,11 @@ function MySeasons(props) {
                             <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                         </div>
                     ) : tokenList.length === 0 ? (
-                        <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '20px' }} >
-                            <strong>Nothing to Display </strong>
-                        </Typography>
+                        <Card variant="outlined" style={{ padding: "40px", marginTop: '20px', marginBottom: '20px' }}>
+                            <Typography variant="body2" className="text-center" color="textSecondary" component="p"  >
+                                <strong>No items to display </strong>
+                            </Typography>
+                        </Card>
                     ) : (
                         <Grid
                             container

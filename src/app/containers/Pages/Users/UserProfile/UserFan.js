@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Grid } from '@material-ui/core/';
 import TablePagination from '@material-ui/core/TablePagination';
+import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
 import Cookies from "js-cookie";
 import axios from 'axios';
@@ -95,9 +96,11 @@ function UserFan(props) {
                                         <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                                     </div>
                                 ) : data.length === 0 ? (
-                                    <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '20px' }} >
-                                        <strong>Nothing to Display </strong>
-                                    </Typography>
+                                    <Card variant="outlined" style={{ padding: "40px", marginTop: '20px', marginBottom: '20px' }}>
+                                        <Typography variant="body2" className="text-center" color="textSecondary" component="p"  >
+                                            <strong>No items to display </strong>
+                                        </Typography>
+                                    </Card>
                                 ) : (
                                     <Grid
                                         container

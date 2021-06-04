@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import Cookies from "js-cookie";
 import axios from 'axios';
 import { Spinner } from "react-bootstrap";
+import Card from '@material-ui/core/Card';
 import NFTCard from "../../../../components/Cards/NFTCard";
 
 function UserNfts(props) {
@@ -75,7 +76,7 @@ function UserNfts(props) {
             <div className="content container-fluid">
                 <div className="card">
                     <ul className="breadcrumb" style={{ backgroundColor: "rgb(167,0,0)" }}>
-                    <li className="breadcrumb-item" style={{ color: "#fff", cursor: 'pointer' }} onClick={() => history.goBack()}>
+                        <li className="breadcrumb-item" style={{ color: "#fff", cursor: 'pointer' }} onClick={() => history.goBack()}>
                             <i className="fas fa-arrow-left"></i> Back
                         </li>
                         <li className="breadcrumb-item active"> User's NFTs</li>
@@ -85,32 +86,34 @@ function UserNfts(props) {
                             <div className="form-group">
 
                                 {open ? (
-                            <div align="center" className="text-center">
-                                <Spinner
-                                    animation="border"
-                                    role="status"
-                                    style={{ color: "#ff0000" }}
-                                >
+                                    <div align="center" className="text-center">
+                                        <Spinner
+                                            animation="border"
+                                            role="status"
+                                            style={{ color: "#ff0000" }}
+                                        >
 
-                                </Spinner>
-                                <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
-                            </div>
-                        ) : data.length === 0 ? (
-                            <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '20px' }} >
-                                <strong>Nothing to Display </strong>
-                            </Typography>
-                        ) : (
-                            <Grid
-                                container
-                                spacing={2}
-                                direction="row"
-                                justify="flex-start"
-                            >
-                                {data.map((i, index) => (
-                                    <NFTCard data={i} key={index}></NFTCard>
-                                ))}
-                            </Grid>
-                        )}
+                                        </Spinner>
+                                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                                    </div>
+                                ) : data.length === 0 ? (
+                                    <Card variant="outlined" style={{ padding: "40px", marginTop: '20px', marginBottom: '20px' }}>
+                                        <Typography variant="body2" className="text-center" color="textSecondary" component="p"  >
+                                            <strong>No items to display </strong>
+                                        </Typography>
+                                    </Card>
+                                ) : (
+                                    <Grid
+                                        container
+                                        spacing={2}
+                                        direction="row"
+                                        justify="flex-start"
+                                    >
+                                        {data.map((i, index) => (
+                                            <NFTCard data={i} key={index}></NFTCard>
+                                        ))}
+                                    </Grid>
+                                )}
                             </div>
                             <TablePagination
                                 rowsPerPageOptions={[4, 8, 12, 24]}

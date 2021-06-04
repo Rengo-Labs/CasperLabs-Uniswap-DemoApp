@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import NFTCard from '../../../../components/Cards/NFTCard';
+import Card from '@material-ui/core/Card';
 
 function MyNFTs(props) {
     const [rowsPerPage, setRowsPerPage] = React.useState(8);
@@ -104,9 +105,11 @@ function MyNFTs(props) {
                                 <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
                             </div>
                         ) : tokenList.length === 0 ? (
-                            <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '20px' }} >
-                                <strong>Nothing to Display </strong>
-                            </Typography>
+                            <Card variant="outlined" style={{ padding: "40px", marginTop: '20px', marginBottom: '20px' }}>
+                                <Typography variant="body2" className="text-center" color="textSecondary" component="p"  >
+                                    <strong>No items to display </strong>
+                                </Typography>
+                            </Card>
                         ) : (
                             <Grid
                                 container
@@ -115,7 +118,7 @@ function MyNFTs(props) {
                                 justify="flex-start"
                             >
                                 {tokenList.map((i, index) => (
-                                    <NFTCard data={i} key={index}/>
+                                    <NFTCard data={i} key={index} />
                                 ))}
                             </Grid>
                         )}
