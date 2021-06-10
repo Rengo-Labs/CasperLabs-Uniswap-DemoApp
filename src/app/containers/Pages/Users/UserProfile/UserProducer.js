@@ -43,7 +43,7 @@ function UserProducer(props) {
             "Authorization"
         )}`;
         // nft/getnft/{userId}/{start}/{end} 
-        axios.get(`/nft/getprofileusernft/${props.userId}/Image Artist/${start}/${end}`).then(
+        axios.get(`/nft/getprofileusernft/${props.userId}/Producer/${start}/${end}`).then(
             (response) => {
                 console.log("response", response);
                 setData(response.data.NFTdata);

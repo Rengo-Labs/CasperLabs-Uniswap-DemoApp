@@ -151,12 +151,12 @@ function ProfileSetting(props) {
   }
   let enableExecutiveProducer = (e) => {
     setIsSavingChanges(true);
+    e.preventDefault();
     if (executiveProducerImage === r1) {
       let variant = "error";
       enqueueSnackbar('Please Upload Executive Producer Image', { variant });
       setIsSavingChanges(false);
     } else {
-      e.preventDefault();
       let ExecutiveProducerData = {
         Name: executiveProducer,
         Profile: executiveProducerImage,
