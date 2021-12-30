@@ -91,7 +91,7 @@ html {
 }
 body {
   background-color: #f8f9fa;
-  color: #a70000;
+  color: #ed0b25;
   font-family: "Poppins", sans-serif;
   font-size: 0.9375rem;
   height: 100%;
@@ -103,7 +103,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: #a70000;
+  color: #ed0b25;
   font-weight: 500;
 }
 .h1,
@@ -178,7 +178,7 @@ input[type="password"] {
   border-color: #dcdcdc;
   color: #333;
   font-size: 15px;
-  min-height: 46px;
+  min-height: 55px;
   padding: 6px 15px;
 }
 .table .form-control {
@@ -222,7 +222,7 @@ input[type="password"] {
 -----------------------*/
 
 .table {
-  color: #a70000;
+  color: #ed0b25;
   max-width: 100%;
   margin-bottom: 0;
   width: 100%;
@@ -269,7 +269,7 @@ table.table td h2.table-avatar {
   white-space: nowrap;
 }
 table.table td h2 a {
-  color: #a70000;
+  color: #ed0b25;
 }
 table.table td h2 a:hover {
   color: #ff0000;
@@ -353,7 +353,7 @@ table.table td h2 span {
 .btn-white {
   background-color: #fff;
   border: 1px solid #ccc;
-  color: #a70000;
+  color: #ed0b25;
 }
 .btn.btn-rounded {
   border-radius: 50px;
@@ -528,7 +528,7 @@ button.bg-danger:hover {
 }
 .btn-success.disabled,
 .btn-success:disabled {
-  background-color: rgb(167,0,0);
+  background-color: #ed0b25;
   border-color: #ff0000;
   color: #fff;
 }
@@ -1171,7 +1171,7 @@ button.bg-danger:hover {
 .select2-container--default
   .select2-selection--single
   .select2-selection__rendered {
-  color: #a70000;
+  color: #ed0b25;
   font-size: 15px;
   font-weight: normal;
   line-height: 44px;
@@ -1397,7 +1397,7 @@ button.bg-danger:hover {
   margin-bottom: 1.875rem;
 }
 .comp-header .comp-title {
-  color: #a70000;
+  color: #ed0b25;
 }
 .line {
   background-color: #20c0f3;
@@ -1752,7 +1752,7 @@ button.bg-danger:hover {
   list-style: none;
   margin: 0;
   padding: 0;
-  color: rgb(167,0,0);
+  color: #ed0b25;
 }
 .main-nav > li.active > a {
   color: #2d3b48;
@@ -1785,7 +1785,7 @@ button.bg-danger:hover {
   display: block;
   font-size: 15px;
   font-weight: 500;
-  color: rgb(167,0,0);
+  color: #ed0b25;
 }
 .main-nav li.login-link {
   display: none;
@@ -1872,8 +1872,8 @@ button.bg-danger:hover {
   border-radius: 0 0 5px 5px;
 }
 .header-navbar-rht li a.header-login:hover {
-  background-color: rgb(167,0,0);
-  border-color: rgb(167,0,0);
+  background-color: #ed0b25;
+  border-color: #ed0b25;
   color: #fff;
 }
 .header-navbar-rht li .dropdown-menu a:hover {
@@ -1883,12 +1883,12 @@ button.bg-danger:hover {
   background-color: #fff;
 }
 .header-navbar-rht li a.header-login {
-  border: 2px solid rgb(167,0,0);
+  border: 2px solid #ed0b25;
   border-radius: 4px;
   padding: 10px 15px !important;
   text-align: center;
   font-size: 15px;
-  color: rgb(167,0,0);
+  color: #ed0b25;
   text-transform: uppercase;
   font-weight: 500;
 }
@@ -1973,7 +1973,7 @@ button.bg-danger:hover {
   padding: 10px 15px;
 }
 .header-navbar-rht .dropdown-menu .dropdown-item:hover {
-  color: rgb(167,0,0);
+  color: #ed0b25;
 }
 .user-header {
   display: -webkit-box;
@@ -2042,7 +2042,7 @@ button.bg-danger:hover {
 }
 .bar-icon span {
   /* background-color: #0de0fe; */
-  background-color: rgb(167,0,0);
+  background-color: #ed0b25;
   display: block;
   float: left;
   height: 3px;
@@ -2069,7 +2069,7 @@ html.menu-opened body {
 -----------------------*/
 
 .footer {
-  background-color: rgb(167,0,0);
+  background-color: #ed0b25;
   /* position: absolute; */
 
   left: 0;
@@ -2140,7 +2140,7 @@ html.menu-opened body {
   margin-right: 15px;
 }
 .footer .footer-bottom .copyright {
-  border-top: 1px solid rgb(167,0,0);
+  border-top: 1px solid #ed0b25;
   padding: 30px 0;
 }
 .footer .footer-bottom .copyright-text p {
@@ -2148,7 +2148,7 @@ html.menu-opened body {
   font-size: 15px;
 }
 .footer .footer-bottom .copyright-text p a {
-  color: rgb(167,0,0);
+  color: #ed0b25;
   -webkit-transition: all 0.4s ease 0s;
   -o-transition: all 0.4s ease 0s;
   transition: all 0.4s ease 0s;
@@ -2221,7 +2221,7 @@ html.menu-opened body {
 -----------------------*/
 
 .btn {
-  background-color: rgb(167,0,0);
+  background-color: #ed0b25;
   border: 1px solid #ff0000;
   color: #ffffff;
   /* border-radius: 0mm; */
@@ -3092,7 +3092,7 @@ html.menu-opened body {
   width: 40px;
 }
 .clinic-services {
-  color: #a70000;
+  color: #ed0b25;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -3353,7 +3353,7 @@ html.menu-opened body {
 }
 .timings-days {
   font-weight: bold;
-  color: #a70000;
+  color: #ed0b25;
   margin-bottom: 5px;
 }
 .timings-times span {
@@ -3362,7 +3362,7 @@ html.menu-opened body {
 .location-list .consult-price {
   font-size: 20px;
   font-weight: 500;
-  color: #a70000;
+  color: #ed0b25;
 }
 .review-listing {
   border-bottom: 1px solid #f5f7fc;
@@ -3402,7 +3402,7 @@ html.menu-opened body {
 }
 .review-listing > ul li .comment .comment-body .meta-data span.comment-author {
   font-weight: 600;
-  color: #a70000;
+  color: #ed0b25;
   text-transform: capitalize;
 }
 .review-listing > ul li .comment .comment-body .meta-data span.comment-date {
@@ -3742,7 +3742,7 @@ html.menu-opened body {
   -ms-user-select: none;
   user-select: none;
   font-weight: 600;
-  color: #a70000;
+  color: #ed0b25;
   text-transform: capitalize;
 }
 .payment-radio input {
@@ -3817,7 +3817,7 @@ html.menu-opened body {
   position: relative;
   font-size: 14px;
   font-weight: 500;
-  color: #a70000;
+  color: #ed0b25;
   text-transform: capitalize;
   margin-bottom: 15px;
 }
@@ -3835,7 +3835,7 @@ html.menu-opened body {
   position: relative;
   font-size: 14px;
   font-weight: 500;
-  color: #a70000;
+  color: #ed0b25;
   text-transform: capitalize;
   margin-bottom: 15px;
 }
@@ -3858,7 +3858,7 @@ html.menu-opened body {
 .booking-total ul li span {
   font-size: 18px;
   font-weight: 600;
-  color: #a70000;
+  color: #ed0b25;
 }
 .booking-total ul li .total-cost {
   color: #20c0f3;
@@ -3935,7 +3935,7 @@ html.menu-opened body {
   max-height: 52px;
 }
 .invoice-item .invoice-text h2 {
-  color: #a70000;
+  color: #ed0b25;
   font-size: 36px;
   font-weight: 600;
 }
@@ -3945,7 +3945,7 @@ html.menu-opened body {
   font-weight: 500;
 }
 .invoice-item .invoice-details strong {
-  color: #a70000;
+  color: #ed0b25;
 }
 .invoice-item .invoice-details-two {
   text-align: left;
@@ -3968,7 +3968,7 @@ html.menu-opened body {
 }
 .invoice-item .customer-text {
   font-size: 18px;
-  color: #a70000;
+  color: #ed0b25;
   font-weight: 600;
   margin-bottom: 8px;
   display: block;
@@ -3977,7 +3977,7 @@ html.menu-opened body {
 .invoice-table tr td,
 .invoice-table-two tr th,
 .invoice-table-two tr td {
-  color: #a70000;
+  color: #ed0b25;
   font-weight: 600;
   padding: 10px 20px;
   line-height: inherit;
@@ -4190,7 +4190,7 @@ html.menu-opened body {
   position: relative;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #a70000;
+  color: #ed0b25;
   text-transform: capitalize;
 }
 .patient-info ul li + li {
@@ -4232,7 +4232,7 @@ html.menu-opened body {
   align-items: center;
   border: 2px dashed #ccc;
   border-radius: 4px;
-  color: #a70000;
+  color: #ed0b25;
   cursor: pointer;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -4297,7 +4297,7 @@ html.menu-opened body {
   align-items: center;
   background-color: #fff;
   border-bottom: 1px solid #f0f0f0;
-  color: #a70000;
+  color: #ed0b25;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -4414,7 +4414,7 @@ html.menu-opened body {
   .media-body
   > div:first-child
   .user-name {
-  color: #a70000;
+  color: #ed0b25;
   text-transform: capitalize;
 }
 .chat-cont-left
@@ -4506,7 +4506,7 @@ html.menu-opened body {
   width: 10px;
 }
 .chat-cont-right .chat-header .media .media-body .user-name {
-  color: #a70000;
+  color: #ed0b25;
   font-size: 16px;
   font-weight: 500;
   text-transform: capitalize;
@@ -4558,7 +4558,7 @@ html.menu-opened body {
   position: relative;
 }
 .chat-cont-right .chat-body .media .media-body .msg-box > div p {
-  color: #a70000;
+  color: #ed0b25;
   margin-bottom: 0;
 }
 .chat-cont-right .chat-body .media .media-body .msg-box + .msg-box {
@@ -4594,7 +4594,7 @@ html.menu-opened body {
   background-color: #e3e3e3;
 }
 .chat-cont-right .chat-body .media.sent .media-body .msg-box > div p {
-  color: #a70000;
+  color: #ed0b25;
 }
 .chat-cont-right .chat-body .chat-date {
   font-size: 14px;
@@ -4984,7 +4984,7 @@ html.menu-opened body {
   margin-bottom: 1.5rem;
 }
 .change-photo-btn {
-  background-color: rgb(167,0,0);
+  background-color: #ed0b25;
   border-radius: 50px;
   color: #fff;
   cursor: pointer;
@@ -5336,7 +5336,7 @@ html.menu-opened body {
 .unread-msg {
   background-color: #ff0000;
   border-radius: 2px;
-  color: #a70000;
+  color: #ed0b25;
   font-size: 10px;
   font-style: normal;
   padding: 0 5px;
@@ -5463,7 +5463,7 @@ html.menu-opened body {
   padding: 0;
 }
 .info-details li .title {
-  color: #a70000;
+  color: #ed0b25;
   font-weight: 500;
 }
 .info-details li .text {
@@ -5548,7 +5548,7 @@ html.menu-opened body {
   padding: 0;
 }
 .fixed-header .user-info a {
-  color: #a70000;
+  color: #ed0b25;
   font-weight: 500;
 }
 .typing-text {
@@ -6015,7 +6015,7 @@ html.menu-opened body {
   margin: 0 0 10px;
 }
 .blog-title a {
-  color: #a70000;
+  color: #ed0b25;
 }
 .blog-title a:hover {
   color: #20c0f3;
@@ -6161,7 +6161,7 @@ html.menu-opened body {
   margin: 0 0 5px;
 }
 .post-info h4 a {
-  color: #a70000;
+  color: #ed0b25;
 }
 .post-info h4 a:hover {
   color: #20c0f3;
@@ -6221,7 +6221,7 @@ html.menu-opened body {
 .tag {
   background-color: #fff;
   border-radius: 4px;
-  color: #a70000;
+  color: #ed0b25;
   padding: 5px 10px;
   position: relative;
   margin: 0 0.5rem 0.5rem 0;
@@ -6327,7 +6327,7 @@ html.menu-opened body {
   font-size: 15px;
 }
 .blog-author-name {
-  color: #a70000;
+  color: #ed0b25;
   font-size: 16px;
   font-weight: 600;
 }
@@ -8159,7 +8159,7 @@ object:hover {
     .square{
       width:100px;
       height:100px;
-      background:#a70000;
+      background:#ed0b25;
       border:solid 2px #FFF;
       transform: skew(180deg,210deg);
       position: absolute;
@@ -8168,7 +8168,7 @@ object:hover {
     .square2{
       width:100px;
       height:100px;
-      background:#a70000;
+      background:#ed0b25;
       border:solid 2px #FFF;
       transform: skew(180deg,150deg);
       position: absolute;
@@ -8178,7 +8178,7 @@ object:hover {
     .square3{
       width:114px;
       height:100px;
-      background:#a70000;
+      background:#ed0b25;
       border:solid 2px #FFF;
      
     

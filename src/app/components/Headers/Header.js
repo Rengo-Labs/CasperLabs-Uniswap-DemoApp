@@ -1,18 +1,36 @@
 import Avatar from '@material-ui/core/Avatar';
 import Cookies from "js-cookie";
-import React, { useState } from "react";
-import { Spinner } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Spinner, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
-import Logo from "../../assets/img/logo.png";
+import Logo from "../../assets/img/cspr.png";
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import NetworkErrorModal from "../Modals/NetworkErrorModal";
 
+import {
+  Signer,
+  CasperServiceByJsonRPC,
+  CasperClient,
+  CLPublicKey,
+  CLByteArray,
+  DeployUtil,
+  CLValueBuilder,
+  RuntimeArgs,
+} from 'casper-js-sdk';
+
 
 function HeaderHome(props) {
   let [menuOpenedClass, setMenuOpenedClass] = useState();
+  let [activeKey, setActiveKey] = useState()
+  let [signerLocked, setSignerLocked] = useState()
+  let [signerConnected, setSignerConnected] = useState(false)
+  let [currentNotification, setCurrentNotification] = useState()
+  let [showAlert, setShowAlert] = useState()
+
+
   let [isLoading] = useState(false);
 
 
@@ -20,16 +38,98 @@ function HeaderHome(props) {
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
- 
+
+
+  useEffect(() => {
+    setTimeout(async () => {
+      try {
+        const connected = await checkConnection();
+        setSignerConnected(connected)
+      } catch (err) {
+        console.log(err)
+        setCurrentNotification({ text: err.message })
+        setShowAlert(true)
+      }
+    }, 100);
+    if (signerConnected) {
+      let res = getActiveKeyFromSigner()
+      setActiveKey(res)
+      localStorage.setItem("Address", res)
+    }
+    window.addEventListener('signer:connected', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(true)
+      setActiveKey(msg.detail.activeKey)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      setCurrentNotification({ text: 'Connected to Signer!', severity: 'success' })
+      setShowAlert(true)
+    });
+    window.addEventListener('signer:disconnected', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(false)
+      setActiveKey(msg.detail.activeKey)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      setCurrentNotification({ text: 'Disconnected from Signer', severity: 'info' })
+      setShowAlert(true)
+    });
+    window.addEventListener('signer:tabUpdated', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(msg.detail.isConnected)
+      setActiveKey(msg.detail.activeKey)
+      localStorage.setItem("Address", msg.detail.activeKey)
+    });
+    window.addEventListener('signer:activeKeyChanged', msg => {
+      setActiveKey(msg.detail.activeKey)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      setCurrentNotification({ text: 'Active key changed', severity: 'warning' })
+      setShowAlert(true)
+    });
+    window.addEventListener('signer:locked', msg => {
+      setSignerLocked(!msg.detail.isUnlocked);
+      setCurrentNotification({ text: 'Signer has locked', severity: 'info' })
+      setShowAlert(true)
+      setActiveKey(msg.detail.activeKey)
+      localStorage.setItem("Address", msg.detail.activeKey)
+    });
+    window.addEventListener('signer:unlocked', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(msg.detail.isConnected)
+      setActiveKey(msg.detail.activeKey)
+      localStorage.setItem("Address", msg.detail.activeKey)
+    });
+    window.addEventListener('signer:initialState', msg => {
+      console.log("Initial State: ", msg.detail);
+
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(msg.detail.isConnected)
+      setActiveKey(msg.detail.activeKey)
+      localStorage.setItem("Address", msg.detail.activeKey)
+    });
+
+  }, []);
+
+
+  async function checkConnection() {
+    return await Signer.isConnected();
+  }
+
+  async function getActiveKeyFromSigner() {
+    return await Signer.getActivePublicKey();
+  }
+  async function connectToSigner() {
+    return Signer.sendConnectionRequest();
+  }
+
+
   const selectedStyling = {
-    border: "2px solid 'rgb(167,0,0)'",
+    border: "2px solid '#ed0b25'",
     padding: "10px 20px",
     borderRadius: "5px",
     color: '#FFF',
-    backgroundColor: 'rgb(167,0,0)'
+    backgroundColor: '#ed0b25'
   };
   const defaultStyling = {
-    // border: "2px solid rgb(167,0,0)",
+    // border: "2px solid #ed0b25",
     padding: "10px 20px",
     borderRadius: "5px",
     // color: '#FFF',
@@ -37,21 +137,21 @@ function HeaderHome(props) {
   };
   const selectedNavStyle = {
     search: props.selectedNav === "search" ? defaultStyling : defaultStyling,
-    Market: props.selectedNav === "Market" ? selectedStyling : defaultStyling,
-    Drops: props.selectedNav === "Drops" ? selectedStyling : defaultStyling,
+    Swap: props.selectedNav === "Swap" ? selectedStyling : defaultStyling,
+    Pool: props.selectedNav === "Pool" ? selectedStyling : defaultStyling,
+    Tokens: props.selectedNav === "Tokens" ? selectedStyling : defaultStyling,
     Home: props.selectedNav === "Home" ? selectedStyling : defaultStyling,
     Blog: props.selectedNav === "Blog" ? selectedStyling : defaultStyling,
     Community: props.selectedNav === "Community" ? selectedStyling : defaultStyling,
     create: props.selectedNav === "create" ? selectedStyling : defaultStyling,
   };
 
-  let Logout = (e) => {
+  let Disconnect = (e) => {
     console.log("akjdf");
     Cookies.remove("Authorization");
     localStorage.removeItem("Address")
+    Signer.disconnectFromSite()
     window.location.reload();
-
-
     // setTimeout(() => { }, 1);
   };
 
@@ -65,7 +165,7 @@ function HeaderHome(props) {
           <a
             id="mobile_btn"
             href="/"
-            style={{ color: "rgb(167,0,0)" }}
+            style={{ color: "#ed0b25" }}
             onClick={(e) => {
               e.preventDefault();
               setMenuOpenedClass("menu-opened");
@@ -78,25 +178,25 @@ function HeaderHome(props) {
             </span>
           </a>
 
-          <Link style={{ color: 'rgb(167,0,0)' }} to="/" className="navbar-brand logo">
-            <img src={Logo} alt="Logo" width="130" />
-            {/* Robot Drop */}
+          <Link style={{ color: '#ed0b25' }} to="/" className="navbar-brand logo">
+            <img src={Logo} alt="Logo" width="50" />
+            {/* Casper Swap */}
           </Link>
 
-          {/* <Link style={{ color: 'rgb(167,0,0)' }} to="/kyc" className="navbar-brand">
+          {/* <Link style={{ color: '#ed0b25' }} to="/kyc" className="navbar-brand">
             KYC
           </Link> */}
         </div>
 
         <div className="main-menu-wrapper">
           <div className="menu-header">
-            {/* <a style={{ color: 'rgb(167,0,0)' }} href="/" className="menu-logo">
+            {/* <a style={{ color: '#ed0b25' }} href="/" className="menu-logo">
               <img src={Logo} alt="Logo" width="100" height="60" />
             </a> */}
             <a
               id="menu_close"
               className="menu-close"
-              style={{ color: 'rgb(167,0,0)' }}
+              style={{ color: '#ed0b25' }}
               href="/"
               onClick={(e) => {
                 e.preventDefault();
@@ -126,43 +226,59 @@ function HeaderHome(props) {
               </a>
             </li>
             <li className="login-link ">
-              {/* <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} > */}
+              {/* <Link to="/dashboard" style={{ color: '#ed0b25' }} > */}
 
-                {localStorage.getItem("Address") ? (
-                  <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: 'rgb(167,0,0)' }}>
-                    <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
-                  </a>
-                ) : (
-                  <>
-                    <Link to="/login" style={{ color: 'rgb(167,0,0)' }} >
-                      <span style={selectedNavStyle.Community} >
-                        Login/Signup
-              </span>
-                    </Link>
-                  </>
+              {localStorage.getItem("Address") && localStorage.getItem("Address") != null && localStorage.getItem("Address") != 'null' ? (
+                <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: '#ed0b25' }}>
+                  <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
+                </a>
+              ) : (signerLocked && signerConnected ? (
+                <>
+                  <Button variant="primary"
+                    onClick={() => { connectToSigner() }}
+                  >
+                    Unlock Signer
+                  </Button>
 
-                )}
+                </>
+              ) : (
+                <>
+                  <Button variant="primary"
+                    onClick={() => { connectToSigner() }}
+                  >
+                    Connect to Signer
+                  </Button>
+                </>
+              )
+              )}
               {/* </Link> */}
             </li>
             <li>
-              <a href="/" style={{ color: 'rgb(167,0,0)' }} >
+              <a href="/" style={{ color: '#ed0b25' }} >
                 <span style={selectedNavStyle.Home}>
                   Home
-                  </span>
+                </span>
               </a>
             </li>
             <li>
-              <Link to="/marketPlace" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Market}>
-                  Market
-                  </span>
+              <Link to="/swap" style={{ color: '#ed0b25' }} >
+                <span style={selectedNavStyle.Swap}>
+                  Swap
+                </span>
               </Link>
             </li>
             <li>
-              <Link to="/auctionDrops" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Drops}>
-                  Drops
-                  </span>
+              <Link to="/pool" style={{ color: '#ed0b25' }} >
+                <span style={selectedNavStyle.Pool}>
+                  Pool
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link to="/tokens" style={{ color: '#ed0b25' }} >
+                <span style={selectedNavStyle.Tokens}>
+                  Tokens
+                </span>
               </Link>
             </li>
 
@@ -180,36 +296,35 @@ function HeaderHome(props) {
               </Spinner>
             </div>
           ) : (
-            localStorage.getItem("Address") ? (
-              <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: 'rgb(167,0,0)' }}>
+            localStorage.getItem("Address") && localStorage.getItem("Address") != null && localStorage.getItem("Address") != 'null' ? (
+              <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: '#ed0b25' }}>
                 <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
               </a>
-            ) : (
+            ) : (signerLocked && signerConnected ? (
               <>
-                <Link to="/login" style={{ color: 'rgb(167,0,0)' }} >
-                  <span style={{ cursor: 'pointer' }}>
-                    Login/Signup
-            </span>
-                </Link>
+                <Button variant="primary"
+                  onClick={() => { connectToSigner() }}
+                >
+                  Unlock Signer
+                </Button>
+
               </>
-            )
+            ) :  (
+              <>
+                <Button variant="primary"
+                  onClick={() => { connectToSigner() }}
+                >
+                  Connect to Signer
+                </Button>
+              </>
+            ))
           )}
 
           </li>
-          <li >
-            {localStorage.getItem("Address") ? (
-              <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
-                Dashboard
-              </Link>
-
-            ) : (
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            )}
-          </li>
           <li>
-            {localStorage.getItem("Address") ? (
-              <span style={{ cursor: 'pointer' }} onClick={() => Logout()}>
-                Logout
+          {localStorage.getItem("Address") && localStorage.getItem("Address") != null && localStorage.getItem("Address") != 'null' ? (
+              <span style={{ cursor: 'pointer' }} onClick={() => Disconnect()}>
+                Disconnect
               </span>
             ) : (null)}
           </li>

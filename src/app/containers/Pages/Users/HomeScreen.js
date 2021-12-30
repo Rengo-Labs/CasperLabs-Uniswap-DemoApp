@@ -5,9 +5,7 @@ import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";
 import HeaderHome from "../../../components/Headers/Header";
-import Drops from "./Home/Drops";
 import HomeBanner from "./Home/HomeBanner";
-import Market from "./Home/Market";
 
 function HomeScreen() {
 
@@ -15,10 +13,15 @@ function HomeScreen() {
     <div className="main-wrapper">
       <div className="home-section home-full-height">
         <HeaderHome selectedNav={"Home"} />
-        <HomeBanner />
-        <Market />
-        <Drops />
+        <div
+          className="content"
+          style={{ paddingTop: "100px", minHeight: "100vh" }}
+          position="absolute"
+        >
+          <HomeBanner />
+        </div>
       </div>
+
       <Footer position={"relative"} />
     </div>
   );

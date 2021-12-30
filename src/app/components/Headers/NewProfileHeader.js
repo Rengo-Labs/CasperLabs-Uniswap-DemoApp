@@ -77,14 +77,10 @@ export default function HeaderMenuAppBar(props) {
     handleClose();
   };
 
-  let handleLogout = (e) => {
+  let handleDisconnect = (e) => {
     Cookies.remove("Authorization");
     history.push("/");
   };
-
-  // useEffect(() => {
-  //   console.log(props.userData);
-  // },[]);
 
   return (
     <div className={classes.root}>
@@ -105,11 +101,11 @@ export default function HeaderMenuAppBar(props) {
             <NavLink to={"/"}>
               <img
                 src={logo}
-                alt={"Robot Drop"}
+                alt={"Casper Swap"}
                 width="80"
                 height="70"
               />
-              Robot Drop
+              Casper Swap
             </NavLink>
           </div>
           <div>
@@ -154,7 +150,7 @@ export default function HeaderMenuAppBar(props) {
               </MenuItem>
               <Divider />
               <MenuItem onClick={handleDashboard}>Dashboard</MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              <MenuItem onClick={handleDisconnect}>Disconnect</MenuItem>
             </Menu>
           </div>
         </Toolbar>

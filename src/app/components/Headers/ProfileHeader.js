@@ -46,20 +46,20 @@ function ProfileHeader(props) {
             href="/"
             className="logo"
             onClick={(e) => e.preventDefault()}
-            style={{ color: 'rgb(167,0,0)' }}
+            style={{ color: '#ed0b25' }}
           >
             {/* <img src={logo} alt="Logo" /> */}
 
-            Robot Drop
+            Casper Swap
           </a>
           <a
             href="/"
             className="logo logo-small"
             onClick={(e) => e.preventDefault()}
-            style={{ color: 'rgb(167,0,0)' }}
+            style={{ color: '#ed0b25' }}
           >
             {/* <img src={logoSmall} alt="Logo" width="30" height="30" /> */}
-            Robot Drop
+            Casper Swap
           </a>
         </div>
         {/* <!-- /Logo --> */}
@@ -152,7 +152,7 @@ function ProfileHeader(props) {
                     to="/"
                     style={{ width: "100%" }}
                   >
-                    Logout
+                    Disconnect
                   </Link>
                 </Dropdown.Item>
               </Dropdown.Menu>

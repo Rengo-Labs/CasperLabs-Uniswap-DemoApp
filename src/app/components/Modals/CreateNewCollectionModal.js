@@ -78,7 +78,7 @@ function CreateNewCollectionModal(props) {
                                 <div className="upload-img">
                                     <div
                                         className="change-photo-btn"
-                                        style={{ backgroundColor: "rgb(167,0,0)" }}
+                                        style={{ backgroundColor: "#ed0b25" }}
                                     >
                                         {isUploadingCollectionImage ? (
                                             <div className="text-center">

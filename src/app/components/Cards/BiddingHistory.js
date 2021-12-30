@@ -56,7 +56,7 @@ function BiddingHistory(props) {
                         <strong>Address : </strong>{props.data.address}
                     </Typography>
                     <Typography variant="body2" color="textSecondary" component="p">
-                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: 'rgb(167,0,0)' }}>{props.data.Bid / 10 ** 18} WETH</span>
+                        <strong>Bid : </strong><span style={{ cursor: 'pointer', color: '#ed0b25' }}>{props.data.Bid / 10 ** 18} WETH</span>
                     </Typography>
                 </CardActionArea>
             </Card>
