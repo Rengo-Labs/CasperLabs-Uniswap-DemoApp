@@ -9,6 +9,7 @@ import Logo from "../../assets/img/cspr.png";
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import NetworkErrorModal from "../Modals/NetworkErrorModal";
+import { useSnackbar } from 'notistack';
 
 import {
   Signer,
@@ -23,6 +24,7 @@ import {
 
 
 function HeaderHome(props) {
+  const { enqueueSnackbar } = useSnackbar();
   let [menuOpenedClass, setMenuOpenedClass] = useState();
   let [activeKey, setActiveKey] = useState()
   let [signerLocked, setSignerLocked] = useState()
@@ -110,14 +112,35 @@ function HeaderHome(props) {
 
 
   async function checkConnection() {
-    return await Signer.isConnected();
+
+    try {
+      return await Signer.isConnected();
+    }
+    catch {
+      let variant = "Error";
+      enqueueSnackbar('Unable to connect', { variant });
+    }
   }
 
   async function getActiveKeyFromSigner() {
-    return await Signer.getActivePublicKey();
+    try {
+      return await Signer.getActivePublicKey();
+    }
+    catch {
+      let variant = "Error";
+      enqueueSnackbar('Unable to get Active Public Key', { variant });
+    }
+
   }
   async function connectToSigner() {
-    return Signer.sendConnectionRequest();
+
+    try {
+      return Signer.sendConnectionRequest();
+    }
+    catch {
+      let variant = "Error";
+      enqueueSnackbar('Unable to send Connection Request', { variant });
+    }
   }
 
 
@@ -309,7 +332,7 @@ function HeaderHome(props) {
                 </Button>
 
               </>
-            ) :  (
+            ) : (
               <>
                 <Button variant="primary"
                   onClick={() => { connectToSigner() }}
@@ -322,7 +345,7 @@ function HeaderHome(props) {
 
           </li>
           <li>
-          {localStorage.getItem("Address") && localStorage.getItem("Address") != null && localStorage.getItem("Address") != 'null' ? (
+            {localStorage.getItem("Address") && localStorage.getItem("Address") != null && localStorage.getItem("Address") != 'null' ? (
               <span style={{ cursor: 'pointer' }} onClick={() => Disconnect()}>
                 Disconnect
               </span>
