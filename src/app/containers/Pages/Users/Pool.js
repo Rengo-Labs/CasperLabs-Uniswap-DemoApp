@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import {
-    CasperClient, CLAccountHash, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
+    CasperClient, CLAccountHash, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
 } from 'casper-js-sdk';
 import { slice } from 'lodash';
 import { useSnackbar } from 'notistack';
@@ -17,11 +17,11 @@ import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import { ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import Footer from "../../../components/Footers/Footer";
 import HeaderHome from "../../../components/Headers/Header";
-
+import { Some, None } from "ts-results";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -67,8 +67,8 @@ function Pool(props) {
     let [priceInUSD, setPriceInUSD] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
-    let [tokenANumber, setTokenANumber] = useState(0);
-    let [tokenBNumber, setTokenBNumber] = useState(0);
+    let [tokenAAmount, setTokenAAmount] = useState(0);
+    let [tokenBAmount, setTokenBAmount] = useState(0);
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
     let [approveBIsLoading, setApproveBIsLoading] = useState(false);
 
@@ -210,6 +210,71 @@ function Pool(props) {
         }
         throw Error('Timeout after ' + i + 's. Something\'s wrong');
     }
+    async function addLiquidityMakeDeploy() {
+        const publicKeyHex = localStorage.getItem("Address")
+        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
+            const publicKey = CLPublicKey.fromHex(publicKeyHex);
+            const caller = ROUTER_CONTRACT_HASH;
+
+            const tokenAAddress = tokenA.address;
+            const tokenBAddress = tokenB.address;
+            const token_AAmount = tokenAAmount;
+            const token_BAmount = tokenBAmount;
+            const deadline = 1739598100811;
+            const paymentAmount = 20000000000;
+
+            // const runtimeArgs = RuntimeArgs.fromMap({
+            //     tokenA: createRecipientAddress(spenderByteArray),
+            //     tokenB: CLValueBuilder.u256(5)
+            // });
+            console.log('tokenAAddress', tokenAAddress);
+            const _token_a = new CLByteArray(
+                Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
+            );
+            const _token_b = new CLByteArray(
+                Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+            );
+            const pair = new CLByteArray(
+                Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+            );
+            
+
+            const runtimeArgs = RuntimeArgs.fromMap({
+                token_a: new CLKey(_token_a),
+                token_b: new CLKey(_token_b),
+                amount_a_desired: CLValueBuilder.u256(token_AAmount),
+                amount_b_desired: CLValueBuilder.u256(token_BAmount),
+                amount_a_min: CLValueBuilder.u256(token_AAmount / 2),
+                amount_b_min: CLValueBuilder.u256(token_BAmount / 2),
+                to: createRecipientAddress(publicKey),
+                deadline: CLValueBuilder.u256(deadline),
+                pair: null
+            });
+
+            let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+            let entryPoint = 'add_liquidity_js_client';
+
+            // Set contract installation deploy (unsigned).
+            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+            console.log("make deploy: ", deploy);
+            try {
+                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                let result = await putdeploy(signedDeploy)
+                console.log('result', result);
+                let variant = "success";
+                enqueueSnackbar('Liquidity Added Successfully', { variant });
+            }
+            catch {
+                let variant = "Error";
+                enqueueSnackbar('User Canceled Signing', { variant });
+            }
+
+        }
+        else {
+            let variant = "error";
+            enqueueSnackbar('Connect to Casper Signer Please', { variant });
+        }
+    }
     return (
 
         <div className="account-page">
@@ -252,8 +317,8 @@ function Pool(props) {
                                                                                     console.log('event', event);
                                                                                     console.log('value', value);
                                                                                     setTokenA(value)
-                                                                                    setTokenBNumber(0)
-                                                                                    setTokenANumber(0)
+                                                                                    setTokenBAmount(0)
+                                                                                    setTokenAAmount(0)
                                                                                 }}
                                                                                 renderInput={(params) => (
                                                                                     <TextField
@@ -270,32 +335,32 @@ function Pool(props) {
                                                                             <input
                                                                                 type="number"
                                                                                 required
-                                                                                value={tokenANumber}
+                                                                                value={tokenAAmount}
                                                                                 placeholder={0}
                                                                                 min={0}
                                                                                 step={.01}
                                                                                 className="form-control"
                                                                                 onChange={(e) => {
-                                                                                    // setTokenANumber(e.target.value)
+                                                                                    // setTokenAAmount(e.target.value)
                                                                                     if (tokenA.name === 'WCSPR' && tokenB.name === "WISE") {
-                                                                                        setTokenANumber(e.target.value)
-                                                                                        setTokenBNumber(e.target.value * (10 / 1))
+                                                                                        setTokenAAmount(e.target.value)
+                                                                                        setTokenBAmount(e.target.value * (10 / 1))
                                                                                     }
                                                                                     else if (tokenA.name === 'WISE' && tokenB.name === "WCSPR") {
-                                                                                        setTokenANumber(e.target.value)
-                                                                                        setTokenBNumber(e.target.value * (1 / 10))
+                                                                                        setTokenAAmount(e.target.value)
+                                                                                        setTokenBAmount(e.target.value * (1 / 10))
                                                                                     }
                                                                                     else if (tokenA.name === 'WCSPR' && tokenB.name === "USDC") {
-                                                                                        setTokenANumber(e.target.value)
-                                                                                        setTokenBNumber(e.target.value * (1 / 8))
+                                                                                        setTokenAAmount(e.target.value)
+                                                                                        setTokenBAmount(e.target.value * (1 / 8))
                                                                                     }
                                                                                     else if (tokenA.name === 'USDC' && tokenB.name === "WCSPR") {
-                                                                                        setTokenANumber(e.target.value)
-                                                                                        setTokenBNumber(e.target.value * (8 / 1))
+                                                                                        setTokenAAmount(e.target.value)
+                                                                                        setTokenBAmount(e.target.value * (8 / 1))
                                                                                     }
                                                                                     else {
-                                                                                        setTokenANumber(e.target.value)
-                                                                                        setTokenBNumber(e.target.value)
+                                                                                        setTokenAAmount(e.target.value)
+                                                                                        setTokenBAmount(e.target.value)
                                                                                     }
                                                                                 }}
                                                                             />
@@ -303,15 +368,15 @@ function Pool(props) {
                                                                             <input
                                                                                 type="number"
                                                                                 required
-                                                                                value={tokenANumber}
+                                                                                value={tokenAAmount}
                                                                                 placeholder={0}
                                                                                 className="form-control"
                                                                                 disabled
                                                                             />
                                                                         )}
                                                                     </div>
-                                                                    <div style={{ textAlign: 'center', marginTop:'13px' }} className="col-md-12 col-lg-2">
-                                                                        {Math.round(tokenANumber * priceInUSD * 1000) / 1000}$
+                                                                    <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
+                                                                        {Math.round(tokenAAmount * priceInUSD * 1000) / 1000}$
                                                                     </div>
                                                                 </div>
                                                                 <br></br>
@@ -330,8 +395,8 @@ function Pool(props) {
                                                                                     console.log('event', event);
                                                                                     console.log('value', value);
                                                                                     setTokenB(value)
-                                                                                    setTokenBNumber(0)
-                                                                                    setTokenANumber(0)
+                                                                                    setTokenBAmount(0)
+                                                                                    setTokenAAmount(0)
                                                                                 }}
                                                                                 renderInput={(params) => (
                                                                                     <TextField
@@ -348,31 +413,31 @@ function Pool(props) {
                                                                             <input
                                                                                 type="number"
                                                                                 required
-                                                                                value={tokenBNumber}
+                                                                                value={tokenBAmount}
                                                                                 placeholder={0}
                                                                                 min={0}
                                                                                 step={.01}
                                                                                 className="form-control"
                                                                                 onChange={(e) => {
                                                                                     if (tokenB.name === 'WCSPR' && tokenA.name === "WISE") {
-                                                                                        setTokenBNumber(e.target.value)
-                                                                                        setTokenANumber(e.target.value * (10 / 1))
+                                                                                        setTokenBAmount(e.target.value)
+                                                                                        setTokenAAmount(e.target.value * (10 / 1))
                                                                                     }
                                                                                     else if (tokenB.name === 'WISE' && tokenA.name === "WCSPR") {
-                                                                                        setTokenBNumber(e.target.value)
-                                                                                        setTokenANumber(e.target.value * (1 / 10))
+                                                                                        setTokenBAmount(e.target.value)
+                                                                                        setTokenAAmount(e.target.value * (1 / 10))
                                                                                     }
                                                                                     else if (tokenB.name === 'WCSPR' && tokenA.name === "USDC") {
-                                                                                        setTokenBNumber(e.target.value)
-                                                                                        setTokenANumber(e.target.value * (1 / 8))
+                                                                                        setTokenBAmount(e.target.value)
+                                                                                        setTokenAAmount(e.target.value * (1 / 8))
                                                                                     }
                                                                                     else if (tokenB.name === 'USDC' && tokenA.name === "WCSPR") {
-                                                                                        setTokenBNumber(e.target.value)
-                                                                                        setTokenANumber(e.target.value * (8 / 1))
+                                                                                        setTokenBAmount(e.target.value)
+                                                                                        setTokenAAmount(e.target.value * (8 / 1))
                                                                                     }
                                                                                     else {
-                                                                                        setTokenBNumber(e.target.value)
-                                                                                        setTokenANumber(e.target.value)
+                                                                                        setTokenBAmount(e.target.value)
+                                                                                        setTokenAAmount(e.target.value)
                                                                                     }
 
                                                                                 }}
@@ -381,7 +446,7 @@ function Pool(props) {
                                                                             <input
                                                                                 type="number"
                                                                                 required
-                                                                                value={tokenBNumber}
+                                                                                value={tokenBAmount}
                                                                                 placeholder={0}
                                                                                 style={{ height: '20px' }}
                                                                                 disabled
@@ -390,8 +455,8 @@ function Pool(props) {
                                                                             />
                                                                         )}
                                                                     </div>
-                                                                    <div style={{ textAlign: 'center', marginTop:'13px' }} className="col-md-12 col-lg-2">
-                                                                        {Math.round(tokenBNumber * priceInUSD * 1000) / 1000}$
+                                                                    <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
+                                                                        {Math.round(tokenBAmount * priceInUSD * 1000) / 1000}$
                                                                     </div>
                                                                 </div>
                                                                 {tokenA ? (
@@ -426,7 +491,7 @@ function Pool(props) {
                                                                 ) : (null)}
                                                                 <Row>
                                                                     <Col>
-                                                                        {tokenA && tokenANumber > 0 ? (
+                                                                        {tokenA && tokenAAmount > 0 ? (
                                                                             approveAIsLoading ? (
                                                                                 <div className="text-center">
                                                                                     <Spinner
@@ -453,7 +518,7 @@ function Pool(props) {
                                                                         ) : (null)}
                                                                     </Col>
                                                                     <Col>
-                                                                        {tokenB && tokenBNumber > 0 ? (
+                                                                        {tokenB && tokenBAmount > 0 ? (
                                                                             approveBIsLoading ? (
                                                                                 <div className="text-center">
                                                                                     <Spinner
@@ -554,10 +619,10 @@ function Pool(props) {
                                                                         </Spinner>
                                                                     </div>
                                                                 ) : (
-                                                                    tokenANumber !== 0 && tokenBNumber !== 0 && tokenANumber !== undefined && tokenBNumber !== undefined ? (
+                                                                    tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                         <button
                                                                             className="btn btn-block btn-lg login-btn"
-                                                                            type="submit"
+                                                                            onClick={async () => await addLiquidityMakeDeploy()}
                                                                             style={{ marginTop: '20px' }}
                                                                         >
                                                                             Add Liquidity
