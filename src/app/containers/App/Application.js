@@ -4,6 +4,7 @@ import { SnackbarProvider } from 'notistack';
 import React, { useEffect } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import HomeScreen from "../Pages/Users/HomeScreen";
+import Pairs from "../Pages/Users/Pairs";
 import Pool from "../Pages/Users/Pool";
 import Swap from "../Pages/Users/Swap";
 import Tokens from "../Pages/Users/Tokens";
@@ -42,6 +43,8 @@ function App() {
       return <Route component={Swap} />;
     } else if (path === "/tokens") {
       return <Route component={Tokens} />;
+    } else if (path === "/pairs") {
+      return <Route component={Pairs} />;
     } else {
       return <Route component={HomeScreen} />;
     }
@@ -62,6 +65,7 @@ function App() {
           <Route path="/pool" component={Pool} />
           <Route path="/swap" component={Swap} />
           <Route path="/tokens" component={Tokens} />
+          <Route path="/pairs" component={Pairs} />
 
         </Switch>
       </BrowserRouter>

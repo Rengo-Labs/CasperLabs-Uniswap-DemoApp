@@ -1,5 +1,5 @@
-import { Avatar, CardHeader } from '@material-ui/core/';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { Avatar, Card, CardContent, CardHeader } from '@material-ui/core/';
+import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
@@ -7,21 +7,19 @@ import axios from "axios";
 import {
     CasperClient, CLAccountHash, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
 } from 'casper-js-sdk';
-import { slice } from 'lodash';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
 import Spinner from "react-bootstrap/Spinner";
 import windowSize from "react-window-size";
+import { Some } from "ts-results";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
-import Footer from "../../../components/Footers/Footer";
 import HeaderHome from "../../../components/Headers/Header";
-import { Some, None } from "ts-results";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -62,8 +60,6 @@ const useStyles = makeStyles((theme) => ({
 function Pool(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
-    const theme = useTheme();
-    let [userName, setUserName] = useState();
     let [priceInUSD, setPriceInUSD] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
@@ -73,7 +69,9 @@ function Pool(props) {
     let [approveBIsLoading, setApproveBIsLoading] = useState(false);
 
     const [tokenList, setTokenList] = useState([])
+    const [pairList, setPairList] = useState([])
     const [istokenList, setIsTokenList] = useState(false)
+    const [ispairList, setIsPairList] = useState(false)
     let [isLoading, setIsLoading] = useState(false);
     let [msg, setMsg] = useState("");
 
@@ -110,6 +108,20 @@ function Pool(props) {
                 console.log("response", error.response);
             });
     }, []);
+    useEffect(() => {
+        axios
+            .get('/getpairlist')
+            .then((res) => {
+                console.log('resresres', res)
+                console.log(res.data.pairList)
+                setIsPairList(true)
+                setPairList(res.data.pairList)
+            })
+            .catch((error) => {
+                console.log(error)
+                console.log(error.response)
+            })// eslint-disable-next-line
+    }, []);
     function createRecipientAddress(recipient) {
         if (recipient instanceof CLPublicKey) {
             return new CLKey(new CLAccountHash(recipient.toAccountHash()));
@@ -117,7 +129,7 @@ function Pool(props) {
             return new CLKey(recipient);
         }
     };
-    async function approveMakedeploy(contractHash,amount) {
+    async function approveMakedeploy(contractHash, amount) {
         console.log('contractHash', contractHash);
         const publicKeyHex = localStorage.getItem("Address")
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
@@ -211,6 +223,7 @@ function Pool(props) {
         throw Error('Timeout after ' + i + 's. Something\'s wrong');
     }
     async function addLiquidityMakeDeploy() {
+        setIsLoading(true)
         const publicKeyHex = localStorage.getItem("Address")
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
@@ -237,7 +250,7 @@ function Pool(props) {
             const pair = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
             );
-            
+
 
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
@@ -263,10 +276,12 @@ function Pool(props) {
                 console.log('result', result);
                 let variant = "success";
                 enqueueSnackbar('Liquidity Added Successfully', { variant });
+                setIsLoading(false)
             }
             catch {
                 let variant = "Error";
                 enqueueSnackbar('User Canceled Signing', { variant });
+                setIsLoading(false)
             }
 
         }
@@ -309,7 +324,7 @@ function Pool(props) {
                                                                                 id="combo-dox-demo"
                                                                                 required
                                                                                 options={tokenList}
-
+                                                                                disabled={!istokenList}
                                                                                 getOptionLabel={(option) =>
                                                                                     option.name + ',' + option.symbol
                                                                                 }
@@ -387,7 +402,7 @@ function Pool(props) {
                                                                                 id="combo-dox-demo"
                                                                                 required
                                                                                 options={tokenList}
-                                                                                // disabled={isDisabledImporter}
+                                                                                disabled={!istokenList}
                                                                                 getOptionLabel={(option) =>
                                                                                     option.name + ',' + option.symbol
                                                                                 }
@@ -600,6 +615,7 @@ function Pool(props) {
                                                                                 </Typography>
                                                                             </Col>
                                                                         </Row>
+
                                                                     </>
                                                                 ) : (
                                                                     null
@@ -625,7 +641,7 @@ function Pool(props) {
                                                                             onClick={async () => await addLiquidityMakeDeploy()}
                                                                             style={{ marginTop: '20px' }}
                                                                         >
-                                                                            Add Liquidity
+                                                                            Supply
                                                                         </button>
                                                                     ) : localStorage.getItem("Address") === 'null' || localStorage.getItem("Address") === null || localStorage.getItem("Address") === undefined ? (
                                                                         <button
@@ -647,6 +663,32 @@ function Pool(props) {
 
                                                                 )}
                                                             </form>
+                                                            <br></br>
+                                                            {tokenA && tokenB ? (
+                                                                <Card>
+                                                                    <CardHeader title='Your Position'></CardHeader>
+                                                                    <CardContent>
+                                                                        <Row>
+                                                                            <Col>uni/eth</Col>
+                                                                            <Col>.5</Col>
+                                                                        </Row>
+                                                                        <Row>
+                                                                            <Col>your Pool Share</Col>
+                                                                            <Col></Col>
+                                                                        </Row>
+                                                                        <Row>
+                                                                            <Col>Uni</Col>
+                                                                            <Col>2</Col>
+                                                                        </Row>
+                                                                        <Row>
+                                                                            <Col>Eth</Col>
+                                                                            <Col>1</Col>
+                                                                        </Row>
+                                                                    </CardContent>
+                                                                </Card>
+                                                            ) : (
+                                                                null
+                                                            )}
                                                         </>
                                                     </div>
                                                 </div>

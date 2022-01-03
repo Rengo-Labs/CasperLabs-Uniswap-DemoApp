@@ -159,21 +159,24 @@ function HeaderHome(props) {
     // backgroundColor: "#000"
   };
   const selectedNavStyle = {
-    search: props.selectedNav === "search" ? defaultStyling : defaultStyling,
     Swap: props.selectedNav === "Swap" ? selectedStyling : defaultStyling,
     Pool: props.selectedNav === "Pool" ? selectedStyling : defaultStyling,
     Tokens: props.selectedNav === "Tokens" ? selectedStyling : defaultStyling,
     Home: props.selectedNav === "Home" ? selectedStyling : defaultStyling,
-    Blog: props.selectedNav === "Blog" ? selectedStyling : defaultStyling,
-    Community: props.selectedNav === "Community" ? selectedStyling : defaultStyling,
-    create: props.selectedNav === "create" ? selectedStyling : defaultStyling,
+    Pairs: props.selectedNav === "pairs" ? selectedStyling : defaultStyling,
   };
 
   let Disconnect = (e) => {
     console.log("akjdf");
     Cookies.remove("Authorization");
     localStorage.removeItem("Address")
-    Signer.disconnectFromSite()
+    try{
+      Signer.disconnectFromSite()
+    }
+    catch{
+
+    }
+    
     window.location.reload();
     // setTimeout(() => { }, 1);
   };
@@ -301,6 +304,13 @@ function HeaderHome(props) {
               <Link to="/tokens" style={{ color: '#ed0b25' }} >
                 <span style={selectedNavStyle.Tokens}>
                   Tokens
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link to="/pairs" style={{ color: '#ed0b25' }} >
+                <span style={selectedNavStyle.Pairs}>
+                  Pairs
                 </span>
               </Link>
             </li>
