@@ -117,7 +117,7 @@ function Pool(props) {
             return new CLKey(recipient);
         }
     };
-    async function approveMakedeploy(contractHash) {
+    async function approveMakedeploy(contractHash,amount) {
         console.log('contractHash', contractHash);
         const publicKeyHex = localStorage.getItem("Address")
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
@@ -127,7 +127,7 @@ function Pool(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(5)
+                amount: CLValueBuilder.u256(amount)
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
@@ -248,7 +248,7 @@ function Pool(props) {
                 amount_b_min: CLValueBuilder.u256(token_BAmount / 2),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
-                pair: null
+                pair: new CLOption(Some(new CLKey(pair)))
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
@@ -507,7 +507,7 @@ function Pool(props) {
                                                                                     className="btn btn-block btn-lg login-btn"
                                                                                     onClick={async () => {
                                                                                         setApproveAIsLoading(true)
-                                                                                        await approveMakedeploy(tokenA.address)
+                                                                                        await approveMakedeploy(tokenA.address, tokenAAmount)
                                                                                         setApproveAIsLoading(false)
                                                                                     }
                                                                                     }
@@ -534,7 +534,7 @@ function Pool(props) {
                                                                                     className="btn btn-block btn-lg login-btn"
                                                                                     onClick={async () => {
                                                                                         setApproveBIsLoading(true)
-                                                                                        await approveMakedeploy(tokenB.address)
+                                                                                        await approveMakedeploy(tokenB.address, tokenBAmount)
                                                                                         setApproveBIsLoading(false)
                                                                                     }
                                                                                     }

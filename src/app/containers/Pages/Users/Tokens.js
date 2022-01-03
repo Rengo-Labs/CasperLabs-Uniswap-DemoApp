@@ -1,15 +1,8 @@
 import { Avatar, CardHeader } from '@material-ui/core/';
-import Card from '@material-ui/core/Card';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
-import TextField from "@material-ui/core/TextField";
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import axios from "axios";
-import Cookies from "js-cookie";
-import React, { useEffect, useState } from "react";
-import { Col, Row } from 'react-bootstrap';
-import Spinner from "react-bootstrap/Spinner";
 import Typography from '@material-ui/core/Typography';
-
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
@@ -17,6 +10,7 @@ import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import Footer from "../../../components/Footers/Footer";
 import HeaderHome from "../../../components/Headers/Header";
+
 
 
 const useStyles = makeStyles((theme) => ({
