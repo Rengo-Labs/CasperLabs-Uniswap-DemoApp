@@ -4,10 +4,12 @@ import { SnackbarProvider } from 'notistack';
 import React, { useEffect } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import HomeScreen from "../Pages/Users/HomeScreen";
+import AddLiquidity from "../Pages/Users/AddLiquidity";
 import Pairs from "../Pages/Users/Pairs";
 import Pool from "../Pages/Users/Pool";
 import Swap from "../Pages/Users/Swap";
 import Tokens from "../Pages/Users/Tokens";
+import RemoveLiquidity from "../Pages/Users/RemoveLiquidity";
 
 function App() {
   let isLoggedIn;
@@ -39,6 +41,10 @@ function App() {
     checkLoginStatus();
     if (path === "/pool") {
       return <Route component={Pool} />;
+    } else if (path === "/pool/addLiquidity") {
+      return <Route component={AddLiquidity} />
+    } else if (path === "/pool/removeLiquidity") {
+      return <Route component={RemoveLiquidity} />
     } else if (path === "/swap") {
       return <Route component={Swap} />;
     } else if (path === "/tokens") {
@@ -62,7 +68,9 @@ function App() {
           <LoginRegisterRedirectCheck exact path="/login" />
           {/* <LoginRegisterRedirectCheck exact path="/" /> */}
 
-          <Route path="/pool" component={Pool} />
+          <Route exact path="/pool" component={Pool} />
+          <Route exact path="/pool/addLiquidity" component={AddLiquidity} />
+          <Route exact path="/pool/removeLiquidity/:tokenAAddress/:tokenBAddress" component={RemoveLiquidity} />
           <Route path="/swap" component={Swap} />
           <Route path="/tokens" component={Tokens} />
           <Route path="/pairs" component={Pairs} />

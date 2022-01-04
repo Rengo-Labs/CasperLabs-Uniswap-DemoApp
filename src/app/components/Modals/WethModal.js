@@ -58,11 +58,11 @@ function WethModal(props) {
                         <Spinner
                             animation="border"
                             role="status"
-                            style={{ color: "#ff0000" }}
+                            style={{ color: "#e84646" }}
                         >
 
                         </Spinner>
-                        <span style={{ color: "#ff0000" }} className="sr-only">Loading...</span>
+                        <span style={{ color: "#e84646" }} className="sr-only">Loading...</span>
                     </div>
                 ) : (
                     <Button variant="primary" onClick={() => props.confirmGetWeth()}>

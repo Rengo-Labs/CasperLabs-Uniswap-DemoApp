@@ -59,7 +59,7 @@ function NewNFTCard(props) {
                     title={props.data.title}
                 />
                 <CardMedia
-                    variant="outlined" style={{ border: props.data.type === "Mastercraft" ? '4px solid #ff0000' : props.data.type === "Legendary" ? '4px solid #FFD700' : props.data.type === "Epic" ? '4px solid #9400D3' : props.data.type === "Rare" ? '4px solid #0000FF' : props.data.type === "Uncommon" ? '4px solid #008000' : props.data.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
+                    variant="outlined" style={{ border: props.data.type === "Mastercraft" ? '4px solid #e84646' : props.data.type === "Legendary" ? '4px solid #FFD700' : props.data.type === "Epic" ? '4px solid #9400D3' : props.data.type === "Rare" ? '4px solid #0000FF' : props.data.type === "Uncommon" ? '4px solid #008000' : props.data.type === "Common" ? '4px solid #FFFFFF' : 'none' }}
                     className={classes.media}
                     image={props.data.artwork}
                     title="NFT Image"

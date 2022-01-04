@@ -1,27 +1,23 @@
-import { Avatar, CardHeader, Card, CardContent } from '@material-ui/core/';
+import { Avatar, CardHeader } from '@material-ui/core/';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import {
-    CasperClient, CLAccountHash, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
+    CasperClient, CLAccountHash, CLByteArray, CLKey, CLList, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
 } from 'casper-js-sdk';
-import { slice } from 'lodash';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
-import { Col, Row } from 'react-bootstrap';
 import Spinner from "react-bootstrap/Spinner";
 import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { ROUTER_CONTRACT_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
-import Footer from "../../../components/Footers/Footer";
 import HeaderHome from "../../../components/Headers/Header";
-import { Some, None } from "ts-results";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -63,14 +59,12 @@ function Swap(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
     const theme = useTheme();
-    let [userName, setUserName] = useState();
+    let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     let [priceInUSD, setPriceInUSD] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
     let [tokenAAmount, setTokenAAmount] = useState(0);
     let [tokenBAmount, setTokenBAmount] = useState(0);
-    let [approveAIsLoading, setApproveAIsLoading] = useState(false);
-    let [approveBIsLoading, setApproveBIsLoading] = useState(false);
 
     const [tokenList, setTokenList] = useState([])
     const [airList, setPairList] = useState([])
@@ -133,43 +127,7 @@ function Swap(props) {
             return new CLKey(recipient);
         }
     };
-    async function approveMakedeploy(contractHash, amount) {
-        console.log('contractHash', contractHash);
-        const publicKeyHex = localStorage.getItem("Address")
-        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
-            const publicKey = CLPublicKey.fromHex(publicKeyHex);
-            const spender = ROUTER_PACKAGE_HASH;
-            const spenderByteArray = new CLByteArray(Uint8Array.from(Buffer.from(spender, 'hex')));
-            const paymentAmount = 5000000000;
-            const runtimeArgs = RuntimeArgs.fromMap({
-                spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(amount)
-            });
 
-            let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
-            let entryPoint = 'approve';
-
-            // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-            console.log("make deploy: ", deploy);
-            try {
-                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy)
-                console.log('result', result);
-                let variant = "success";
-                enqueueSnackbar('Approved Successfully', { variant });
-            }
-            catch {
-                let variant = "Error";
-                enqueueSnackbar('User Canceled Signing', { variant });
-            }
-
-        }
-        else {
-            let variant = "error";
-            enqueueSnackbar('Connect to Casper Signer Please', { variant });
-        }
-    }
     async function makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount) {
         let deploy = DeployUtil.makeDeploy(
             new DeployUtil.DeployParams(publicKey, 'casper-test'),
@@ -184,8 +142,10 @@ function Swap(props) {
     }
 
     async function signdeploywithcaspersigner(deploy, publicKeyHex) {
-        let deployJSON = DeployUtil.deployToJson(deploy);
-        let signedDeployJSON = await Signer.sign(deployJSON, publicKeyHex, publicKeyHex);
+        // let deployJSON = DeployUtil.deployToJson(deploy);
+        console.log("deploy: ", deploy);
+        console.log("publicKeyHex: ", publicKeyHex);
+        let signedDeployJSON = await Signer.sign(deploy, publicKeyHex, publicKeyHex);
         let signedDeploy = DeployUtil.deployFromJson(signedDeployJSON).unwrap();
 
         console.log("signed deploy: ", signedDeploy);
@@ -227,63 +187,67 @@ function Swap(props) {
         throw Error('Timeout after ' + i + 's. Something\'s wrong');
     }
     async function swapMakeDeploy() {
-        const publicKeyHex = localStorage.getItem("Address")
+        setIsLoading(true)
+        const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
-
             const tokenAAddress = tokenA.address;
             const tokenBAddress = tokenB.address;
-            const token_AAmount = tokenAAmount;
-            const token_BAmount = tokenBAmount;
+            const amount_in = tokenAAmount * 10 ** 18;
+            const amount_out_min = tokenBAmount * 10 ** 18;
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
 
-            // const runtimeArgs = RuntimeArgs.fromMap({
-            //     tokenA: createRecipientAddress(spenderByteArray),
-            //     tokenB: CLValueBuilder.u256(5)
-            // });
-            console.log('tokenAAddress', tokenAAddress);
             const _token_a = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
             );
             const _token_b = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
             );
-            const pair = new CLByteArray(
-                Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
-            );
-
-
-            const runtimeArgs = RuntimeArgs.fromMap({
-                token_a: new CLKey(_token_a),
-                token_b: new CLKey(_token_b),
-                amount_a_desired: CLValueBuilder.u256(token_AAmount),
-                amount_b_desired: CLValueBuilder.u256(token_BAmount),
-                amount_a_min: CLValueBuilder.u256(token_AAmount / 2),
-                amount_b_min: CLValueBuilder.u256(token_BAmount / 2),
-                to: createRecipientAddress(publicKey),
-                deadline: CLValueBuilder.u256(deadline),
-                pair: new CLOption(Some(new CLKey(pair)))
-            });
-
-            let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-            let entryPoint = 'add_liquidity_js_client';
-
-            // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-            console.log("make deploy: ", deploy);
-            try {
-                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy)
-                console.log('result', result);
-                let variant = "success";
-                enqueueSnackbar('Liquidity Added Successfully', { variant });
+            console.log('tokenAAddress', tokenAAddress);
+            console.log('publicKeyHex', publicKeyHex);
+            let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+            console.log('path', path);
+            let _paths = [];
+            for (let i = 0; i < path.length; i++) {
+                const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
+                _paths.push(createRecipientAddress(p));
             }
-            catch {
-                let variant = "Error";
-                enqueueSnackbar('User Canceled Signing', { variant });
+            console.log('_paths', _paths);
+
+            const runtimeArgs = {
+                signerKey: publicKeyHex,
+                amountin: amount_in,
+                amountout: amount_out_min,
+                paths: [tokenAAddress.slice(5), tokenBAddress.slice(5)],
+                to: publicKeyHex,
+                deadline: deadline
             }
+            axios
+                .post("swapmakedeployJSON", runtimeArgs)
+                .then(async (response) => {
+                    console.log("response", response);
+
+                    console.log("make deploy: ", response.data.deployJSON);
+                    // try {
+                    let signedDeploy = await signdeploywithcaspersigner(response.data.deployJSON, publicKeyHex)
+                    let result = await putdeploy(signedDeploy)
+                    console.log('result', result);
+                    let variant = "success";
+                    enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                    setIsLoading(false)
+                    // }
+                    // catch {
+                    //     let variant = "Error";
+                    //     enqueueSnackbar('User Canceled Signing', { variant });
+                    //     setIsLoading(false)
+                    // }
+                })
+                .catch((error) => {
+                    console.log("response", error);
+                    setIsLoading(false)
+                });
 
         }
         else {
@@ -296,7 +260,7 @@ function Swap(props) {
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
-                    <HeaderHome selectedNav={"Swap"} />
+                    <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Swap"} />
                     <div className="card">
                         <div className="container-fluid">
                             <div
@@ -515,7 +479,7 @@ function Swap(props) {
                                                                     <Spinner
                                                                         animation="border"
                                                                         role="status"
-                                                                        style={{ color: "#ff0000" }}
+                                                                        style={{ color: "#e84646" }}
                                                                     >
                                                                         <span className="sr-only">Loading...</span>
                                                                     </Spinner>
@@ -529,7 +493,7 @@ function Swap(props) {
                                                                     >
                                                                         Swap
                                                                     </button>
-                                                                ) : localStorage.getItem("Address") === 'null' || localStorage.getItem("Address") === null || localStorage.getItem("Address") === undefined ? (
+                                                                ) : activePublicKey === 'null' || activePublicKey === null || activePublicKey === undefined ? (
                                                                     <button
                                                                         className="btn btn-block btn-lg "
                                                                         disabled

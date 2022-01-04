@@ -56,6 +56,7 @@ function Tokens(props) {
     const classes = useStyles();
     const [tokenList, setTokenList] = useState([])
     const [istokenList, setIsTokenList] = useState(false)
+    let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     useEffect(() => {
         axios
             .get('/tokensList')
@@ -78,7 +79,7 @@ function Tokens(props) {
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
-                    <HeaderHome selectedNav={"Tokens"} />
+                    <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Tokens"} />
                     <div className="card">
                         <div className="container-fluid">
                             <div
@@ -100,31 +101,32 @@ function Tokens(props) {
                                                 className="table-responsive"
                                                 style={{ paddingTop: "20px" }}
                                             >
-                                                <table className="table table-hover table-center mb-0">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th style={{ textAlign: 'center' }}>Logo</th>
-                                                            <th>Name</th>
-                                                            <th>Symbol</th>
-                                                            <th>Contract Hash</th>
-                                                            <th>Package Hash</th>
+                                                {istokenList ? (
+                                                    <div className=" align-items-center justify-content-center text-center">
+                                                        <Spinner
+                                                            animation="border"
+                                                            role="status"
+                                                            style={{ color: "#e84646" }}
+                                                        >
+                                                            <span className="sr-only">Loading...</span>
+                                                        </Spinner>
+                                                    </div>
+                                                ) : (
+                                                    <table className="table table-hover table-center mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th style={{ textAlign: 'center' }}>Logo</th>
+                                                                <th>Name</th>
+                                                                <th>Symbol</th>
+                                                                <th>Contract Hash</th>
+                                                                <th>Package Hash</th>
 
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody style={{ color: 'black' }}>
-                                                        {istokenList ? (
-                                                            <div className="text-center">
-                                                                <Spinner
-                                                                    animation="border"
-                                                                    role="status"
-                                                                    style={{ color: "#ff0000" }}
-                                                                >
-                                                                    <span className="sr-only">Loading...</span>
-                                                                </Spinner>
-                                                            </div>
-                                                        ) : (
-                                                            tokenList.map((i, index) => (
+                                                            </tr>
+                                                        </thead>
+
+                                                        <tbody style={{ color: 'black' }}>
+                                                            {tokenList.map((i, index) => (
                                                                 <tr key={index}>
                                                                     <td>{index + 1}</td>
                                                                     <td >
@@ -138,9 +140,11 @@ function Tokens(props) {
                                                                     <td>{shortenAddress(i.packageHash)}</td>
 
                                                                 </tr>
-                                                            )))}
-                                                    </tbody>
-                                                </table>
+                                                            ))}
+                                                        </tbody>
+
+                                                    </table>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

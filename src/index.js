@@ -4,6 +4,8 @@ import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 import App from "./app/containers/App/Application";
 import axios from "axios";
+// import 'bootstrap/dist/css/bootstrap.css'; // or include from a CDN
+// import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 
 // axios.defaults.withCredentials = true;
 

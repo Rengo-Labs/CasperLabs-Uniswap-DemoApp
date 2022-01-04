@@ -14,6 +14,7 @@ function Pairs(props) {
 
     const [pairList, setPairList] = useState([])
     const [isPairList, setIsPairList] = useState(false)
+    let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     useEffect(() => {
         axios
             .get('/getpairlist')
@@ -36,7 +37,7 @@ function Pairs(props) {
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
-                    <HeaderHome selectedNav={"pairs"} />
+                    <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"pairs"} />
                     <div className="card">
                         <div className="container-fluid">
                             <div
@@ -58,47 +59,50 @@ function Pairs(props) {
                                                 className="table-responsive"
                                                 style={{ paddingTop: "20px" }}
                                             >
-                                                <table className="table table-hover table-center mb-0">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>Name A/B</th>
-                                                            <th>Symbol A/B</th>
-                                                            <th>Contract Hash A/B</th>
-                                                            <th>Reserve0</th>
-                                                            <th>Reserve1</th>
-                                                            <th>ReserveETH</th>
-                                                            <th>ReserveUSD</th>
 
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody style={{ color: 'black' }}>
-                                                        {isPairList ? (
-                                                            <div className="text-center">
-                                                                <Spinner
-                                                                    animation="border"
-                                                                    role="status"
-                                                                    style={{ color: "#ff0000" }}
-                                                                >
-                                                                    <span className="sr-only">Loading...</span>
-                                                                </Spinner>
-                                                            </div>
-                                                        ) : (pairList.map((i, index) => (
-                                                            <tr key={index}>
-                                                                <td>{index + 1}</td>
-                                                                <td>{i.token0.name}/{i.token1.name}</td>
-                                                                <td>{i.token0.symbol}/{i.token1.symbol}</td>
-                                                                <td>{shortenAddress(i.token0.id)}/{shortenAddress(i.token1.id)}</td>
-                                                                <td>{i.reserve0}</td>
-                                                                <td>{i.reserve1}</td>
-                                                                <td>{i.reserveETH}</td>
-                                                                <td>{i.reserveUSD}</td>
-                                                                {/* <td>{shortenAddress(i.token0.packageHash)/shortenAddress(i.token1.packageHash)}</td> */}
+                                                {isPairList ? (
+                                                    <div className=" align-items-center justify-content-center text-center">
+                                                        <Spinner
+                                                            animation="border"
+                                                            role="status"
+                                                            style={{ color: "#e84646" }}
+                                                        >
+                                                            <span className="sr-only">Loading...</span>
+                                                        </Spinner>
+                                                    </div>
+                                                ) : (
+                                                    <table className="table table-hover table-center mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>Name A/B</th>
+                                                                <th>Symbol A/B</th>
+                                                                <th>Contract Hash A/B</th>
+                                                                <th>Reserve0</th>
+                                                                <th>Reserve1</th>
+                                                                <th>ReserveETH</th>
+                                                                <th>ReserveUSD</th>
 
                                                             </tr>
-                                                        )))}
-                                                    </tbody>
-                                                </table>
+                                                        </thead>
+                                                        <tbody style={{ color: 'black' }}>
+                                                            {pairList.map((i, index) => (
+                                                                <tr key={index}>
+                                                                    <td>{index + 1}</td>
+                                                                    <td>{i.token0.name}/{i.token1.name}</td>
+                                                                    <td>{i.token0.symbol}/{i.token1.symbol}</td>
+                                                                    <td>{shortenAddress(i.token0.id)}/{shortenAddress(i.token1.id)}</td>
+                                                                    <td>{i.reserve0}</td>
+                                                                    <td>{i.reserve1}</td>
+                                                                    <td>{i.reserveETH}</td>
+                                                                    <td>{i.reserveUSD}</td>
+                                                                    {/* <td>{shortenAddress(i.token0.packageHash)/shortenAddress(i.token1.packageHash)}</td> */}
+
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

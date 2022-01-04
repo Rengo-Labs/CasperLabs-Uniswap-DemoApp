@@ -57,12 +57,14 @@ function HeaderHome(props) {
       let res = getActiveKeyFromSigner()
       setActiveKey(res)
       localStorage.setItem("Address", res)
+      props.setActivePublicKey(res)
     }
     window.addEventListener('signer:connected', msg => {
       setSignerLocked(!msg.detail.isUnlocked)
       setSignerConnected(true)
       setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
       setCurrentNotification({ text: 'Connected to Signer!', severity: 'success' })
       setShowAlert(true)
     });
@@ -71,6 +73,7 @@ function HeaderHome(props) {
       setSignerConnected(false)
       setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
       setCurrentNotification({ text: 'Disconnected from Signer', severity: 'info' })
       setShowAlert(true)
     });
@@ -79,10 +82,12 @@ function HeaderHome(props) {
       setSignerConnected(msg.detail.isConnected)
       setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
     });
     window.addEventListener('signer:activeKeyChanged', msg => {
       setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
       setCurrentNotification({ text: 'Active key changed', severity: 'warning' })
       setShowAlert(true)
     });
@@ -92,12 +97,14 @@ function HeaderHome(props) {
       setShowAlert(true)
       setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
     });
     window.addEventListener('signer:unlocked', msg => {
       setSignerLocked(!msg.detail.isUnlocked)
       setSignerConnected(msg.detail.isConnected)
       setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
     });
     window.addEventListener('signer:initialState', msg => {
       console.log("Initial State: ", msg.detail);
@@ -106,6 +113,7 @@ function HeaderHome(props) {
       setSignerConnected(msg.detail.isConnected)
       setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
     });
 
   }, []);
@@ -135,7 +143,7 @@ function HeaderHome(props) {
   async function connectToSigner() {
 
     try {
-      return Signer.sendConnectionRequest();
+      return await Signer.sendConnectionRequest();
     }
     catch {
       let variant = "Error";
@@ -170,13 +178,15 @@ function HeaderHome(props) {
     console.log("akjdf");
     Cookies.remove("Authorization");
     localStorage.removeItem("Address")
-    try{
+    props.setActivePublicKey("")
+    try {
       Signer.disconnectFromSite()
     }
-    catch{
-
+    catch {
+      let variant = "Error";
+      enqueueSnackbar('Unable to Disconnect', { variant });
     }
-    
+
     window.location.reload();
     // setTimeout(() => { }, 1);
   };
@@ -261,7 +271,9 @@ function HeaderHome(props) {
               ) : (signerLocked && signerConnected ? (
                 <>
                   <Button variant="primary"
-                    onClick={() => { connectToSigner() }}
+                    onClick={async () => {
+                      await connectToSigner();
+                    }}
                   >
                     Unlock Signer
                   </Button>
@@ -270,7 +282,9 @@ function HeaderHome(props) {
               ) : (
                 <>
                   <Button variant="primary"
-                    onClick={() => { connectToSigner() }}
+                    onClick={async () => {
+                      await connectToSigner()
+                    }}
                   >
                     Connect to Signer
                   </Button>
@@ -323,7 +337,7 @@ function HeaderHome(props) {
               <Spinner
                 animation="border"
                 role="status"
-                style={{ color: "ff0000" }}
+                style={{ color: "e84646" }}
               >
                 <span className="sr-only">Loading...</span>
               </Spinner>
@@ -336,7 +350,9 @@ function HeaderHome(props) {
             ) : (signerLocked && signerConnected ? (
               <>
                 <Button variant="primary"
-                  onClick={() => { connectToSigner() }}
+                  onClick={async () => {
+                    await connectToSigner();
+                  }}
                 >
                   Unlock Signer
                 </Button>
@@ -345,7 +361,9 @@ function HeaderHome(props) {
             ) : (
               <>
                 <Button variant="primary"
-                  onClick={() => { connectToSigner() }}
+                  onClick={async () => {
+                    await connectToSigner()
+                  }}
                 >
                   Connect to Signer
                 </Button>
