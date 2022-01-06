@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import {
-    CasperClient, CLAccountHash, CLByteArray, CLKey, CLList, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
+    CasperClient, CLAccountHash, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
 } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
@@ -15,7 +15,7 @@ import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import { ROUTER_CONTRACT_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import HeaderHome from "../../../components/Headers/Header";
 
@@ -65,7 +65,7 @@ function Swap(props) {
     let [tokenB, setTokenB] = useState();
     let [tokenAAmount, setTokenAAmount] = useState(0);
     let [tokenBAmount, setTokenBAmount] = useState(0);
-
+    let [approveAIsLoading, setApproveAIsLoading] = useState(false);
     const [tokenList, setTokenList] = useState([])
     const [airList, setPairList] = useState([])
     const [istokenList, setIsTokenList] = useState(false)
@@ -141,11 +141,48 @@ function Swap(props) {
         return deploy
     }
 
+    async function approveMakedeploy(contractHash, amount) {
+        console.log('contractHash', contractHash);
+        const publicKeyHex = activePublicKey
+        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
+            const publicKey = CLPublicKey.fromHex(publicKeyHex);
+            const spender = ROUTER_PACKAGE_HASH;
+            const spenderByteArray = new CLByteArray(Uint8Array.from(Buffer.from(spender, 'hex')));
+            const paymentAmount = 5000000000;
+            const runtimeArgs = RuntimeArgs.fromMap({
+                spender: createRecipientAddress(spenderByteArray),
+                amount: CLValueBuilder.u256(amount)
+            });
+
+            let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
+            let entryPoint = 'approve';
+
+            // Set contract installation deploy (unsigned).
+            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+            console.log("make deploy: ", deploy);
+            try {
+                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                let result = await putdeploy(signedDeploy)
+                console.log('result', result);
+                let variant = "success";
+                enqueueSnackbar('Approved Successfully', { variant });
+            }
+            catch {
+                let variant = "Error";
+                enqueueSnackbar('Unable to Approve', { variant });
+            }
+
+        }
+        else {
+            let variant = "error";
+            enqueueSnackbar('Connect to Casper Signer Please', { variant });
+        }
+    }
     async function signdeploywithcaspersigner(deploy, publicKeyHex) {
-        // let deployJSON = DeployUtil.deployToJson(deploy);
-        console.log("deploy: ", deploy);
-        console.log("publicKeyHex: ", publicKeyHex);
-        let signedDeployJSON = await Signer.sign(deploy, publicKeyHex, publicKeyHex);
+        let deployJSON = DeployUtil.deployToJson(deploy);
+        console.log("deployJSON: ", deployJSON);
+        let signedDeployJSON = await Signer.sign(deployJSON, publicKeyHex, publicKeyHex);
+        console.log("signedDeployJSON: ", signedDeployJSON);
         let signedDeploy = DeployUtil.deployFromJson(signedDeployJSON).unwrap();
 
         console.log("signed deploy: ", signedDeploy);
@@ -187,24 +224,17 @@ function Swap(props) {
         throw Error('Timeout after ' + i + 's. Something\'s wrong');
     }
     async function swapMakeDeploy() {
-        setIsLoading(true)
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
             const tokenAAddress = tokenA.address;
             const tokenBAddress = tokenB.address;
-            const amount_in = tokenAAmount * 10 ** 18;
-            const amount_out_min = tokenBAmount * 10 ** 18;
+            const amount_in = tokenAAmount;
+            const amount_out_min = 50;
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
 
-            const _token_a = new CLByteArray(
-                Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
-            );
-            const _token_b = new CLByteArray(
-                Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
-            );
             console.log('tokenAAddress', tokenAAddress);
             console.log('publicKeyHex', publicKeyHex);
             let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
@@ -215,40 +245,48 @@ function Swap(props) {
                 _paths.push(createRecipientAddress(p));
             }
             console.log('_paths', _paths);
+            const _token_a = new CLByteArray(
+                Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
+            );
+            const _token_b = new CLByteArray(
+                Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+            );
+            const runtimeArgs = RuntimeArgs.fromMap({
+                amount_in: CLValueBuilder.u256(amount_in),
+                amount_out_min: CLValueBuilder.u256(amount_out_min),
+                token_a: new CLKey(_token_a),
+                token_b: new CLKey(_token_b),
+                to: createRecipientAddress(publicKey),
+                deadline: CLValueBuilder.u256(deadline),
+            });
 
-            const runtimeArgs = {
-                signerKey: publicKeyHex,
-                amountin: amount_in,
-                amountout: amount_out_min,
-                paths: [tokenAAddress.slice(5), tokenBAddress.slice(5)],
-                to: publicKeyHex,
-                deadline: deadline
+            let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+            let entryPoint = 'swap_exact_tokens_for_tokens_js_client';
+
+            // Set contract installation deploy (unsigned).
+            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+            console.log("make deploy: ", deploy);
+
+            // const runtimeArgs = {
+            //     signerKey: publicKeyHex,
+            //     amountin: amount_in,
+            //     amountout: amount_out_min,
+            //     token_a: CLValueBuilder.key(_token_a),
+            //     token_b: CLValueBuilder.key(_token_b),
+            //     to: CLValueBuilder.key(publicKey),
+            //     deadline: deadline
+            // }
+            try {
+                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                let result = await putdeploy(signedDeploy)
+                console.log('result', result);
+                let variant = "success";
+                enqueueSnackbar('Tokens Swapped Successfully', { variant });
             }
-            axios
-                .post("swapmakedeployJSON", runtimeArgs)
-                .then(async (response) => {
-                    console.log("response", response);
-
-                    console.log("make deploy: ", response.data.deployJSON);
-                    // try {
-                    let signedDeploy = await signdeploywithcaspersigner(response.data.deployJSON, publicKeyHex)
-                    let result = await putdeploy(signedDeploy)
-                    console.log('result', result);
-                    let variant = "success";
-                    enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                    setIsLoading(false)
-                    // }
-                    // catch {
-                    //     let variant = "Error";
-                    //     enqueueSnackbar('User Canceled Signing', { variant });
-                    //     setIsLoading(false)
-                    // }
-                })
-                .catch((error) => {
-                    console.log("response", error);
-                    setIsLoading(false)
-                });
-
+            catch {
+                let variant = "Error";
+                enqueueSnackbar('Unable to Swap Tokens', { variant });
+            }
         }
         else {
             let variant = "error";
@@ -445,10 +483,10 @@ function Swap(props) {
                                                                         title={tokenA.name}
                                                                         subheader={tokenA.symbol}
                                                                     />
-                                                                    <Typography variant="body3" color="textSecondary" component="p">
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
                                                                         <strong>Contract Hash: </strong>{tokenA.address}
                                                                     </Typography>
-                                                                    <Typography variant="body3" color="textSecondary" component="p">
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
                                                                         <strong>Package Hash: </strong>{tokenA.packageHash}
                                                                     </Typography>
                                                                 </div>
@@ -460,10 +498,10 @@ function Swap(props) {
                                                                         title={tokenB.name}
                                                                         subheader={tokenB.symbol}
                                                                     />
-                                                                    <Typography variant="body3" color="textSecondary" component="p">
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
                                                                         <strong>Contract Hash: </strong>{tokenB.address}
                                                                     </Typography>
-                                                                    <Typography variant="body3" color="textSecondary" component="p">
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
                                                                         <strong>Package Hash: </strong>{tokenB.packageHash}
                                                                     </Typography>
                                                                 </div>
@@ -473,7 +511,31 @@ function Swap(props) {
                                                             <div className="text-center">
                                                                 <p style={{ color: "red" }}>{msg}</p>
                                                             </div>
-
+                                                            {tokenAAmount > 0 ? (
+                                                                approveAIsLoading ? (
+                                                                    <div className="text-center">
+                                                                        <Spinner
+                                                                            animation="border"
+                                                                            role="status"
+                                                                            style={{ color: "#e84646" }}
+                                                                        >
+                                                                            <span className="sr-only">Loading...</span>
+                                                                        </Spinner>
+                                                                    </div>
+                                                                ) : (
+                                                                    <button
+                                                                        className="btn btn-block btn-lg login-btn"
+                                                                        onClick={async () => {
+                                                                            setApproveAIsLoading(true)
+                                                                            await approveMakedeploy(tokenA.address, tokenAAmount)
+                                                                            setApproveAIsLoading(false)
+                                                                        }
+                                                                        }
+                                                                    >
+                                                                        Approve {tokenA.name}
+                                                                    </button>
+                                                                )
+                                                            ) : (null)}
                                                             {isLoading ? (
                                                                 <div className="text-center">
                                                                     <Spinner

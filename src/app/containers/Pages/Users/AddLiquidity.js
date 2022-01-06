@@ -143,7 +143,7 @@ function AddLiquidity(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(amount * 10 ** 18)
+                amount: CLValueBuilder.u256(amount)
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
@@ -161,7 +161,7 @@ function AddLiquidity(props) {
             }
             catch {
                 let variant = "Error";
-                enqueueSnackbar('User Canceled Signing', { variant });
+                enqueueSnackbar('Unable to Approve', { variant });
             }
 
         }
@@ -236,8 +236,8 @@ function AddLiquidity(props) {
 
             const tokenAAddress = tokenA.address;
             const tokenBAddress = tokenB.address;
-            const token_AAmount = tokenAAmount * 10 ** 18;
-            const token_BAmount = tokenBAmount * 10 ** 18;
+            const token_AAmount = tokenAAmount;
+            const token_BAmount = tokenBAmount;
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
 
@@ -262,8 +262,8 @@ function AddLiquidity(props) {
                 token_b: new CLKey(_token_b),
                 amount_a_desired: CLValueBuilder.u256(token_AAmount),
                 amount_b_desired: CLValueBuilder.u256(token_BAmount),
-                amount_a_min: CLValueBuilder.u256(token_AAmount / 2),
-                amount_b_min: CLValueBuilder.u256(token_BAmount / 2),
+                amount_a_min: CLValueBuilder.u256(token_AAmount),
+                amount_b_min: CLValueBuilder.u256(token_BAmount),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
                 pair: new CLOption(Some(new CLKey(pair)))
@@ -285,7 +285,7 @@ function AddLiquidity(props) {
             }
             catch {
                 let variant = "Error";
-                enqueueSnackbar('User Canceled Signing', { variant });
+                enqueueSnackbar('Unable to Add Liquidity', { variant });
                 setIsLoading(false)
             }
 
@@ -320,6 +320,7 @@ function AddLiquidity(props) {
                                                         <>
                                                             <div className="login-header">
                                                                 <h3 style={{ textAlign: "center" }}>Add Liquidity</h3>
+                                                                <h3 style={{ textAlign: 'right' }}><i class="fas fa-cog"></i></h3>
                                                             </div>
                                                             <form onSubmit={handleSubmitEvent}>
                                                                 <div className="row">
@@ -486,10 +487,10 @@ function AddLiquidity(props) {
                                                                             title={tokenA.name}
                                                                             subheader={tokenA.symbol}
                                                                         />
-                                                                        <Typography variant="body3" color="textSecondary" component="p">
+                                                                        <Typography variant="body2" color="textSecondary" component="p">
                                                                             <strong>Contract Hash: </strong>{tokenA.address}
                                                                         </Typography>
-                                                                        <Typography variant="body3" color="textSecondary" component="p">
+                                                                        <Typography variant="body2" color="textSecondary" component="p">
                                                                             <strong>Package Hash: </strong>{tokenA.packageHash}
                                                                         </Typography>
                                                                     </div>
@@ -501,10 +502,10 @@ function AddLiquidity(props) {
                                                                             title={tokenB.name}
                                                                             subheader={tokenB.symbol}
                                                                         />
-                                                                        <Typography variant="body3" color="textSecondary" component="p">
+                                                                        <Typography variant="body2" color="textSecondary" component="p">
                                                                             <strong>Contract Hash: </strong>{tokenB.address}
                                                                         </Typography>
-                                                                        <Typography variant="body3" color="textSecondary" component="p">
+                                                                        <Typography variant="body2" color="textSecondary" component="p">
                                                                             <strong>Package Hash: </strong>{tokenB.packageHash}
                                                                         </Typography>
                                                                     </div>

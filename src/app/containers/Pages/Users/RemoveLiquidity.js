@@ -38,7 +38,10 @@ const useStyles = makeStyles((theme) => ({
         zIndex: theme.zIndex.drawer + 1,
         color: '#fff',
     },
-
+    avatar: {
+        height: '20px',
+        width: '20px',
+    },
     card: {
         minWidth: 250,
     },
@@ -72,7 +75,7 @@ function RemoveLiquidity(props) {
     let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
     let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [pair, setPairHash] = useState();
-    let [liquidity, setLiquidity] = useState(8);
+    let [liquidity, setLiquidity] = useState();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     const [value, setValue] = useState(25);
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
@@ -137,19 +140,39 @@ function RemoveLiquidity(props) {
         axios
             .post('/getpairsagainstuser', param)
             .then((res) => {
-                console.log('resresres', res)
+                console.log('9', res)
                 console.log(res.data.userpairs)
                 setIsPairList(true)
                 for (let i = 0; i < res.data.userpairs.length; i++) {
-                    let address0 = res.data.userpairs[0].token0.id.toLowerCase();
-                    let address1 = res.data.userpairs[0].token1.id.toLowerCase();
+                    let address0 = res.data.userpairs[i].token0.id.toLowerCase();
+                    let address1 = res.data.userpairs[i].token1.id.toLowerCase();
                     if ((address0.includes(tokenAAddress.toLowerCase()) && address1.includes(tokenBAddress.toLowerCase())) || (address0.includes(tokenBAddress.toLowerCase()) && address1.includes(tokenAAddress.toLowerCase()))) {
-                        console.log('res.data.', res.data.userpairs[0]);
-                        setTokenAAmount(res.data.userpairs[0].reserve0)
-                        setTokenBAmount(res.data.userpairs[0].reserve1)
-                        setPairHash(res.data.userpairs[0].id)
-                        setTokenAAmountPercent(res.data.userpairs[0].reserve0 * value / 100)
-                        setTokenBAmountPercent(res.data.userpairs[0].reserve1 * value / 100)
+                        console.log('res.data.', res.data.userpairs[i]);
+                        setTokenAAmount(res.data.userpairs[i].reserve0)
+                        setTokenBAmount(res.data.userpairs[i].reserve1)
+                        setPairHash(res.data.userpairs[i].id)
+                        setTokenAAmountPercent(res.data.userpairs[i].reserve0 * value / 100)
+                        setTokenBAmountPercent(res.data.userpairs[i].reserve1 * value / 100)
+
+                        let param = {
+                            to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
+                            pairid: res.data.userpairs[i].id
+                        }
+                        console.log('await Signer.getSelectedPublicKeyBase64()',
+                            Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
+
+                        axios
+                            .post('/liquidityagainstuserandpair', param)
+                            .then((res1) => {
+                                console.log('liquidityagainstuserandpair', res1)
+                                setLiquidity(res1.data.liquidity)
+                                console.log("res1.data.liquidity", res1.data.liquidity)
+                            })
+                            .catch((error) => {
+                                console.log(error)
+                                console.log(error.response)
+                            })
+
                         // setTokenA(res.data.tokens[i])
                     }
                     // if () {
@@ -164,6 +187,12 @@ function RemoveLiquidity(props) {
                 console.log(error.response)
             })// eslint-disable-next-line
     }, [activePublicKey]);
+
+    //     https://casper-uniswap-v2-graphql.herokuapp.com/liquidityagainstuserandpair
+    // {
+    //     "to":"8b217a09296d5ce360847a7d20f623476157c5f022333c4e988a464035cadd80",
+    //     "pairid":"9c2aa298dc8f7bc10a7e57d005ed0a4c97597c963368246c51671c0794a48707"
+    // }
     function createRecipientAddress(recipient) {
         if (recipient instanceof CLPublicKey) {
             return new CLKey(new CLAccountHash(recipient.toAccountHash()));
@@ -199,7 +228,7 @@ function RemoveLiquidity(props) {
             }
             catch {
                 let variant = "Error";
-                enqueueSnackbar('User Canceled Signing', { variant });
+                enqueueSnackbar('Unable to Approve', { variant });
             }
 
         }
@@ -289,9 +318,6 @@ function RemoveLiquidity(props) {
             const _token_b = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
             );
-            const pair = new CLByteArray(
-                Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
-            );
 
 
             // const runtimeArgs = RuntimeArgs.fromMap({
@@ -307,9 +333,9 @@ function RemoveLiquidity(props) {
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
-                liquidity: CLValueBuilder.u256(liquidity * value / 100),
-                amount_a_min: CLValueBuilder.u256(token_AAmount),
-                amount_b_min: CLValueBuilder.u256(token_BAmount),
+                liquidity: CLValueBuilder.u256((liquidity * value / 100) ),
+                amount_a_min: CLValueBuilder.u256(1 ),
+                amount_b_min: CLValueBuilder.u256(1 ),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
             });
@@ -324,12 +350,12 @@ function RemoveLiquidity(props) {
                 let result = await putdeploy(signedDeploy)
                 console.log('result', result);
                 let variant = "success";
-                enqueueSnackbar('Liquidity Added Successfully', { variant });
+                enqueueSnackbar('Liquidity Removed Successfully', { variant });
                 setIsLoading(false)
             }
             catch {
                 let variant = "Error";
-                enqueueSnackbar('User Canceled Signing', { variant });
+                enqueueSnackbar('Unable to Remove Liquidity', { variant });
                 setIsLoading(false)
             }
 
@@ -415,20 +441,15 @@ function RemoveLiquidity(props) {
                                                                             <CardContent>
                                                                                 <Row>
                                                                                     <Col>
-                                                                                        <CardHeader
-                                                                                            subheader={`price`}
+                                                                                        <CardHeader style={{ margin: '25px' }}
+                                                                                            subheader={`Price`}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
+
                                                                                         <CardHeader
                                                                                             subheader={`1 ${tokenA.name} = ${tokenBAmount / tokenAAmount} ${tokenB.name}`}
                                                                                         />
-                                                                                    </Col>
-                                                                                </Row>
-                                                                                <Row>
-                                                                                    <Col>
-                                                                                    </Col>
-                                                                                    <Col>
                                                                                         <CardHeader
                                                                                             subheader={`1 ${tokenB.name} = ${tokenAAmount / tokenBAmount} ${tokenA.name}`}
                                                                                         />
@@ -471,7 +492,7 @@ function RemoveLiquidity(props) {
                                                                     </Col>
                                                                     <Col>
                                                                         {isLoading ? (
-                                                                            <div className="text-center">
+                                                                            <div className="text-center" style={{ marginTop: '20px' }}>
                                                                                 <Spinner
                                                                                     animation="border"
                                                                                     role="status"
@@ -489,21 +510,13 @@ function RemoveLiquidity(props) {
                                                                                 >
                                                                                     Remove
                                                                                 </button>
-                                                                            ) : tokenAAmountPercent === 0 || tokenBAmountPercent === 0 ? (
-                                                                                <button
-                                                                                    className="btn btn-block btn-lg login-btn"
-                                                                                    disabled
-                                                                                    style={{ marginTop: '20px' }}
-                                                                                >
-                                                                                    Remove
-                                                                                </button>
                                                                             ) : activePublicKey === 'null' || activePublicKey === null || activePublicKey === undefined ? (
                                                                                 <button
                                                                                     className="btn btn-block btn-lg "
                                                                                     disabled
                                                                                     style={{ marginTop: '20px' }}
                                                                                 >
-                                                                                    Connect to Casper Signer
+                                                                                    Connect to Signer
                                                                                 </button>
                                                                             ) : (
                                                                                 <button
@@ -519,6 +532,54 @@ function RemoveLiquidity(props) {
                                                                     </Col>
                                                                 </Row>
                                                             </form>
+                                                            <br></br>
+                                                            {tokenA && tokenB ? (
+                                                                <Card>
+                                                                    <CardContent>
+                                                                        <h3>Your Position</h3>
+                                                                        <Row>
+                                                                            <Col>
+                                                                                <CardHeader
+                                                                                    subheader={`${tokenA.symbol}/${tokenB.symbol}`}
+                                                                                />
+                                                                            </Col>
+                                                                            <Col style={{ textAlign: 'right' }}>
+                                                                                <CardHeader
+                                                                                    subheader={liquidity}
+                                                                                />
+                                                                            </Col>
+                                                                        </Row>
+                                                                        <Row>
+                                                                            <Col>
+                                                                                <CardHeader
+                                                                                    subheader={`${tokenA.name}:`}
+                                                                                />
+                                                                            </Col>
+                                                                            <Col style={{ textAlign: 'right' }}>
+                                                                                <CardHeader
+                                                                                    subheader={tokenAAmount}
+                                                                                />
+                                                                            </Col>
+
+                                                                        </Row>
+                                                                        <Row>
+                                                                            <Col>
+                                                                                <CardHeader
+                                                                                    subheader={`${tokenB.name}:`}
+                                                                                />
+                                                                            </Col>
+                                                                            <Col style={{ textAlign: 'right' }}>
+                                                                                <CardHeader
+                                                                                    subheader={tokenBAmount}
+                                                                                />
+                                                                            </Col>
+
+                                                                        </Row>
+                                                                    </CardContent>
+                                                                </Card>
+                                                            ) : (
+                                                                null
+                                                            )}
                                                         </>
                                                     </div>
                                                 </div>

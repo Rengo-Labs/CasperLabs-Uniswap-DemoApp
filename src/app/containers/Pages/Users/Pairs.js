@@ -16,17 +16,19 @@ function Pairs(props) {
     const [isPairList, setIsPairList] = useState(false)
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     useEffect(() => {
+        setIsPairList(true)
         axios
             .get('/getpairlist')
             .then((res) => {
                 console.log('resresres', res)
                 console.log(res.data.pairList)
-                setIsPairList(true)
+                setIsPairList(false)
                 setPairList(res.data.pairList)
             })
             .catch((error) => {
                 console.log(error)
                 console.log(error.response)
+                setIsPairList(false)
             })// eslint-disable-next-line
     }, []);
     function shortenAddress(address, chars = 15) {
