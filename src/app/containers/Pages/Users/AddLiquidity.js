@@ -143,7 +143,7 @@ function AddLiquidity(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(amount)
+                amount: CLValueBuilder.u256(amount * 10 ** 9)
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
@@ -260,10 +260,10 @@ function AddLiquidity(props) {
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
-                amount_a_desired: CLValueBuilder.u256(token_AAmount),
-                amount_b_desired: CLValueBuilder.u256(token_BAmount),
-                amount_a_min: CLValueBuilder.u256(token_AAmount),
-                amount_b_min: CLValueBuilder.u256(token_BAmount),
+                amount_a_desired: CLValueBuilder.u256(token_AAmount * 10 ** 9),
+                amount_b_desired: CLValueBuilder.u256(token_BAmount * 10 ** 9),
+                amount_a_min: CLValueBuilder.u256(token_AAmount * 10 ** 9),
+                amount_b_min: CLValueBuilder.u256(token_BAmount * 10 ** 9),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
                 pair: new CLOption(Some(new CLKey(pair)))

@@ -210,7 +210,7 @@ function RemoveLiquidity(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(liquidity * value / 100)
+                amount: CLValueBuilder.u256((liquidity * value / 100) * 10 ** 9)
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
@@ -333,9 +333,9 @@ function RemoveLiquidity(props) {
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
-                liquidity: CLValueBuilder.u256((liquidity * value / 100) ),
-                amount_a_min: CLValueBuilder.u256(1 ),
-                amount_b_min: CLValueBuilder.u256(1 ),
+                liquidity: CLValueBuilder.u256((liquidity * value / 100) * 10 ** 9),
+                amount_a_min: CLValueBuilder.u256(1 * 10 ** 9),
+                amount_b_min: CLValueBuilder.u256(1 * 10 ** 9),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
             });

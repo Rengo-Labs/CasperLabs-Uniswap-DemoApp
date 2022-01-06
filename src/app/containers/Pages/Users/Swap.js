@@ -151,7 +151,7 @@ function Swap(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(amount)
+                amount: CLValueBuilder.u256(amount * 10 ** 9)
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
@@ -252,8 +252,8 @@ function Swap(props) {
                 Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
             );
             const runtimeArgs = RuntimeArgs.fromMap({
-                amount_in: CLValueBuilder.u256(amount_in),
-                amount_out_min: CLValueBuilder.u256(amount_out_min),
+                amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
+                amount_out_min: CLValueBuilder.u256(amount_out_min * 10 ** 9),
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
                 to: createRecipientAddress(publicKey),
