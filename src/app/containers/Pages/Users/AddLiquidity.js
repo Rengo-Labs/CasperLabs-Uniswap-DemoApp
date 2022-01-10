@@ -20,6 +20,7 @@ import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import HeaderHome from "../../../components/Headers/Header";
+import SlippageModal from '../../../components/Modals/SlippageModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -60,7 +61,7 @@ const useStyles = makeStyles((theme) => ({
 function AddLiquidity(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
-    let [priceInUSD, setPriceInUSD] = useState(0);
+    // let [priceInUSD, setPriceInUSD] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
     let [tokenAAmount, setTokenAAmount] = useState(0);
@@ -68,11 +69,20 @@ function AddLiquidity(props) {
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
     let [approveBIsLoading, setApproveBIsLoading] = useState(false);
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
+    const [slippage, setSlippage] = useState(0.5);
+    const [openSlippage, setOpenSlippage] = useState(false);
+    const handleCloseSlippage = () => {
+        setOpenSlippage(false);
+    };
+    const handleShowSlippage = () => {
+        setOpenSlippage(true);
+    };
 
     const [tokenList, setTokenList] = useState([])
-    const [pairList, setPairList] = useState([])
     const [istokenList, setIsTokenList] = useState(false)
-    const [ispairList, setIsPairList] = useState(false)
+    let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
+    let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
+    let [liquidity, setLiquidity] = useState();
     let [isLoading, setIsLoading] = useState(false);
     let [msg, setMsg] = useState("");
 
@@ -94,38 +104,70 @@ function AddLiquidity(props) {
             .catch((error) => {
                 console.log(error)
                 console.log(error.response)
-            })// eslint-disable-next-line
-        axios
-            .post("priceconversion", {
-                symbolforconversion: "CSPR",
-                symboltoconvertto: "USD",
-                amount: 1
             })
-            .then((response) => {
-                console.log("response", response.data.worth.USD);
-                setPriceInUSD(response.data.worth.USD.price);
-            })
-            .catch((error) => {
-                console.log("response", error.response);
-            });
+        // axios
+        //     .post("priceconversion", {
+        //         symbolforconversion: "CSPR",
+        //         symboltoconvertto: "USD",
+        //         amount: 1
+        //     })
+        //     .then((response) => {
+        //         console.log("response", response.data.worth.USD);
+        //         setPriceInUSD(response.data.worth.USD.price);
+        //     })
+        //     .catch((error) => {
+        //         console.log("response", error.response);
+        //     });
+        // eslint-disable-next-line
     }, []);
     useEffect(() => {
-        let param = {
-            user: activePublicKey
+        if (tokenA && tokenB) {
+            console.log("tokenA", tokenA);
+            console.log("tokenB", tokenB);
+            axios
+                .get('/getpairlist')
+                .then((res) => {
+                    console.log('resresres', res)
+                    console.log(res.data.pairList)
+                    for (let i = 0; i < res.data.pairList.length; i++) {
+                        let address0 = res.data.pairList[i].token0.id.toLowerCase();
+                        let address1 = res.data.pairList[i].token1.id.toLowerCase();
+                        console.log("address0", address0);
+                        console.log("address1", address1);
+                        if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase()) || (address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
+                            console.log('res.data.', res.data.pairList[i]);
+                            setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                            setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+
+                            let param = {
+                                to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
+                                pairid: res.data.pairList[i].id
+                            }
+                            console.log('await Signer.getSelectedPublicKeyBase64()',
+                                Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
+
+                            axios
+                                .post('/liquidityagainstuserandpair', param)
+                                .then((res1) => {
+                                    console.log('liquidityagainstuserandpair', res1)
+                                    setLiquidity(parseFloat(res1.data.liquidity))
+                                    console.log("res1.data.liquidity", res1.data.liquidity)
+                                })
+                                .catch((error) => {
+                                    console.log(error)
+                                    console.log(error.response)
+                                })
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
         }
-        axios
-            .post('/getpairsagainstuser', param)
-            .then((res) => {
-                console.log('resresres', res)
-                console.log(res.data.pairList)
-                setIsPairList(true)
-                setPairList(res.data.pairList)
-            })
-            .catch((error) => {
-                console.log(error)
-                console.log(error.response)
-            })// eslint-disable-next-line
-    }, [activePublicKey]);
+    }, [activePublicKey, tokenA, tokenB]);
+
+
     function createRecipientAddress(recipient) {
         if (recipient instanceof CLPublicKey) {
             return new CLKey(new CLAccountHash(recipient.toAccountHash()));
@@ -143,7 +185,7 @@ function AddLiquidity(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(amount * 10 ** 9)
+                amount: CLValueBuilder.u256(parseInt(amount * 10 ** 9))
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
@@ -241,10 +283,6 @@ function AddLiquidity(props) {
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
 
-            // const runtimeArgs = RuntimeArgs.fromMap({
-            //     tokenA: createRecipientAddress(spenderByteArray),
-            //     tokenB: CLValueBuilder.u256(5)
-            // });
             console.log('tokenAAddress', tokenAAddress);
             const _token_a = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
@@ -260,10 +298,10 @@ function AddLiquidity(props) {
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
-                amount_a_desired: CLValueBuilder.u256(token_AAmount * 10 ** 9),
-                amount_b_desired: CLValueBuilder.u256(token_BAmount * 10 ** 9),
-                amount_a_min: CLValueBuilder.u256(token_AAmount * 10 ** 9),
-                amount_b_min: CLValueBuilder.u256(token_BAmount * 10 ** 9),
+                amount_a_desired: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9)),
+                amount_b_desired: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9)),
+                amount_a_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
+                amount_b_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
                 pair: new CLOption(Some(new CLKey(pair)))
@@ -320,7 +358,7 @@ function AddLiquidity(props) {
                                                         <>
                                                             <div className="login-header">
                                                                 <h3 style={{ textAlign: "center" }}>Add Liquidity</h3>
-                                                                <h3 style={{ textAlign: 'right' }}><i class="fas fa-cog"></i></h3>
+                                                                <h3 onClick={handleShowSlippage} style={{ textAlign: 'right' }}><i className="fas fa-cog"></i></h3>
                                                             </div>
                                                             <form onSubmit={handleSubmitEvent}>
                                                                 <div className="row">
@@ -351,7 +389,7 @@ function AddLiquidity(props) {
                                                                             />
                                                                         </div>
                                                                     </div>
-                                                                    <div className="col-md-12 col-lg-3">
+                                                                    <div className="col-md-12 col-lg-4">
                                                                         {tokenB && tokenA ? (
                                                                             <input
                                                                                 type="number"
@@ -363,25 +401,13 @@ function AddLiquidity(props) {
                                                                                 className="form-control"
                                                                                 onChange={(e) => {
                                                                                     // setTokenAAmount(e.target.value)
-                                                                                    if (tokenA.name === 'WCSPR' && tokenB.name === "WISE") {
+                                                                                    if (e.target.value >= 0) {
                                                                                         setTokenAAmount(e.target.value)
-                                                                                        setTokenBAmount(e.target.value * (10 / 1))
-                                                                                    }
-                                                                                    else if (tokenA.name === 'WISE' && tokenB.name === "WCSPR") {
-                                                                                        setTokenAAmount(e.target.value)
-                                                                                        setTokenBAmount(e.target.value * (1 / 10))
-                                                                                    }
-                                                                                    else if (tokenA.name === 'WCSPR' && tokenB.name === "USDC") {
-                                                                                        setTokenAAmount(e.target.value)
-                                                                                        setTokenBAmount(e.target.value * (1 / 8))
-                                                                                    }
-                                                                                    else if (tokenA.name === 'USDC' && tokenB.name === "WCSPR") {
-                                                                                        setTokenAAmount(e.target.value)
-                                                                                        setTokenBAmount(e.target.value * (8 / 1))
-                                                                                    }
-                                                                                    else {
-                                                                                        setTokenAAmount(e.target.value)
-                                                                                        setTokenBAmount(e.target.value)
+                                                                                        setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
+
+                                                                                    } else {
+                                                                                        setTokenAAmount(0)
+                                                                                        setTokenBAmount(0)
                                                                                     }
                                                                                 }}
                                                                             />
@@ -396,9 +422,9 @@ function AddLiquidity(props) {
                                                                             />
                                                                         )}
                                                                     </div>
-                                                                    <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
+                                                                    {/* <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
                                                                         {Math.round(tokenAAmount * priceInUSD * 1000) / 1000}$
-                                                                    </div>
+                                                                    </div> */}
                                                                 </div>
                                                                 <br></br>
                                                                 <div className="row">
@@ -429,7 +455,7 @@ function AddLiquidity(props) {
                                                                             />
                                                                         </div>
                                                                     </div>
-                                                                    <div className="col-md-12 col-lg-3">
+                                                                    <div className="col-md-12 col-lg-4">
                                                                         {tokenB && tokenA ? (
                                                                             <input
                                                                                 type="number"
@@ -440,25 +466,13 @@ function AddLiquidity(props) {
                                                                                 step={.01}
                                                                                 className="form-control"
                                                                                 onChange={(e) => {
-                                                                                    if (tokenB.name === 'WCSPR' && tokenA.name === "WISE") {
+                                                                                    if (e.target.value >= 0) {
                                                                                         setTokenBAmount(e.target.value)
-                                                                                        setTokenAAmount(e.target.value * (10 / 1))
-                                                                                    }
-                                                                                    else if (tokenB.name === 'WISE' && tokenA.name === "WCSPR") {
-                                                                                        setTokenBAmount(e.target.value)
-                                                                                        setTokenAAmount(e.target.value * (1 / 10))
-                                                                                    }
-                                                                                    else if (tokenB.name === 'WCSPR' && tokenA.name === "USDC") {
-                                                                                        setTokenBAmount(e.target.value)
-                                                                                        setTokenAAmount(e.target.value * (1 / 8))
-                                                                                    }
-                                                                                    else if (tokenB.name === 'USDC' && tokenA.name === "WCSPR") {
-                                                                                        setTokenBAmount(e.target.value)
-                                                                                        setTokenAAmount(e.target.value * (8 / 1))
+                                                                                        setTokenAAmount(e.target.value * (tokenBAmountPercent / tokenAAmountPercent).toFixed(5))
                                                                                     }
                                                                                     else {
-                                                                                        setTokenBAmount(e.target.value)
-                                                                                        setTokenAAmount(e.target.value)
+                                                                                        setTokenAAmount(0)
+                                                                                        setTokenBAmount(0)
                                                                                     }
 
                                                                                 }}
@@ -476,9 +490,9 @@ function AddLiquidity(props) {
                                                                             />
                                                                         )}
                                                                     </div>
-                                                                    <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
+                                                                    {/* <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
                                                                         {Math.round(tokenBAmount * priceInUSD * 1000) / 1000}$
-                                                                    </div>
+                                                                    </div> */}
                                                                 </div>
                                                                 {tokenA ? (
                                                                     <div className="card">
@@ -569,59 +583,55 @@ function AddLiquidity(props) {
                                                                 <br></br>
                                                                 {tokenA && tokenB ? (
                                                                     <>
-                                                                        <Typography variant="h5" color="textSecondary" component="p">
-                                                                            <strong>Prices and pool share </strong>
-                                                                        </Typography>
+                                                                        <Card>
+                                                                            <CardContent>
+                                                                                <Row>
+                                                                                    <Col>
+                                                                                        <CardHeader
+                                                                                            title={tokenAAmount}
+                                                                                        />
+                                                                                    </Col>
+                                                                                    <Col><CardHeader
+                                                                                        avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" className={classes.avatar} />}
+                                                                                        title={tokenA.name}
+                                                                                    /></Col>
+                                                                                </Row>
+                                                                                <Row>
+                                                                                    <Col>
+                                                                                        <CardHeader
+                                                                                            title={(tokenBAmount).toFixed(5)}
+                                                                                        />
+                                                                                    </Col>
+                                                                                    <Col>
+                                                                                        <CardHeader
+                                                                                            avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" className={classes.avatar} />}
+                                                                                            title={tokenB.name}
+                                                                                        />
+                                                                                    </Col>
+                                                                                </Row>
+                                                                            </CardContent>
+                                                                        </Card>
                                                                         <hr />
-                                                                        <Row style={{ textAlign: 'center' }}>
+                                                                        <Card>
+                                                                            <CardContent>
+                                                                                <Row>
+                                                                                    <Col>
+                                                                                        <CardHeader style={{ margin: '25px' }}
+                                                                                            subheader={`Price`}
+                                                                                        />
+                                                                                    </Col>
+                                                                                    <Col>
 
-                                                                            <Col>
-                                                                                <Typography variant="body1" component="p">
-                                                                                    {tokenA.name === 'WCSPR' && tokenB.name === "WISE" ? (
-                                                                                        1 / 10
-                                                                                    ) : tokenA.name === 'WISE' && tokenB.name === "WCSPR" ? (
-                                                                                        10 / 1
-                                                                                    ) : tokenA.name === 'WCSPR' && tokenB.name === "USDC" ? (
-                                                                                        8 / 1
-                                                                                    ) : tokenA.name === 'USDC' && tokenB.name === "WCSPR" ? (
-                                                                                        1 / 8
-                                                                                    ) : (
-                                                                                        1
-                                                                                    )}
-                                                                                </Typography>
-                                                                                <Typography variant="body1" component="p">
-                                                                                    <strong> {tokenA.name} per {tokenB.name} </strong>
-                                                                                </Typography>
-                                                                            </Col>
-                                                                            <Col>
-                                                                                <Typography variant="body1" component="p">
-                                                                                    {tokenB.name === 'WCSPR' && tokenA.name === "WISE" ? (
-                                                                                        1 / 10
-                                                                                    ) : tokenB.name === 'WISE' && tokenA.name === "WCSPR" ? (
-                                                                                        10 / 1
-                                                                                    ) : tokenB.name === 'WCSPR' && tokenA.name === "USDC" ? (
-                                                                                        8 / 1
-                                                                                    ) : tokenB.name === 'USDC' && tokenA.name === "WCSPR" ? (
-                                                                                        1 / 8
-                                                                                    ) : (
-                                                                                        1
-                                                                                    )}
-                                                                                </Typography>
-                                                                                <Typography variant="body1" component="p">
-                                                                                    <strong> {tokenB.name} per {tokenA.name} </strong>
-                                                                                </Typography>
-                                                                            </Col>
-                                                                            <Col>
-                                                                                <Typography variant="body1" component="p">
-                                                                                    0%
-                                                                                </Typography>
-                                                                                <Typography variant="body1" component="p">
-                                                                                    <strong>Share of Pool</strong>
-
-                                                                                </Typography>
-                                                                            </Col>
-                                                                        </Row>
-
+                                                                                        <CardHeader
+                                                                                            subheader={`1 ${tokenA.name} = ${(tokenAAmountPercent / tokenBAmountPercent).toFixed(5)} ${tokenB.name}`}
+                                                                                        />
+                                                                                        <CardHeader
+                                                                                            subheader={`1 ${tokenB.name} = ${(tokenBAmountPercent / tokenAAmountPercent).toFixed(5)} ${tokenA.name}`}
+                                                                                        />
+                                                                                    </Col>
+                                                                                </Row>
+                                                                            </CardContent>
+                                                                        </Card>
                                                                     </>
                                                                 ) : (
                                                                     null
@@ -670,32 +680,47 @@ function AddLiquidity(props) {
                                                                 )}
                                                             </form>
                                                             <br></br>
-                                                            {tokenA && tokenB ? (
+                                                            {tokenA && tokenB && liquidity ? (
                                                                 <Card>
                                                                     <CardContent>
+                                                                        <h3>Your Position</h3>
                                                                         <Row>
                                                                             <Col>
                                                                                 <CardHeader
-                                                                                    title={tokenAAmount}
+                                                                                    subheader={`${tokenA.symbol}/${tokenB.symbol}`}
                                                                                 />
                                                                             </Col>
-                                                                            <Col><CardHeader
-                                                                                avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" className={classes.avatar} />}
-                                                                                title={tokenA.name}
-                                                                            /></Col>
+                                                                            <Col style={{ textAlign: 'right' }}>
+                                                                                <CardHeader
+                                                                                    subheader={liquidity / 10 ** 9}
+                                                                                />
+                                                                            </Col>
                                                                         </Row>
                                                                         <Row>
                                                                             <Col>
                                                                                 <CardHeader
-                                                                                    title={tokenBAmount}
+                                                                                    subheader={`${tokenA.name}:`}
                                                                                 />
                                                                             </Col>
+                                                                            <Col style={{ textAlign: 'right' }}>
+                                                                                <CardHeader
+                                                                                    subheader={(tokenAAmountPercent).toFixed(5)}
+                                                                                />
+                                                                            </Col>
+
+                                                                        </Row>
+                                                                        <Row>
                                                                             <Col>
                                                                                 <CardHeader
-                                                                                    avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" className={classes.avatar} />}
-                                                                                    title={tokenB.name}
+                                                                                    subheader={`${tokenB.name}:`}
                                                                                 />
                                                                             </Col>
+                                                                            <Col style={{ textAlign: 'right' }}>
+                                                                                <CardHeader
+                                                                                    subheader={(tokenBAmountPercent).toFixed(5)}
+                                                                                />
+                                                                            </Col>
+
                                                                         </Row>
                                                                     </CardContent>
                                                                 </Card>
@@ -714,6 +739,7 @@ function AddLiquidity(props) {
                     </div>
                 </div>
             </div>
+            <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
         </div>
     );
 }

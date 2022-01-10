@@ -1,45 +1,24 @@
 import Avatar from '@material-ui/core/Avatar';
+import {
+  Signer
+} from 'casper-js-sdk';
 import Cookies from "js-cookie";
-import React, { useState, useEffect } from "react";
-import { Spinner, Button } from "react-bootstrap";
+import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
+import { Button, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
 import Logo from "../../assets/img/cspr.png";
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import NetworkErrorModal from "../Modals/NetworkErrorModal";
-import { useSnackbar } from 'notistack';
-
-import {
-  Signer,
-  CasperServiceByJsonRPC,
-  CasperClient,
-  CLPublicKey,
-  CLByteArray,
-  DeployUtil,
-  CLValueBuilder,
-  RuntimeArgs,
-} from 'casper-js-sdk';
-
 
 function HeaderHome(props) {
   const { enqueueSnackbar } = useSnackbar();
   let [menuOpenedClass, setMenuOpenedClass] = useState();
-  let [activeKey, setActiveKey] = useState()
   let [signerLocked, setSignerLocked] = useState()
   let [signerConnected, setSignerConnected] = useState(false)
-  let [currentNotification, setCurrentNotification] = useState()
-  let [showAlert, setShowAlert] = useState()
-
-
   let [isLoading] = useState(false);
-
-
-  let [network] = useState(false);
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
 
 
   useEffect(() => {
@@ -49,60 +28,43 @@ function HeaderHome(props) {
         setSignerConnected(connected)
       } catch (err) {
         console.log(err)
-        setCurrentNotification({ text: err.message })
-        setShowAlert(true)
       }
     }, 100);
     if (signerConnected) {
       let res = getActiveKeyFromSigner()
-      setActiveKey(res)
       localStorage.setItem("Address", res)
       props.setActivePublicKey(res)
     }
     window.addEventListener('signer:connected', msg => {
       setSignerLocked(!msg.detail.isUnlocked)
       setSignerConnected(true)
-      setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
       props.setActivePublicKey(msg.detail.activeKey)
-      setCurrentNotification({ text: 'Connected to Signer!', severity: 'success' })
-      setShowAlert(true)
     });
     window.addEventListener('signer:disconnected', msg => {
       setSignerLocked(!msg.detail.isUnlocked)
       setSignerConnected(false)
-      setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
       props.setActivePublicKey(msg.detail.activeKey)
-      setCurrentNotification({ text: 'Disconnected from Signer', severity: 'info' })
-      setShowAlert(true)
     });
     window.addEventListener('signer:tabUpdated', msg => {
       setSignerLocked(!msg.detail.isUnlocked)
       setSignerConnected(msg.detail.isConnected)
-      setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
       props.setActivePublicKey(msg.detail.activeKey)
     });
     window.addEventListener('signer:activeKeyChanged', msg => {
-      setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
       props.setActivePublicKey(msg.detail.activeKey)
-      setCurrentNotification({ text: 'Active key changed', severity: 'warning' })
-      setShowAlert(true)
     });
     window.addEventListener('signer:locked', msg => {
       setSignerLocked(!msg.detail.isUnlocked);
-      setCurrentNotification({ text: 'Signer has locked', severity: 'info' })
-      setShowAlert(true)
-      setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
       props.setActivePublicKey(msg.detail.activeKey)
     });
     window.addEventListener('signer:unlocked', msg => {
       setSignerLocked(!msg.detail.isUnlocked)
       setSignerConnected(msg.detail.isConnected)
-      setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
       props.setActivePublicKey(msg.detail.activeKey)
     });
@@ -111,11 +73,10 @@ function HeaderHome(props) {
 
       setSignerLocked(!msg.detail.isUnlocked)
       setSignerConnected(msg.detail.isConnected)
-      setActiveKey(msg.detail.activeKey)
       localStorage.setItem("Address", msg.detail.activeKey)
       props.setActivePublicKey(msg.detail.activeKey)
     });
-
+// eslint-disable-next-line
   }, []);
 
 
@@ -264,7 +225,7 @@ function HeaderHome(props) {
             <li className="login-link ">
               {/* <Link to="/dashboard" style={{ color: '#ed0b25' }} > */}
 
-              {localStorage.getItem("Address") && localStorage.getItem("Address") != null && localStorage.getItem("Address") != 'null' ? (
+              {localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
                 <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: '#ed0b25' }}>
                   <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
                 </a>
@@ -343,7 +304,7 @@ function HeaderHome(props) {
               </Spinner>
             </div>
           ) : (
-            localStorage.getItem("Address") && localStorage.getItem("Address") != null && localStorage.getItem("Address") != 'null' ? (
+            localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
               <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: '#ed0b25' }}>
                 <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
               </a>
@@ -373,19 +334,13 @@ function HeaderHome(props) {
 
           </li>
           <li>
-            {localStorage.getItem("Address") && localStorage.getItem("Address") != null && localStorage.getItem("Address") != 'null' ? (
+            {localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
               <span style={{ cursor: 'pointer' }} onClick={() => Disconnect()}>
                 Disconnect
               </span>
             ) : (null)}
           </li>
         </ul>
-        <NetworkErrorModal
-          show={show}
-          handleClose={handleClose}
-          network={network}
-        >
-        </NetworkErrorModal>
       </nav>
     </header >
   );

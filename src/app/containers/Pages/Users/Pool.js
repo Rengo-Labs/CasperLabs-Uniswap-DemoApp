@@ -1,27 +1,16 @@
-import { Avatar, Card, CardContent, CardHeader, Accordion, AccordionDetails, AccordionSummary } from '@material-ui/core/';
+import { Accordion, AccordionDetails, AccordionSummary, Card, CardContent } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
-import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
-import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
-import {
-    CasperClient, CLAccountHash, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
-} from 'casper-js-sdk';
-import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Button, Col, Row } from 'react-bootstrap';
-import Spinner from "react-bootstrap/Spinner";
 import { Link } from 'react-router-dom';
 import windowSize from "react-window-size";
-import { Some } from "ts-results";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
-import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import HeaderHome from "../../../components/Headers/Header";
-import AddLiquidity from './AddLiquidity';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -61,11 +50,12 @@ const useStyles = makeStyles((theme) => ({
 // let RecipientType = CLPublicKey | CLAccountHash | CLByteArray;
 function Pool(props) {
     const classes = useStyles();
-    const { enqueueSnackbar } = useSnackbar();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
 
     const [userPairs, setuserPairs] = useState([])
+    const [error, setError] = useState()
     const [ispairList, setIsPairList] = useState(false)
+    const [isError, setIsError] = useState(false)
     const [expanded, setExpanded] = React.useState(false);
 
     const handleChange = (panel) => (event, isExpanded) => {
@@ -82,11 +72,15 @@ function Pool(props) {
                 console.log('resresres', res)
                 console.log(res.data.userpairs)
                 setIsPairList(true)
+                setIsError(false)
+                setError()
                 setuserPairs(res.data.userpairs)
             })
             .catch((error) => {
                 console.log(error)
                 console.log(error.response)
+                setIsError(true)
+                setError("There is no pair against this user.")
             })// eslint-disable-next-line
     }, [activePublicKey]);
     return (
@@ -123,9 +117,13 @@ function Pool(props) {
                                                 </Link>
                                             </div>
                                             <div className="account-content">
-                                                {!ispairList ? (
+                                                {!ispairList && !isError ? (
                                                     <Typography>
                                                         Connect to a wallet to view your liquidity.
+                                                    </Typography>
+                                                ) : isError && error ? (
+                                                    <Typography>
+                                                        {error}
                                                     </Typography>
                                                 ) : (
                                                     userPairs.map((i, index) => (
@@ -146,15 +144,15 @@ function Pool(props) {
                                                                     <CardContent>
                                                                         <Row>
                                                                             <Col>Your total Pool Tokens</Col>
-                                                                            <Col><Typography>{i.reserve0 / i.reserve1}</Typography></Col>
+                                                                            <Col><Typography>{(i.reserve0 / i.reserve1).toFixed(5)}</Typography></Col>
                                                                         </Row>
                                                                         <Row>
-                                                                            <Col>{i.token0.name}</Col>
-                                                                            <Col><Typography>{i.reserve0}</Typography></Col>
+                                                                            <Col>Pooled {i.token0.name}</Col>
+                                                                            <Col><Typography>{i.reserve0 / 10 ** 9}</Typography></Col>
                                                                         </Row>
                                                                         <Row>
-                                                                            <Col>{i.token1.name}</Col>
-                                                                            <Col><Typography>{i.reserve1}</Typography></Col>
+                                                                            <Col>Pooled {i.token1.name}</Col>
+                                                                            <Col><Typography>{i.reserve1 / 10 ** 9}</Typography></Col>
                                                                         </Row>
                                                                     </CardContent>
                                                                     <Link to='/pool/addLiquidity'>

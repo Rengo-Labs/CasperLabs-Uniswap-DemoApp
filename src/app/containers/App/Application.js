@@ -1,44 +1,17 @@
-import Cookies from "js-cookie";
-import jwtDecode from "jwt-decode";
 import { SnackbarProvider } from 'notistack';
-import React, { useEffect } from "react";
+import React from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import HomeScreen from "../Pages/Users/HomeScreen";
 import AddLiquidity from "../Pages/Users/AddLiquidity";
+import HomeScreen from "../Pages/Users/HomeScreen";
 import Pairs from "../Pages/Users/Pairs";
 import Pool from "../Pages/Users/Pool";
+import RemoveLiquidity from "../Pages/Users/RemoveLiquidity";
 import Swap from "../Pages/Users/Swap";
 import Tokens from "../Pages/Users/Tokens";
-import RemoveLiquidity from "../Pages/Users/RemoveLiquidity";
 
 function App() {
-  let isLoggedIn;
-  let jwtDecoded;
-  let checkLoginStatus = () => {
-    // Cookies.remove("Authorization");
-    let jwt = Cookies.get("Authorization");
-    if (jwt) {
-      console.log(jwtDecode(jwt));
-      // setjwtDecoded(jwtDecode(jwt));
-      jwtDecoded = jwtDecode(jwt);
-      console.log("jwtDecoded", jwtDecoded);
-      isLoggedIn = true;
-      // setIsLoggedIn(true);
-    } else {
-      // setIsLoggedIn(false);
-      isLoggedIn = false;
-    }
-  };
-
-  useEffect(() => {
-
-    checkLoginStatus();// eslint-disable-next-line
-  }, []);
-
-
 
   const LoginRegisterRedirectCheck = ({ path, ...rest }) => {
-    checkLoginStatus();
     if (path === "/pool") {
       return <Route component={Pool} />;
     } else if (path === "/pool/addLiquidity") {

@@ -1,18 +1,16 @@
 import { Avatar, Card, CardContent, CardHeader } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
-import TextField from "@material-ui/core/TextField";
-import Typography from '@material-ui/core/Typography';
-import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import {
-    CasperClient, CLAccountHash, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
+    CasperClient, CLAccountHash, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
 } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
+import RangeSlider from 'react-bootstrap-range-slider';
 import Spinner from "react-bootstrap/Spinner";
+import { useParams } from 'react-router-dom';
 import windowSize from "react-window-size";
-import { Some } from "ts-results";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
@@ -20,8 +18,7 @@ import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import HeaderHome from "../../../components/Headers/Header";
-import RangeSlider from 'react-bootstrap-range-slider';
-import { useParams } from 'react-router-dom';
+import SlippageModal from '../../../components/Modals/SlippageModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -67,7 +64,7 @@ function RemoveLiquidity(props) {
     let { tokenAAddress, tokenBAddress } = useParams()
     // console.log("tokenAAddress",tokenAAddress);
     const { enqueueSnackbar } = useSnackbar();
-    let [priceInUSD, setPriceInUSD] = useState(0);
+    // let [priceInUSD, setPriceInUSD] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
     let [tokenAAmount, setTokenAAmount] = useState(0);
@@ -79,21 +76,16 @@ function RemoveLiquidity(props) {
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     const [value, setValue] = useState(25);
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
-
-
-    const [tokenList, setTokenList] = useState([])
-    const [pairList, setPairList] = useState([])
-    const [istokenList, setIsTokenList] = useState(false)
-    const [ispairList, setIsPairList] = useState(false)
-    let [isLoading, setIsLoading] = useState(false);
-    let [msg, setMsg] = useState("");
-
-
-    let handleSubmitEvent = (event) => {
-        setMsg("");
-        event.preventDefault();
-
+    const [slippage, setSlippage] = useState(0.5);
+    const [openSlippage, setOpenSlippage] = useState(false);
+    const handleCloseSlippage = () => {
+        setOpenSlippage(false);
     };
+    const handleShowSlippage = () => {
+        setOpenSlippage(true);
+    };
+
+    let [isLoading, setIsLoading] = useState(false);
     useEffect(() => {
         axios
             .get('/tokensList')
@@ -112,26 +104,25 @@ function RemoveLiquidity(props) {
                     }
 
                 }
-                setIsTokenList(true)
-                setTokenList(res.data.tokens)
             })
             .catch((error) => {
                 console.log(error)
                 console.log(error.response)
-            })// eslint-disable-next-line
-        axios
-            .post("priceconversion", {
-                symbolforconversion: "CSPR",
-                symboltoconvertto: "USD",
-                amount: 1
             })
-            .then((response) => {
-                console.log("response", response.data.worth.USD);
-                setPriceInUSD(response.data.worth.USD.price);
-            })
-            .catch((error) => {
-                console.log("response", error.response);
-            });
+        // axios
+        //     .post("priceconversion", {
+        //         symbolforconversion: "CSPR",
+        //         symboltoconvertto: "USD",
+        //         amount: 1
+        //     })
+        //     .then((response) => {
+        //         console.log("response", response.data.worth.USD);
+        //         setPriceInUSD(response.data.worth.USD.price);
+        //     })
+        //     .catch((error) => {
+        //         console.log("response", error.response);
+        //     });
+        // eslint-disable-next-line
     }, []);
     useEffect(() => {
         let param = {
@@ -142,17 +133,16 @@ function RemoveLiquidity(props) {
             .then((res) => {
                 console.log('9', res)
                 console.log(res.data.userpairs)
-                setIsPairList(true)
                 for (let i = 0; i < res.data.userpairs.length; i++) {
                     let address0 = res.data.userpairs[i].token0.id.toLowerCase();
                     let address1 = res.data.userpairs[i].token1.id.toLowerCase();
                     if ((address0.includes(tokenAAddress.toLowerCase()) && address1.includes(tokenBAddress.toLowerCase())) || (address0.includes(tokenBAddress.toLowerCase()) && address1.includes(tokenAAddress.toLowerCase()))) {
                         console.log('res.data.', res.data.userpairs[i]);
-                        setTokenAAmount(res.data.userpairs[i].reserve0)
-                        setTokenBAmount(res.data.userpairs[i].reserve1)
+                        setTokenAAmount((res.data.userpairs[i].reserve0 / 10 ** 9))
+                        setTokenBAmount((res.data.userpairs[i].reserve1 / 10 ** 9))
                         setPairHash(res.data.userpairs[i].id)
-                        setTokenAAmountPercent(res.data.userpairs[i].reserve0 * value / 100)
-                        setTokenBAmountPercent(res.data.userpairs[i].reserve1 * value / 100)
+                        setTokenAAmountPercent(((res.data.userpairs[i].reserve0 * value / 100) / 10 ** 9))
+                        setTokenBAmountPercent(((res.data.userpairs[i].reserve1 * value / 100) / 10 ** 9))
 
                         let param = {
                             to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
@@ -173,14 +163,8 @@ function RemoveLiquidity(props) {
                                 console.log(error.response)
                             })
 
-                        // setTokenA(res.data.tokens[i])
                     }
-                    // if () {
-                    //     console.log('res.data.tokensB.address', res.data.tokens[i].address);
-                    //     setTokenB(res.data.tokens[i])
-                    // }
                 }
-                setPairList(res.data.pairList)
             })
             .catch((error) => {
                 console.log(error)
@@ -188,11 +172,6 @@ function RemoveLiquidity(props) {
             })// eslint-disable-next-line
     }, [activePublicKey]);
 
-    //     https://casper-uniswap-v2-graphql.herokuapp.com/liquidityagainstuserandpair
-    // {
-    //     "to":"8b217a09296d5ce360847a7d20f623476157c5f022333c4e988a464035cadd80",
-    //     "pairid":"9c2aa298dc8f7bc10a7e57d005ed0a4c97597c963368246c51671c0794a48707"
-    // }
     function createRecipientAddress(recipient) {
         if (recipient instanceof CLPublicKey) {
             return new CLKey(new CLAccountHash(recipient.toAccountHash()));
@@ -210,7 +189,7 @@ function RemoveLiquidity(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256((liquidity * value / 100) * 10 ** 9)
+                amount: CLValueBuilder.u256(Math.round(liquidity * value / 100))
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
@@ -302,8 +281,8 @@ function RemoveLiquidity(props) {
 
             const tokenAAddress = tokenA.address;
             const tokenBAddress = tokenB.address;
-            const token_AAmount = tokenAAmountPercent;
-            const token_BAmount = tokenBAmountPercent;
+            const token_AAmount = (tokenAAmountPercent).toFixed(5);
+            const token_BAmount = (tokenBAmountPercent).toFixed(5);
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
 
@@ -320,22 +299,12 @@ function RemoveLiquidity(props) {
             );
 
 
-            // const runtimeArgs = RuntimeArgs.fromMap({
-            //     token_a: new CLKey(_token_a),
-            //     token_b: new CLKey(_token_b),
-            //     amount_a_desired: CLValueBuilder.u256(token_AAmount),
-            //     amount_b_desired: CLValueBuilder.u256(token_BAmount),
-            //     amount_a_min: CLValueBuilder.u256(token_AAmount / 2),
-            //     amount_b_min: CLValueBuilder.u256(token_BAmount / 2),
-            //     to: createRecipientAddress(publicKey),
-            //     deadline: CLValueBuilder.u256(deadline),
-            // });
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
-                liquidity: CLValueBuilder.u256((liquidity * value / 100) * 10 ** 9),
-                amount_a_min: CLValueBuilder.u256(1 * 10 ** 9),
-                amount_b_min: CLValueBuilder.u256(1 * 10 ** 9),
+                liquidity: CLValueBuilder.u256(Math.round(liquidity * value / 100)),
+                amount_a_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
+                amount_b_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
             });
@@ -390,8 +359,9 @@ function RemoveLiquidity(props) {
                                                         <>
                                                             <div className="login-header">
                                                                 <h3 style={{ textAlign: "center" }}>Remove Liquidity</h3>
+                                                                <h3 onClick={handleShowSlippage} style={{ textAlign: 'right' }}><i className="fas fa-cog"></i></h3>
                                                             </div>
-                                                            <form onSubmit={handleSubmitEvent} style={{ textAlign: "center" }}>
+                                                            <form style={{ textAlign: "center" }}>
                                                                 <br></br>
                                                                 <RangeSlider
                                                                     style={{ width: '250px' }}
@@ -413,7 +383,7 @@ function RemoveLiquidity(props) {
                                                                                 <Row>
                                                                                     <Col>
                                                                                         <CardHeader
-                                                                                            title={tokenAAmountPercent}
+                                                                                            title={tokenAAmountPercent.toFixed(5)}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col><CardHeader
@@ -424,7 +394,7 @@ function RemoveLiquidity(props) {
                                                                                 <Row>
                                                                                     <Col>
                                                                                         <CardHeader
-                                                                                            title={tokenBAmountPercent}
+                                                                                            title={tokenBAmountPercent.toFixed(5)}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
@@ -448,10 +418,10 @@ function RemoveLiquidity(props) {
                                                                                     <Col>
 
                                                                                         <CardHeader
-                                                                                            subheader={`1 ${tokenA.name} = ${tokenBAmount / tokenAAmount} ${tokenB.name}`}
+                                                                                            subheader={`1 ${tokenA.name} = ${(tokenBAmount / tokenAAmount).toFixed(5)} ${tokenB.name}`}
                                                                                         />
                                                                                         <CardHeader
-                                                                                            subheader={`1 ${tokenB.name} = ${tokenAAmount / tokenBAmount} ${tokenA.name}`}
+                                                                                            subheader={`1 ${tokenB.name} = ${(tokenAAmount / tokenBAmount).toFixed(5)} ${tokenA.name}`}
                                                                                         />
                                                                                     </Col>
                                                                                 </Row>
@@ -545,7 +515,7 @@ function RemoveLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={liquidity}
+                                                                                    subheader={liquidity / 10 ** 9}
                                                                                 />
                                                                             </Col>
                                                                         </Row>
@@ -557,7 +527,7 @@ function RemoveLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={tokenAAmount}
+                                                                                    subheader={(tokenAAmount).toFixed(5)}
                                                                                 />
                                                                             </Col>
 
@@ -570,7 +540,7 @@ function RemoveLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={tokenBAmount}
+                                                                                    subheader={(tokenBAmount).toFixed(5)}
                                                                                 />
                                                                             </Col>
 
@@ -592,6 +562,7 @@ function RemoveLiquidity(props) {
                     </div>
                 </div>
             </div>
+            <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
         </div>
     );
 }

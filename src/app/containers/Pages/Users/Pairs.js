@@ -14,6 +14,7 @@ function Pairs(props) {
 
     const [pairList, setPairList] = useState([])
     const [isPairList, setIsPairList] = useState(false)
+    // eslint-disable-next-line
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     useEffect(() => {
         setIsPairList(true)
@@ -94,10 +95,10 @@ function Pairs(props) {
                                                                     <td>{i.token0.name}/{i.token1.name}</td>
                                                                     <td>{i.token0.symbol}/{i.token1.symbol}</td>
                                                                     <td>{shortenAddress(i.token0.id)}/{shortenAddress(i.token1.id)}</td>
-                                                                    <td>{i.reserve0}</td>
-                                                                    <td>{i.reserve1}</td>
-                                                                    <td>{i.reserveETH}</td>
-                                                                    <td>{i.reserveUSD}</td>
+                                                                    <td>{i.reserve0 / 10 ** 9}</td>
+                                                                    <td>{i.reserve1 / 10 ** 9}</td>
+                                                                    <td>{i.reserveETH / 10 ** 9}</td>
+                                                                    <td>{i.reserveUSD / 10 ** 9}</td>
                                                                     {/* <td>{shortenAddress(i.token0.packageHash)/shortenAddress(i.token1.packageHash)}</td> */}
 
                                                                 </tr>

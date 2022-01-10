@@ -56,6 +56,7 @@ function Tokens(props) {
     const classes = useStyles();
     const [tokenList, setTokenList] = useState([])
     const [istokenList, setIsTokenList] = useState(false)
+    // eslint-disable-next-line
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     useEffect(() => {
         axios
@@ -101,7 +102,7 @@ function Tokens(props) {
                                                 className="table-responsive"
                                                 style={{ paddingTop: "20px" }}
                                             >
-                                                {istokenList ? (
+                                                {!istokenList ? (
                                                     <div className=" align-items-center justify-content-center text-center">
                                                         <Spinner
                                                             animation="border"

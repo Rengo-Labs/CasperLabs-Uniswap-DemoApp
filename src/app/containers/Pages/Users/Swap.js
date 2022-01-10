@@ -1,5 +1,5 @@
 import { Avatar, CardHeader } from '@material-ui/core/';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
@@ -18,6 +18,7 @@ import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import HeaderHome from "../../../components/Headers/Header";
+import SlippageModal from '../../../components/Modals/SlippageModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -58,19 +59,26 @@ const useStyles = makeStyles((theme) => ({
 function Swap(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
-    const theme = useTheme();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
-    let [priceInUSD, setPriceInUSD] = useState(0);
+    // let [priceInUSD, setPriceInUSD] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
     let [tokenAAmount, setTokenAAmount] = useState(0);
     let [tokenBAmount, setTokenBAmount] = useState(0);
+    let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
+    let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
     const [tokenList, setTokenList] = useState([])
-    const [airList, setPairList] = useState([])
     const [istokenList, setIsTokenList] = useState(false)
-    const [ispairList, setIsPairList] = useState(false)
     let [isLoading, setIsLoading] = useState(false);
+    const [slippage, setSlippage] = useState(0.5);
+    const [openSlippage, setOpenSlippage] = useState(false);
+    const handleCloseSlippage = () => {
+        setOpenSlippage(false);
+    };
+    const handleShowSlippage = () => {
+        setOpenSlippage(true);
+    };
     let [msg, setMsg] = useState("");
 
 
@@ -92,34 +100,49 @@ function Swap(props) {
                 console.log(error)
                 console.log(error.response)
             })// eslint-disable-next-line
-        axios
-            .post("priceconversion", {
-                symbolforconversion: "CSPR",
-                symboltoconvertto: "USD",
-                amount: 1
-            })
-            .then((response) => {
-                console.log("response", response.data.worth.USD);
-                setPriceInUSD(response.data.worth.USD.price);
-            })
-            .catch((error) => {
-                console.log("response", error.response);
-            });
+        // axios
+        //     .post("priceconversion", {
+        //         symbolforconversion: "CSPR",
+        //         symboltoconvertto: "USD",
+        //         amount: 1
+        //     })
+        //     .then((response) => {
+        //         console.log("response", response.data.worth.USD);
+        //         setPriceInUSD(response.data.worth.USD.price);
+        //     })
+        //     .catch((error) => {
+        //         console.log("response", error.response);
+        //     });
     }, []);
     useEffect(() => {
-        axios
-            .get('/getpairlist')
-            .then((res) => {
-                console.log('resresres', res)
-                console.log(res.data.pairList)
-                setIsPairList(true)
-                setPairList(res.data.pairList)
-            })
-            .catch((error) => {
-                console.log(error)
-                console.log(error.response)
-            })// eslint-disable-next-line
-    }, []);
+        if (tokenA && tokenB) {
+            console.log("tokenA", tokenA);
+            console.log("tokenB", tokenB);
+            axios
+                .get('/getpairlist')
+                .then((res) => {
+                    console.log('resresres', res)
+                    console.log(res.data.pairList)
+                    // setIsPairList(true)
+                    for (let i = 0; i < res.data.pairList.length; i++) {
+                        let address0 = res.data.pairList[i].token0.id.toLowerCase();
+                        let address1 = res.data.pairList[i].token1.id.toLowerCase();
+                        console.log("address0", address0);
+                        console.log("address1", address1);
+                        if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase()) || (address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
+                            console.log('res.data.', res.data.pairList[i]);
+
+                            setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                            setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
+        }
+    }, [activePublicKey, tokenA, tokenB]);
     function createRecipientAddress(recipient) {
         if (recipient instanceof CLPublicKey) {
             return new CLKey(new CLAccountHash(recipient.toAccountHash()));
@@ -224,6 +247,7 @@ function Swap(props) {
         throw Error('Timeout after ' + i + 's. Something\'s wrong');
     }
     async function swapMakeDeploy() {
+        setIsLoading(true)
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
@@ -231,7 +255,7 @@ function Swap(props) {
             const tokenAAddress = tokenA.address;
             const tokenBAddress = tokenB.address;
             const amount_in = tokenAAmount;
-            const amount_out_min = 50;
+            const amount_out_min = tokenBAmount;
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
 
@@ -253,7 +277,7 @@ function Swap(props) {
             );
             const runtimeArgs = RuntimeArgs.fromMap({
                 amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
-                amount_out_min: CLValueBuilder.u256(amount_out_min * 10 ** 9),
+                amount_out_min: CLValueBuilder.u256((amount_out_min * 10 ** 9) * slippage / 100),
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
                 to: createRecipientAddress(publicKey),
@@ -282,15 +306,18 @@ function Swap(props) {
                 console.log('result', result);
                 let variant = "success";
                 enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                setIsLoading(false)
             }
             catch {
                 let variant = "Error";
                 enqueueSnackbar('Unable to Swap Tokens', { variant });
+                setIsLoading(false)
             }
         }
         else {
             let variant = "error";
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
+            setIsLoading(false)
         }
     }
     return (
@@ -317,6 +344,7 @@ function Swap(props) {
                                                     <div className="col-md-12 col-lg-6 login-right">
                                                         <div className="login-header">
                                                             <h3 style={{ textAlign: "center" }}>Swap</h3>
+                                                            <h3 onClick={handleShowSlippage} style={{ textAlign: 'right' }}><i className="fas fa-cog"></i></h3>
                                                         </div>
                                                         <form onSubmit={handleSubmitEvent}>
                                                             <div className="row">
@@ -347,7 +375,7 @@ function Swap(props) {
                                                                         />
                                                                     </div>
                                                                 </div>
-                                                                <div className="col-md-12 col-lg-3">
+                                                                <div className="col-md-12 col-lg-4">
                                                                     {tokenB && tokenA ? (
                                                                         <input
                                                                             type="number"
@@ -359,25 +387,13 @@ function Swap(props) {
                                                                             className="form-control"
                                                                             onChange={(e) => {
                                                                                 // setTokenAAmount(e.target.value)
-                                                                                if (tokenA.name === 'WCSPR' && tokenB.name === "WISE") {
+                                                                                if (e.target.value >= 0) {
                                                                                     setTokenAAmount(e.target.value)
-                                                                                    setTokenBAmount(e.target.value * (10 / 1))
-                                                                                }
-                                                                                else if (tokenA.name === 'WISE' && tokenB.name === "WCSPR") {
-                                                                                    setTokenAAmount(e.target.value)
-                                                                                    setTokenBAmount(e.target.value * (1 / 10))
-                                                                                }
-                                                                                else if (tokenA.name === 'WCSPR' && tokenB.name === "USDC") {
-                                                                                    setTokenAAmount(e.target.value)
-                                                                                    setTokenBAmount(e.target.value * (1 / 8))
-                                                                                }
-                                                                                else if (tokenA.name === 'USDC' && tokenB.name === "WCSPR") {
-                                                                                    setTokenAAmount(e.target.value)
-                                                                                    setTokenBAmount(e.target.value * (8 / 1))
-                                                                                }
-                                                                                else {
-                                                                                    setTokenAAmount(e.target.value)
-                                                                                    setTokenBAmount(e.target.value)
+                                                                                    setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
+
+                                                                                } else {
+                                                                                    setTokenAAmount(0)
+                                                                                    setTokenBAmount(0)
                                                                                 }
                                                                             }}
                                                                         />
@@ -392,9 +408,9 @@ function Swap(props) {
                                                                         />
                                                                     )}
                                                                 </div>
-                                                                <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
+                                                                {/* <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
                                                                     {Math.round(tokenAAmount * priceInUSD * 1000) / 1000}$
-                                                                </div>
+                                                                </div> */}
                                                             </div>
                                                             <br></br>
                                                             <div className="row">
@@ -425,7 +441,7 @@ function Swap(props) {
                                                                         />
                                                                     </div>
                                                                 </div>
-                                                                <div className="col-md-12 col-lg-3">
+                                                                <div className="col-md-12 col-lg-4">
                                                                     {tokenB && tokenA ? (
                                                                         <input
                                                                             type="number"
@@ -436,25 +452,13 @@ function Swap(props) {
                                                                             step={.01}
                                                                             className="form-control"
                                                                             onChange={(e) => {
-                                                                                if (tokenB.name === 'WCSPR' && tokenA.name === "WISE") {
+                                                                                if (e.target.value >= 0) {
                                                                                     setTokenBAmount(e.target.value)
-                                                                                    setTokenAAmount(e.target.value * (10 / 1))
-                                                                                }
-                                                                                else if (tokenB.name === 'WISE' && tokenA.name === "WCSPR") {
-                                                                                    setTokenBAmount(e.target.value)
-                                                                                    setTokenAAmount(e.target.value * (1 / 10))
-                                                                                }
-                                                                                else if (tokenB.name === 'WCSPR' && tokenA.name === "USDC") {
-                                                                                    setTokenBAmount(e.target.value)
-                                                                                    setTokenAAmount(e.target.value * (1 / 8))
-                                                                                }
-                                                                                else if (tokenB.name === 'USDC' && tokenA.name === "WCSPR") {
-                                                                                    setTokenBAmount(e.target.value)
-                                                                                    setTokenAAmount(e.target.value * (8 / 1))
+                                                                                    setTokenAAmount(e.target.value * (tokenBAmountPercent / tokenAAmountPercent).toFixed(5))
                                                                                 }
                                                                                 else {
-                                                                                    setTokenBAmount(e.target.value)
-                                                                                    setTokenAAmount(e.target.value)
+                                                                                    setTokenAAmount(0)
+                                                                                    setTokenBAmount(0)
                                                                                 }
 
                                                                             }}
@@ -472,9 +476,9 @@ function Swap(props) {
                                                                         />
                                                                     )}
                                                                 </div>
-                                                                <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
+                                                                {/* <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
                                                                     {Math.round(tokenBAmount * priceInUSD * 1000) / 1000}$
-                                                                </div>
+                                                                </div> */}
                                                             </div>
                                                             {tokenA ? (
                                                                 <div className="card">
@@ -576,6 +580,7 @@ function Swap(props) {
                                                             )}
                                                         </form>
                                                     </div>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -586,7 +591,7 @@ function Swap(props) {
                     </div>
                 </div>
             </div>
-
+            <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
 
         </div >
     );

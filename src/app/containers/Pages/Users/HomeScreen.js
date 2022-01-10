@@ -9,6 +9,7 @@ import HeaderHome from "../../../components/Headers/Header";
 import HomeBanner from "./Home/HomeBanner";
 
 function HomeScreen() {
+  // eslint-disable-next-line
   let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
   return (
     <div className="main-wrapper">
