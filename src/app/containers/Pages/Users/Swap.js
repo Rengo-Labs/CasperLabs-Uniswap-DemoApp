@@ -4,9 +4,7 @@ import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
-import {
-    CasperClient, CLAccountHash, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
-} from 'casper-js-sdk';
+import { CasperClient, CasperServiceByJsonRPC, CLAccountHash, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
@@ -15,6 +13,7 @@ import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
+import Logo from "../../../assets/img/cspr.png";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import HeaderHome from "../../../components/Headers/Header";
@@ -60,11 +59,13 @@ function Swap(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
-    // let [priceInUSD, setPriceInUSD] = useState(0);
+    let [balance, setBalance] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
     let [tokenAAmount, setTokenAAmount] = useState(0);
     let [tokenBAmount, setTokenBAmount] = useState(0);
+    let [tokenABalance, setTokenABalance] = useState(0);
+    let [tokenBBalance, setTokenBBalance] = useState(0);
     let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
     let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
@@ -93,13 +94,25 @@ function Swap(props) {
             .then((res) => {
                 console.log('resresres', res)
                 console.log(res.data.tokens)
+                let CSPR =
+                {
+                    address: "",
+                    chainId: 1,
+                    decimals: 9,
+                    logoURI: Logo,
+                    name: "Casper",
+                    symbol: "CSPR",
+                }
+                setTokenList(res.data.tokens);
                 setIsTokenList(true)
-                setTokenList(res.data.tokens)
+                setTokenList(oldArray => [...oldArray, CSPR])
             })
             .catch((error) => {
                 console.log(error)
                 console.log(error.response)
-            })// eslint-disable-next-line
+            })
+
+        // eslint-disable-next-line
         // axios
         //     .post("priceconversion", {
         //         symbolforconversion: "CSPR",
@@ -123,17 +136,40 @@ function Swap(props) {
                 .then((res) => {
                     console.log('resresres', res)
                     console.log(res.data.pairList)
-                    // setIsPairList(true)
-                    for (let i = 0; i < res.data.pairList.length; i++) {
-                        let address0 = res.data.pairList[i].token0.id.toLowerCase();
-                        let address1 = res.data.pairList[i].token1.id.toLowerCase();
-                        console.log("address0", address0);
-                        console.log("address1", address1);
-                        if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase()) || (address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
-                            console.log('res.data.', res.data.pairList[i]);
+                    if (tokenA.name !== "Casper" && tokenB.name !== "Casper") {
 
-                            setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                            setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                        for (let i = 0; i < res.data.pairList.length; i++) {
+                            let address0 = res.data.pairList[i].token0.id.toLowerCase();
+                            let address1 = res.data.pairList[i].token1.id.toLowerCase();
+                            console.log("address0", address0);
+                            console.log("address1", address1);
+                            if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                            } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
+
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                            }
+                        }
+                    } else if ((tokenA.name === "Casper" && tokenB.name === "WCSPR") || (tokenA.name === "WCSPR" && tokenB.name === "Casper")) {
+                        setTokenAAmountPercent(1)
+                        setTokenBAmountPercent(1)
+                    } else {
+                        for (let i = 0; i < res.data.pairList.length; i++) {
+                            let name0 = res.data.pairList[i].token0.name;
+                            let name1 = res.data.pairList[i].token1.name;
+                            console.log("name0", name0);
+                            console.log("name1", name1);
+                            if (name0 === "WCSPR") {
+                                console.log('res.WCSPRWCSPR.', res.data.pairList[i]);
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                            } else if (name1 === "WCSPR") {
+
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                            }
                         }
                     }
                 })
@@ -142,7 +178,110 @@ function Swap(props) {
                     console.log(error.response)
                 })
         }
+        else {
+            setTokenAAmountPercent(0)
+            setTokenBAmountPercent(0)
+        }
     }, [activePublicKey, tokenA, tokenB]);
+    useEffect(() => {
+        if (tokenA && tokenA.name !== "Casper" && activePublicKey) {
+            let param = {
+                contractHash: tokenA.address.slice(5),
+                user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+            }
+            axios
+                .post('/balanceagainstuser', param)
+                .then((res) => {
+                    console.log('tokenAbalanceagainstuser', res)
+                    console.log(res.data)
+                    setTokenABalance(res.data.balance)
+
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
+        }
+
+        if (tokenA && tokenA.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            const client = new CasperServiceByJsonRPC(
+                NODE_ADDRESS
+            );
+            getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                console.log('stateRootHash', stateRootHash);
+                client.getBlockState(
+                    stateRootHash,
+                    CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                    []
+                ).then(result => {
+                    console.log('result', result.Account.mainPurse);
+                    try {
+                        const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+                        client.getAccountBalance(
+                            stateRootHash,
+                            result.Account.mainPurse
+                        ).then(result => {
+                            console.log('CSPR balance', result.toString());
+                            setTokenABalance(result.toString())
+                        });
+                    } catch (error) {
+                        console.log('error', error);
+                    }
+                });
+            })
+
+        }
+    }, [activePublicKey, tokenA]);
+    useEffect(() => {
+
+        if (tokenB && tokenB.name !== "Casper" && activePublicKey) {
+            let param = {
+                contractHash: tokenB.address.slice(5),
+                user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+            }
+            axios
+                .post('/balanceagainstuser', param)
+                .then((res) => {
+                    console.log('tokenBbalanceagainstuser', res)
+                    console.log(res.data)
+                    setTokenBBalance(res.data.balance)
+
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
+        }
+
+        console.log("tokenB", tokenB);
+        if (tokenB && tokenB.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            const client = new CasperServiceByJsonRPC(
+                NODE_ADDRESS
+            );
+            getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                console.log('stateRootHash', stateRootHash);
+                client.getBlockState(
+                    stateRootHash,
+                    CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                    []
+                ).then(result => {
+                    console.log('result', result.Account.mainPurse);
+                    try {
+                        const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+                        client.getAccountBalance(
+                            stateRootHash,
+                            result.Account.mainPurse
+                        ).then(result => {
+                            console.log('CSPR balance', result.toString());
+                            setTokenBBalance(result.toString())
+                        });
+                    } catch (error) {
+                        console.log('error', error);
+                    }
+                });
+            })
+        }
+    }, [activePublicKey, tokenB]);
     function createRecipientAddress(recipient) {
         if (recipient instanceof CLPublicKey) {
             return new CLKey(new CLAccountHash(recipient.toAccountHash()));
@@ -246,10 +385,20 @@ function Swap(props) {
         }
         throw Error('Timeout after ' + i + 's. Something\'s wrong');
     }
+    const getStateRootHash = async (nodeAddress) => {
+        const client = new CasperServiceByJsonRPC(nodeAddress);
+        const { block } = await client.getLatestBlockInfo();
+        if (block) {
+            return block.header.state_root_hash;
+        } else {
+            throw Error("Problem when calling getLatestBlockInfo");
+        }
+    };
     async function swapMakeDeploy() {
         setIsLoading(true)
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
+
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
             const tokenAAddress = tokenA.address;
@@ -277,7 +426,7 @@ function Swap(props) {
             );
             const runtimeArgs = RuntimeArgs.fromMap({
                 amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
-                amount_out_min: CLValueBuilder.u256((amount_out_min * 10 ** 9) * slippage / 100),
+                amount_out_min: CLValueBuilder.u256(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100),
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
                 to: createRecipientAddress(publicKey),
@@ -326,6 +475,7 @@ function Swap(props) {
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
                     <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Swap"} />
+                    <p>{balance}</p>
                     <div className="card">
                         <div className="container-fluid">
                             <div
@@ -412,7 +562,17 @@ function Swap(props) {
                                                                     {Math.round(tokenAAmount * priceInUSD * 1000) / 1000}$
                                                                 </div> */}
                                                             </div>
-                                                            <br></br>
+                                                            {activePublicKey && tokenA ? (
+                                                                <>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Balance: </strong>{tokenABalance / 10 ** 9}
+                                                                    </Typography>
+                                                                    <br></br>
+                                                                </>
+                                                            ) : (null)}
+                                                            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                                                <i className="fas fa-exchange-alt fa-2x fa-rotate-90"></i>
+                                                            </div>
                                                             <div className="row">
                                                                 <div className="col-md-12 col-lg-7">
                                                                     <div className="filter-widget">
@@ -441,6 +601,7 @@ function Swap(props) {
                                                                         />
                                                                     </div>
                                                                 </div>
+
                                                                 <div className="col-md-12 col-lg-4">
                                                                     {tokenB && tokenA ? (
                                                                         <input
@@ -480,6 +641,15 @@ function Swap(props) {
                                                                     {Math.round(tokenBAmount * priceInUSD * 1000) / 1000}$
                                                                 </div> */}
                                                             </div>
+                                                            {activePublicKey && tokenB ? (
+                                                                <>
+                                                                    <Typography variant="body2" color="textSecondary" component="p">
+                                                                        <strong>Balance: </strong>{tokenBBalance / 10 ** 9}
+                                                                    </Typography>
+                                                                    <br></br>
+                                                                </>
+                                                            ) : (null)}
+
                                                             {tokenA ? (
                                                                 <div className="card">
                                                                     <CardHeader
@@ -487,12 +657,17 @@ function Swap(props) {
                                                                         title={tokenA.name}
                                                                         subheader={tokenA.symbol}
                                                                     />
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Contract Hash: </strong>{tokenA.address}
-                                                                    </Typography>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Package Hash: </strong>{tokenA.packageHash}
-                                                                    </Typography>
+                                                                    {tokenA.address !== "" ? (
+                                                                        <>
+                                                                            <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                <strong>Contract Hash: </strong>{tokenA.address}
+                                                                            </Typography>
+                                                                            <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                <strong>Package Hash: </strong>{tokenA.packageHash}
+                                                                            </Typography>
+                                                                        </>
+                                                                    ) : (null)}
+
                                                                 </div>
                                                             ) : (null)}
                                                             {tokenB ? (
@@ -502,12 +677,17 @@ function Swap(props) {
                                                                         title={tokenB.name}
                                                                         subheader={tokenB.symbol}
                                                                     />
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Contract Hash: </strong>{tokenB.address}
-                                                                    </Typography>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Package Hash: </strong>{tokenB.packageHash}
-                                                                    </Typography>
+                                                                    {tokenB.address !== "" ? (
+                                                                        <>
+                                                                            <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                <strong>Contract Hash: </strong>{tokenB.address}
+                                                                            </Typography>
+                                                                            <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                <strong>Package Hash: </strong>{tokenB.packageHash}
+                                                                            </Typography>
+                                                                        </>
+                                                                    ) : (null)}
+
                                                                 </div>
                                                             ) : (null)}
                                                             <br></br>
@@ -515,7 +695,7 @@ function Swap(props) {
                                                             <div className="text-center">
                                                                 <p style={{ color: "red" }}>{msg}</p>
                                                             </div>
-                                                            {tokenAAmount > 0 ? (
+                                                            {tokenA && tokenA.name !== 'Casper' && tokenAAmount > 0 ? (
                                                                 approveAIsLoading ? (
                                                                     <div className="text-center">
                                                                         <Spinner
@@ -528,13 +708,12 @@ function Swap(props) {
                                                                     </div>
                                                                 ) : (
                                                                     <button
-                                                                        className="btn btn-block btn-lg login-btn"
+                                                                        className="btn-block btn-outline-primary btn-lg"
                                                                         onClick={async () => {
                                                                             setApproveAIsLoading(true)
                                                                             await approveMakedeploy(tokenA.address, tokenAAmount)
                                                                             setApproveAIsLoading(false)
-                                                                        }
-                                                                        }
+                                                                        }}
                                                                     >
                                                                         Approve {tokenA.name}
                                                                     </button>
@@ -553,7 +732,7 @@ function Swap(props) {
                                                             ) : (
                                                                 tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                     <button
-                                                                        className="btn btn-block btn-lg login-btn"
+                                                                        className="btn btn-block btn-lg"
                                                                         onClick={async () => await swapMakeDeploy()}
                                                                         style={{ marginTop: '20px' }}
                                                                     >

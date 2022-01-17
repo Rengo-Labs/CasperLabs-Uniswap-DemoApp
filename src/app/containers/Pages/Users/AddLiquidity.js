@@ -539,7 +539,7 @@ function AddLiquidity(props) {
                                                                                 </div>
                                                                             ) : (
                                                                                 <button
-                                                                                    className="btn btn-block btn-lg login-btn"
+                                                                                    className="btn btn-block btn-lg"
                                                                                     onClick={async () => {
                                                                                         setApproveAIsLoading(true)
                                                                                         await approveMakedeploy(tokenA.address, tokenAAmount)
@@ -566,7 +566,7 @@ function AddLiquidity(props) {
                                                                                 </div>
                                                                             ) : (
                                                                                 <button
-                                                                                    className="btn btn-block btn-lg login-btn"
+                                                                                    className="btn btn-block btn-lg"
                                                                                     onClick={async () => {
                                                                                         setApproveBIsLoading(true)
                                                                                         await approveMakedeploy(tokenB.address, tokenBAmount)
@@ -653,7 +653,7 @@ function AddLiquidity(props) {
                                                                 ) : (
                                                                     tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                         <button
-                                                                            className="btn btn-block btn-lg login-btn"
+                                                                            className="btn btn-block btn-lg"
                                                                             onClick={async () => await addLiquidityMakeDeploy()}
                                                                             style={{ marginTop: '20px' }}
                                                                         >
@@ -661,7 +661,7 @@ function AddLiquidity(props) {
                                                                         </button>
                                                                     ) : activePublicKey === 'null' || activePublicKey === null || activePublicKey === undefined ? (
                                                                         <button
-                                                                            className="btn btn-block btn-lg "
+                                                                            className="btn btn-block btn-lg"
                                                                             disabled
                                                                             style={{ marginTop: '20px' }}
                                                                         >
@@ -669,7 +669,7 @@ function AddLiquidity(props) {
                                                                         </button>
                                                                     ) : (
                                                                         <button
-                                                                            className="btn btn-block btn-lg "
+                                                                            className="btn btn-block btn-lg"
                                                                             disabled
                                                                             style={{ marginTop: '20px' }}
                                                                         >

@@ -14,15 +14,17 @@ function SlippageModal(props) {
             </Modal.Header>
             <Modal.Body className="text-center"> <i className="fas fa-cog fa-10x"></i></Modal.Body>
             <Modal.Body>
-                <Row>
-
+                <Row className="form-group">
                     <Col>
-                        <Typography variant="h6" gutterBottom  >Slippage in %</Typography>
+                        <Typography variant="h6" gutterBottom  >Slippage in per cent</Typography>
                     </Col>
-                    <Col className="text-right">
-                        <input type='number' step="0.0001" min={0} max={100} className='form-control' style={{ marginBottom: '20px' }} value={props.slippage} onChange={(evt) => {
-                            if (evt.target.value >= 0) {
+                    <Col>
+                        <input type='number' step="0.0001" min={0} max={50} className='form-control' style={{ marginBottom: '20px' }} value={props.slippage} onChange={(evt) => {
+                            if (evt.target.value >= 0 && evt.target.value <= 50) {
                                 props.setSlippage(evt.target.value)
+                            }
+                            else if (evt.target.value >= 50) {
+                                props.setSlippage(50)
                             }
                             else {
                                 props.setSlippage(0)
@@ -36,6 +38,9 @@ function SlippageModal(props) {
 
             </Modal.Body>
             <Modal.Footer>
+                <Button variant="primary" onClick={props.handleClose}>
+                    Confirm
+                </Button>
                 <Button variant="primary" onClick={props.handleClose}>
                     Close
                 </Button>
