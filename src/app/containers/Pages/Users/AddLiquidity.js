@@ -4,9 +4,7 @@ import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
-import {
-    CasperClient, CLAccountHash, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer
-} from 'casper-js-sdk';
+import { CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
@@ -18,7 +16,10 @@ import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
-import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
+import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
+import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
+import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
+import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import HeaderHome from "../../../components/Headers/Header";
 import SlippageModal from '../../../components/Modals/SlippageModal';
 
@@ -167,14 +168,6 @@ function AddLiquidity(props) {
         }
     }, [activePublicKey, tokenA, tokenB]);
 
-
-    function createRecipientAddress(recipient) {
-        if (recipient instanceof CLPublicKey) {
-            return new CLKey(new CLAccountHash(recipient.toAccountHash()));
-        } else {
-            return new CLKey(recipient);
-        }
-    };
     async function approveMakedeploy(contractHash, amount) {
         console.log('contractHash', contractHash);
         const publicKeyHex = activePublicKey
@@ -212,63 +205,7 @@ function AddLiquidity(props) {
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
     }
-    async function makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount) {
-        let deploy = DeployUtil.makeDeploy(
-            new DeployUtil.DeployParams(publicKey, 'casper-test'),
-            DeployUtil.ExecutableDeployItem.newStoredContractByHash(
-                contractHashAsByteArray,
-                entryPoint,
-                runtimeArgs
-            ),
-            DeployUtil.standardPayment(paymentAmount)
-        );
-        return deploy
-    }
-
-    async function signdeploywithcaspersigner(deploy, publicKeyHex) {
-        let deployJSON = DeployUtil.deployToJson(deploy);
-        console.log("deployJSON: ", deployJSON);
-        let signedDeployJSON = await Signer.sign(deployJSON, publicKeyHex, publicKeyHex);
-        let signedDeploy = DeployUtil.deployFromJson(signedDeployJSON).unwrap();
-
-        console.log("signed deploy: ", signedDeploy);
-        return signedDeploy;
-    }
-    async function putdeploy(signedDeploy) {
-        // Dispatch deploy to node.
-        const client = new CasperClient(NODE_ADDRESS);
-        const installDeployHash = await client.putDeploy(signedDeploy);
-        console.log(`... Contract installation deployHash: ${installDeployHash}`);
-        const result = await getDeploy(NODE_ADDRESS, installDeployHash);
-        console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-        return result;
-    }
-    async function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async function getDeploy(NODE_URL, deployHash) {
-        const client = new CasperClient(NODE_URL);
-        let i = 1000;
-        while (i !== 0) {
-            const [deploy, raw] = await client.getDeploy(deployHash);
-            if (raw.execution_results.length !== 0) {
-                // @ts-ignore
-                if (raw.execution_results[0].result.Success) {
-
-                    return deploy;
-                } else {
-                    // @ts-ignore
-                    throw Error("Contract execution: " + raw.execution_results[0].result.Failure.error_message);
-                }
-            } else {
-                i--;
-                await sleep(1000);
-                continue;
-            }
-        }
-        throw Error('Timeout after ' + i + 's. Something\'s wrong');
-    }
+ 
     async function addLiquidityMakeDeploy() {
         setIsLoading(true)
         const publicKeyHex = activePublicKey

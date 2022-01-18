@@ -4,18 +4,23 @@ import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
-import { CasperClient, CasperServiceByJsonRPC, CLAccountHash, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, DeployUtil, RuntimeArgs, Signer } from 'casper-js-sdk';
+import { CasperServiceByJsonRPC, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
 import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
+import Logo from "../../../assets/img/cspr.png";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import Logo from "../../../assets/img/cspr.png";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
+import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
+import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
+import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
+import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import HeaderHome from "../../../components/Headers/Header";
 import SlippageModal from '../../../components/Modals/SlippageModal';
 
@@ -59,7 +64,8 @@ function Swap(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
-    let [balance, setBalance] = useState(0);
+    let [inputSelection, setInputSelection] = useState();
+    let [mainPurse, setMainPurse] = useState();
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
     let [tokenAAmount, setTokenAAmount] = useState(0);
@@ -69,6 +75,8 @@ function Swap(props) {
     let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
     let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
+    let [tokenAAllowance, setTokenAAllowance] = useState(0);
+    let [isInvalidPair, setIsInvalidPair] = useState(false);
     const [tokenList, setTokenList] = useState([])
     const [istokenList, setIsTokenList] = useState(false)
     let [isLoading, setIsLoading] = useState(false);
@@ -79,14 +87,6 @@ function Swap(props) {
     };
     const handleShowSlippage = () => {
         setOpenSlippage(true);
-    };
-    let [msg, setMsg] = useState("");
-
-
-    let handleSubmitEvent = (event) => {
-        setMsg("");
-        event.preventDefault();
-
     };
     useEffect(() => {
         axios
@@ -144,12 +144,15 @@ function Swap(props) {
                             console.log("address0", address0);
                             console.log("address1", address1);
                             if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
+                                setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                             } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
-
+                                setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                            } else {
+                                setIsInvalidPair(true)
                             }
                         }
                     } else if ((tokenA.name === "Casper" && tokenB.name === "WCSPR") || (tokenA.name === "WCSPR" && tokenB.name === "Casper")) {
@@ -163,12 +166,15 @@ function Swap(props) {
                             console.log("name1", name1);
                             if (name0 === "WCSPR") {
                                 console.log('res.WCSPRWCSPR.', res.data.pairList[i]);
+                                setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                             } else if (name1 === "WCSPR") {
-
+                                setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                            } else {
+                                setIsInvalidPair(true)
                             }
                         }
                     }
@@ -185,12 +191,12 @@ function Swap(props) {
     }, [activePublicKey, tokenA, tokenB]);
     useEffect(() => {
         if (tokenA && tokenA.name !== "Casper" && activePublicKey) {
-            let param = {
+            let balanceParam = {
                 contractHash: tokenA.address.slice(5),
                 user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
             }
             axios
-                .post('/balanceagainstuser', param)
+                .post('/balanceagainstuser', balanceParam)
                 .then((res) => {
                     console.log('tokenAbalanceagainstuser', res)
                     console.log(res.data)
@@ -200,8 +206,28 @@ function Swap(props) {
                 .catch((error) => {
                     console.log(error)
                     console.log(error.response)
+                });
+
+            let allowanceParam = {
+                contractHash: tokenA.address.slice(5),
+                owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
+                spender: ROUTER_PACKAGE_HASH
+            }
+            console.log('allowanceParam0', allowanceParam);
+            axios
+                .post('/allowanceagainstownerandspender', allowanceParam)
+                .then((res) => {
+                    console.log('allowanceagainstownerandspender', res)
+                    console.log(res.data)
+                    setTokenAAllowance(res.data.allowance)
+
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
                 })
         }
+
 
         if (tokenA && tokenA.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
             const client = new CasperServiceByJsonRPC(
@@ -215,6 +241,7 @@ function Swap(props) {
                     []
                 ).then(result => {
                     console.log('result', result.Account.mainPurse);
+                    setMainPurse(result.Account.mainPurse)
                     try {
                         const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
                         client.getAccountBalance(
@@ -282,26 +309,25 @@ function Swap(props) {
             })
         }
     }, [activePublicKey, tokenB]);
-    function createRecipientAddress(recipient) {
-        if (recipient instanceof CLPublicKey) {
-            return new CLKey(new CLAccountHash(recipient.toAccountHash()));
-        } else {
-            return new CLKey(recipient);
+    useEffect(() => {
+        if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            const client = new CasperServiceByJsonRPC(
+                NODE_ADDRESS
+            );
+            getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                console.log('stateRootHash', stateRootHash);
+                client.getBlockState(
+                    stateRootHash,
+                    CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                    []
+                ).then(result => {
+                    console.log('result', result.Account.mainPurse);
+                    setMainPurse(result.Account.mainPurse)
+                })
+            })
         }
-    };
+    }, [activePublicKey])
 
-    async function makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount) {
-        let deploy = DeployUtil.makeDeploy(
-            new DeployUtil.DeployParams(publicKey, 'casper-test'),
-            DeployUtil.ExecutableDeployItem.newStoredContractByHash(
-                contractHashAsByteArray,
-                entryPoint,
-                runtimeArgs
-            ),
-            DeployUtil.standardPayment(paymentAmount)
-        );
-        return deploy
-    }
 
     async function approveMakedeploy(contractHash, amount) {
         console.log('contractHash', contractHash);
@@ -326,6 +352,7 @@ function Swap(props) {
                 let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                 let result = await putdeploy(signedDeploy)
                 console.log('result', result);
+                setTokenAAllowance(amount * 10 ** 9)
                 let variant = "success";
                 enqueueSnackbar('Approved Successfully', { variant });
             }
@@ -340,128 +367,322 @@ function Swap(props) {
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
     }
-    async function signdeploywithcaspersigner(deploy, publicKeyHex) {
-        let deployJSON = DeployUtil.deployToJson(deploy);
-        console.log("deployJSON: ", deployJSON);
-        let signedDeployJSON = await Signer.sign(deployJSON, publicKeyHex, publicKeyHex);
-        console.log("signedDeployJSON: ", signedDeployJSON);
-        let signedDeploy = DeployUtil.deployFromJson(signedDeployJSON).unwrap();
 
-        console.log("signed deploy: ", signedDeploy);
-        return signedDeploy;
-    }
-    async function putdeploy(signedDeploy) {
-        // Dispatch deploy to node.
-        const client = new CasperClient(NODE_ADDRESS);
-        const installDeployHash = await client.putDeploy(signedDeploy);
-        console.log(`... Contract installation deployHash: ${installDeployHash}`);
-        const result = await getDeploy(NODE_ADDRESS, installDeployHash);
-        console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-        return result;
-    }
-    async function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
 
-    async function getDeploy(NODE_URL, deployHash) {
-        const client = new CasperClient(NODE_URL);
-        let i = 1000;
-        while (i !== 0) {
-            const [deploy, raw] = await client.getDeploy(deployHash);
-            if (raw.execution_results.length !== 0) {
-                // @ts-ignore
-                if (raw.execution_results[0].result.Success) {
 
-                    return deploy;
-                } else {
-                    // @ts-ignore
-                    throw Error("Contract execution: " + raw.execution_results[0].result.Failure.error_message);
-                }
-            } else {
-                i--;
-                await sleep(1000);
-                continue;
-            }
-        }
-        throw Error('Timeout after ' + i + 's. Something\'s wrong');
-    }
-    const getStateRootHash = async (nodeAddress) => {
-        const client = new CasperServiceByJsonRPC(nodeAddress);
-        const { block } = await client.getLatestBlockInfo();
-        if (block) {
-            return block.header.state_root_hash;
-        } else {
-            throw Error("Problem when calling getLatestBlockInfo");
-        }
-    };
     async function swapMakeDeploy() {
         setIsLoading(true)
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
-
-            const publicKey = CLPublicKey.fromHex(publicKeyHex);
-            const caller = ROUTER_CONTRACT_HASH;
-            const tokenAAddress = tokenA.address;
-            const tokenBAddress = tokenB.address;
-            const amount_in = tokenAAmount;
-            const amount_out_min = tokenBAmount;
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
+            if (inputSelection === "tokenA") {
+                if (tokenA.name === 'Casper') {
+                    console.log("swap_exact_cspr_for_token");
+                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
+                    const caller = ROUTER_CONTRACT_HASH;
+                    const tokenAAddress = tokenA.address;
+                    const tokenBAddress = tokenB.address;
+                    const amount_in = tokenAAmount;
+                    const amount_out_min = tokenBAmount;
 
-            console.log('tokenAAddress', tokenAAddress);
-            console.log('publicKeyHex', publicKeyHex);
-            let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
-            console.log('path', path);
-            let _paths = [];
-            for (let i = 0; i < path.length; i++) {
-                const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
-                _paths.push(createRecipientAddress(p));
+
+                    console.log('tokenAAddress', tokenAAddress);
+                    console.log('publicKeyHex', publicKeyHex);
+                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    console.log('path', path);
+                    let _paths = [];
+                    for (let i = 0; i < path.length; i++) {
+                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
+                        _paths.push(createRecipientAddress(p));
+                    }
+                    console.log('_paths', _paths);
+                    // const _token_a = new CLByteArray(
+                    //     Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
+                    // );
+                    // const _token_b = new CLByteArray(
+                    //     Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+                    // );
+                    const runtimeArgs = RuntimeArgs.fromMap({
+                        amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
+                        amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
+                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        to: createRecipientAddress(publicKey),
+                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                        deadline: CLValueBuilder.u256(deadline),
+                    });
+
+                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                    let entryPoint = 'swap_exact_cspr_for_tokens_js_client';
+
+                    // Set contract installation deploy (unsigned).
+                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    console.log("make deploy: ", deploy);
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy)
+                        console.log('result', result);
+                        let variant = "success";
+                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Swap Tokens', { variant });
+                        setIsLoading(false)
+                    }
+                } else if (tokenB.name === "Casper") {
+                    console.log("swap_exact_token_for_cspr");
+                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
+                    const caller = ROUTER_CONTRACT_HASH;
+                    const tokenAAddress = tokenA.address;
+                    const tokenBAddress = tokenB.address;
+                    const amount_in = tokenAAmount;
+                    const amount_out_min = tokenBAmount;
+
+
+                    console.log('tokenAAddress', tokenAAddress);
+                    console.log('publicKeyHex', publicKeyHex);
+                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    console.log('path', path);
+                    let _paths = [];
+                    for (let i = 0; i < path.length; i++) {
+                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
+                        _paths.push(createRecipientAddress(p));
+                    }
+                    console.log('_paths', _paths);
+                    // const _token_a = new CLByteArray(
+                    //     Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
+                    // );
+                    // const _token_b = new CLByteArray(
+                    //     Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+                    // );
+                    console.log('mainPurse', mainPurse);
+                    console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
+                    const runtimeArgs = RuntimeArgs.fromMap({
+                        amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
+                        amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
+                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        // to: createRecipientAddress(publicKey),
+                        to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                        deadline: CLValueBuilder.u256(deadline),
+                    });
+
+                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                    let entryPoint = 'swap_exact_tokens_for_cspr_js_client';
+
+                    // Set contract installation deploy (unsigned).
+                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    console.log("make deploy: ", deploy);
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy)
+                        console.log('result', result);
+                        let variant = "success";
+                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Swap Tokens', { variant });
+                        setIsLoading(false)
+                    }
+                } else {
+                    console.log("swap_exact_token_for_token");
+                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
+                    const caller = ROUTER_CONTRACT_HASH;
+                    const tokenAAddress = tokenA.address;
+                    const tokenBAddress = tokenB.address;
+                    const amount_in = tokenAAmount;
+                    const amount_out_min = tokenBAmount;
+
+
+                    console.log('tokenAAddress', tokenAAddress);
+                    console.log('publicKeyHex', publicKeyHex);
+                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    console.log('path', path);
+                    let _paths = [];
+                    for (let i = 0; i < path.length; i++) {
+                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
+                        _paths.push(createRecipientAddress(p));
+                    }
+                    console.log('_paths', _paths);
+                    const _token_a = new CLByteArray(
+                        Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
+                    );
+                    const _token_b = new CLByteArray(
+                        Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+                    );
+                    const runtimeArgs = RuntimeArgs.fromMap({
+                        amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
+                        amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
+                        token_a: new CLKey(_token_a),
+                        token_b: new CLKey(_token_b),
+                        to: createRecipientAddress(publicKey),
+                        deadline: CLValueBuilder.u256(deadline),
+                    });
+
+                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                    let entryPoint = 'swap_exact_tokens_for_tokens_js_client';
+
+                    // Set contract installation deploy (unsigned).
+                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    console.log("make deploy: ", deploy);
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy)
+                        console.log('result', result);
+                        let variant = "success";
+                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Swap Tokens', { variant });
+                        setIsLoading(false)
+                    }
+                }
+            } else if (inputSelection === "tokenB") {
+                if (tokenA.name === 'Casper') {
+                    console.log("swap_cspr_for_exact_token");
+                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
+                    const caller = ROUTER_CONTRACT_HASH;
+                    const tokenAAddress = tokenA.address;
+                    const tokenBAddress = tokenB.address;
+
+                    console.log('tokenAAddress', tokenAAddress);
+                    console.log('publicKeyHex', publicKeyHex);
+                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    console.log('path', path);
+                    let _paths = [];
+                    for (let i = 0; i < path.length; i++) {
+                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
+                        _paths.push(createRecipientAddress(p));
+                    }
+                    console.log('_paths', _paths);
+                    console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
+                    const runtimeArgs = RuntimeArgs.fromMap({
+                        amount_out: CLValueBuilder.u256(tokenBAmount * 10 ** 9),
+                        amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
+                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        to: createRecipientAddress(publicKey),
+                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                        deadline: CLValueBuilder.u256(deadline),
+                    });
+
+                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                    let entryPoint = 'swap_cspr_for_exact_tokens_js_client';
+
+                    // Set contract installation deploy (unsigned).
+                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    console.log("make deploy: ", deploy);
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy)
+                        console.log('result', result);
+                        let variant = "success";
+                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Swap Tokens', { variant });
+                        setIsLoading(false)
+                    }
+                } else if (tokenB.name === "Casper") {
+                    console.log("swap_token_for_exact_cspr");
+                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
+                    const caller = ROUTER_CONTRACT_HASH;
+                    const tokenAAddress = tokenA.address;
+                    const tokenBAddress = tokenB.address;
+
+                    console.log('tokenAAddress', tokenAAddress);
+                    console.log('publicKeyHex', publicKeyHex);
+                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    console.log('path', path);
+                    let _paths = [];
+                    for (let i = 0; i < path.length; i++) {
+                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
+                        _paths.push(createRecipientAddress(p));
+                    }
+                    console.log('_paths', _paths);
+
+                    const runtimeArgs = RuntimeArgs.fromMap({
+                        amount_out: CLValueBuilder.u256(tokenBAmount * 10 ** 9),
+                        amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
+                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        // to: createRecipientAddress(publicKey),
+                        to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                        deadline: CLValueBuilder.u256(deadline),
+                    });
+
+                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                    let entryPoint = 'swap_tokens_for_exact_cspr_js_client';
+
+                    // Set contract installation deploy (unsigned).
+                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    console.log("make deploy: ", deploy);
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy)
+                        console.log('result', result);
+                        let variant = "success";
+                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Swap Tokens', { variant });
+                        setIsLoading(false)
+                    }
+                } else {
+                    console.log("swap_token_for_exact_token");
+                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
+                    const caller = ROUTER_CONTRACT_HASH;
+                    const tokenAAddress = tokenA.address;
+                    const tokenBAddress = tokenB.address;
+
+                    console.log('tokenAAddress', tokenAAddress);
+                    console.log('publicKeyHex', publicKeyHex);
+                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    console.log('path', path);
+                    let _paths = [];
+                    for (let i = 0; i < path.length; i++) {
+                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
+                        _paths.push(createRecipientAddress(p));
+                    }
+                    console.log('_paths', _paths);
+
+                    const runtimeArgs = RuntimeArgs.fromMap({
+                        amount_out: CLValueBuilder.u256(tokenBAmount * 10 ** 9),
+                        amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
+                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        to: createRecipientAddress(publicKey),
+                        deadline: CLValueBuilder.u256(deadline),
+                    });
+
+                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                    let entryPoint = 'swap_tokens_for_exact_tokens_js_client';
+
+                    // Set contract installation deploy (unsigned).
+                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    console.log("make deploy: ", deploy);
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy)
+                        console.log('result', result);
+                        let variant = "success";
+                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Swap Tokens', { variant });
+                        setIsLoading(false)
+                    }
+                }
             }
-            console.log('_paths', _paths);
-            const _token_a = new CLByteArray(
-                Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
-            );
-            const _token_b = new CLByteArray(
-                Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
-            );
-            const runtimeArgs = RuntimeArgs.fromMap({
-                amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
-                amount_out_min: CLValueBuilder.u256(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100),
-                token_a: new CLKey(_token_a),
-                token_b: new CLKey(_token_b),
-                to: createRecipientAddress(publicKey),
-                deadline: CLValueBuilder.u256(deadline),
-            });
 
-            let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-            let entryPoint = 'swap_exact_tokens_for_tokens_js_client';
-
-            // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-            console.log("make deploy: ", deploy);
-
-            // const runtimeArgs = {
-            //     signerKey: publicKeyHex,
-            //     amountin: amount_in,
-            //     amountout: amount_out_min,
-            //     token_a: CLValueBuilder.key(_token_a),
-            //     token_b: CLValueBuilder.key(_token_b),
-            //     to: CLValueBuilder.key(publicKey),
-            //     deadline: deadline
-            // }
-            try {
-                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy)
-                console.log('result', result);
-                let variant = "success";
-                enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                setIsLoading(false)
-            }
-            catch {
-                let variant = "Error";
-                enqueueSnackbar('Unable to Swap Tokens', { variant });
-                setIsLoading(false)
-            }
         }
         else {
             let variant = "error";
@@ -475,7 +696,6 @@ function Swap(props) {
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
                     <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Swap"} />
-                    <p>{balance}</p>
                     <div className="card">
                         <div className="container-fluid">
                             <div
@@ -496,7 +716,7 @@ function Swap(props) {
                                                             <h3 style={{ textAlign: "center" }}>Swap</h3>
                                                             <h3 onClick={handleShowSlippage} style={{ textAlign: 'right' }}><i className="fas fa-cog"></i></h3>
                                                         </div>
-                                                        <form onSubmit={handleSubmitEvent}>
+                                                        <form >
                                                             <div className="row">
                                                                 <div className="col-md-12 col-lg-7">
                                                                     <div className="filter-widget">
@@ -533,17 +753,18 @@ function Swap(props) {
                                                                             value={tokenAAmount}
                                                                             placeholder={0}
                                                                             min={0}
-                                                                            step={.01}
+                                                                            step="any"
                                                                             className="form-control"
                                                                             onChange={(e) => {
                                                                                 // setTokenAAmount(e.target.value)
                                                                                 if (e.target.value >= 0) {
                                                                                     setTokenAAmount(e.target.value)
                                                                                     setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
-
+                                                                                    setInputSelection('tokenA')
                                                                                 } else {
                                                                                     setTokenAAmount(0)
                                                                                     setTokenBAmount(0)
+                                                                                    setInputSelection()
                                                                                 }
                                                                             }}
                                                                         />
@@ -558,18 +779,16 @@ function Swap(props) {
                                                                         />
                                                                     )}
                                                                 </div>
-                                                                {/* <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
-                                                                    {Math.round(tokenAAmount * priceInUSD * 1000) / 1000}$
-                                                                </div> */}
                                                             </div>
                                                             {activePublicKey && tokenA ? (
                                                                 <>
                                                                     <Typography variant="body2" color="textSecondary" component="p">
                                                                         <strong>Balance: </strong>{tokenABalance / 10 ** 9}
                                                                     </Typography>
-                                                                    <br></br>
+
                                                                 </>
                                                             ) : (null)}
+                                                            <br></br>
                                                             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                                                                 <i className="fas fa-exchange-alt fa-2x fa-rotate-90"></i>
                                                             </div>
@@ -610,16 +829,18 @@ function Swap(props) {
                                                                             value={tokenBAmount}
                                                                             placeholder={0}
                                                                             min={0}
-                                                                            step={.01}
+                                                                            step="any"
                                                                             className="form-control"
                                                                             onChange={(e) => {
                                                                                 if (e.target.value >= 0) {
                                                                                     setTokenBAmount(e.target.value)
                                                                                     setTokenAAmount(e.target.value * (tokenBAmountPercent / tokenAAmountPercent).toFixed(5))
+                                                                                    setInputSelection('tokenB')
                                                                                 }
                                                                                 else {
                                                                                     setTokenAAmount(0)
                                                                                     setTokenBAmount(0)
+                                                                                    setInputSelection()
                                                                                 }
 
                                                                             }}
@@ -637,9 +858,6 @@ function Swap(props) {
                                                                         />
                                                                     )}
                                                                 </div>
-                                                                {/* <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
-                                                                    {Math.round(tokenBAmount * priceInUSD * 1000) / 1000}$
-                                                                </div> */}
                                                             </div>
                                                             {activePublicKey && tokenB ? (
                                                                 <>
@@ -691,11 +909,7 @@ function Swap(props) {
                                                                 </div>
                                                             ) : (null)}
                                                             <br></br>
-
-                                                            <div className="text-center">
-                                                                <p style={{ color: "red" }}>{msg}</p>
-                                                            </div>
-                                                            {tokenA && tokenA.name !== 'Casper' && tokenAAmount > 0 ? (
+                                                            {tokenA && tokenA.name !== 'Casper' && tokenAAmount > 0 && tokenAAmount * 10 ** 9 > tokenAAllowance && !isInvalidPair ? (
                                                                 approveAIsLoading ? (
                                                                     <div className="text-center">
                                                                         <Spinner
@@ -719,6 +933,7 @@ function Swap(props) {
                                                                     </button>
                                                                 )
                                                             ) : (null)}
+                                                            <br></br>
                                                             {isLoading ? (
                                                                 <div className="text-center">
                                                                     <Spinner
@@ -729,6 +944,22 @@ function Swap(props) {
                                                                         <span className="sr-only">Loading...</span>
                                                                     </Spinner>
                                                                 </div>
+                                                            ) : isInvalidPair ? (
+                                                                <button
+                                                                    className="btn btn-block btn-lg"
+                                                                    style={{ marginTop: '20px' }}
+                                                                    disabled
+                                                                >
+                                                                    Invalid Pair
+                                                                </button>
+                                                            ) : tokenA && tokenA.name !== "Casper" && tokenAAmount * 10 ** 9 > tokenAAllowance ? (
+                                                                <button
+                                                                    className="btn btn-block btn-lg "
+                                                                    disabled
+                                                                    style={{ marginTop: '20px' }}
+                                                                >
+                                                                    Approve {tokenA.name} First
+                                                                </button>
                                                             ) : (
                                                                 tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                     <button
