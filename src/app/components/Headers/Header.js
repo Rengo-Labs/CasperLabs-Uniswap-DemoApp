@@ -1,4 +1,3 @@
-import Avatar from '@material-ui/core/Avatar';
 import {
   Signer
 } from 'casper-js-sdk';
@@ -76,7 +75,7 @@ function HeaderHome(props) {
       localStorage.setItem("Address", msg.detail.activeKey)
       props.setActivePublicKey(msg.detail.activeKey)
     });
-// eslint-disable-next-line
+    // eslint-disable-next-line
   }, []);
 
 
@@ -149,7 +148,6 @@ function HeaderHome(props) {
     }
 
     window.location.reload();
-    // setTimeout(() => { }, 1);
   };
 
   return (
@@ -177,19 +175,11 @@ function HeaderHome(props) {
 
           <Link style={{ color: '#ed0b25' }} to="/" className="navbar-brand logo">
             <img src={Logo} alt="Logo" width="50" />
-            {/* Casper Swap */}
           </Link>
-
-          {/* <Link style={{ color: '#ed0b25' }} to="/kyc" className="navbar-brand">
-            KYC
-          </Link> */}
         </div>
 
         <div className="main-menu-wrapper">
           <div className="menu-header">
-            {/* <a style={{ color: '#ed0b25' }} href="/" className="menu-logo">
-              <img src={Logo} alt="Logo" width="100" height="60" />
-            </a> */}
             <a
               id="menu_close"
               className="menu-close"
@@ -210,80 +200,72 @@ function HeaderHome(props) {
               marginTop: "4px",
             }}
           >
-            <li className="login-link ">
-              <a
-                href="/"
-                style={{ paddingLeft: "5px" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMenuOpenedClass("");
-                }}
-              >
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-              </a>
-            </li>
-            <li className="login-link ">
-              {/* <Link to="/dashboard" style={{ color: '#ed0b25' }} > */}
 
-              {localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
-                <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: '#ed0b25' }}>
-                  <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
+            {localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
+              <li className="login-link ">
+                <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }}>
+                  <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").slice(0, 10)}. . .</span>
                 </a>
-              ) : (signerLocked && signerConnected ? (
-                <>
-                  <Button variant="primary"
-                    onClick={async () => {
-                      await connectToSigner();
-                    }}
-                  >
-                    Unlock Signer
-                  </Button>
+              </li>
+            ) : (signerLocked && signerConnected ? (
+              <li onClick={async () => {
+                await connectToSigner();
+              }} className="login-link ">
+                <a href='#' className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }}>
+                  Unlock Signer
+                </a>
 
-                </>
-              ) : (
-                <>
-                  <Button variant="primary"
-                    onClick={async () => {
-                      await connectToSigner()
-                    }}
-                  >
-                    Connect to Signer
-                  </Button>
-                </>
-              )
-              )}
-              {/* </Link> */}
+              </li>
+            ) : (
+              <li onClick={async () => {
+                await connectToSigner()
+              }} className="login-link ">
+                <a href='#' className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }}>
+                  Connect to Signer
+                </a>
+              </li>
+            )
+            )}
+
+            <li onClick={() => Disconnect()} className="login-link ">
+              {localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
+                <a href='#' className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }} >
+                  <span style={{ cursor: 'pointer' }} >
+                    Disconnect
+                  </span>
+                </a>
+              ) : (null)}
             </li>
             <li>
-              <a href="/" style={{ color: '#ed0b25' }} >
+              <Link to="/" className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }} >
                 <span style={selectedNavStyle.Home}>
                   Home
                 </span>
-              </a>
+              </Link>
             </li>
             <li>
-              <Link to="/swap" style={{ color: '#ed0b25' }} >
+              <Link className=" align-items-center justify-content-center text-center" to="/swap" style={{ color: '#ed0b25' }} >
                 <span style={selectedNavStyle.Swap}>
                   Swap
                 </span>
               </Link>
             </li>
             <li>
-              <Link to="/pool" style={{ color: '#ed0b25' }} >
+              <Link className=" align-items-center justify-content-center text-center" to="/pool" style={{ color: '#ed0b25' }} >
                 <span style={selectedNavStyle.Pool}>
                   Pool
                 </span>
               </Link>
             </li>
             <li>
-              <Link to="/tokens" style={{ color: '#ed0b25' }} >
+              <Link className=" align-items-center justify-content-center text-center" to="/tokens" style={{ color: '#ed0b25' }} >
                 <span style={selectedNavStyle.Tokens}>
                   Tokens
                 </span>
               </Link>
             </li>
             <li>
-              <Link to="/pairs" style={{ color: '#ed0b25' }} >
+              <Link className=" align-items-center justify-content-center text-center" to="/pairs" style={{ color: '#ed0b25' }} >
                 <span style={selectedNavStyle.Pairs}>
                   Pairs
                 </span>
@@ -341,7 +323,7 @@ function HeaderHome(props) {
             ) : (null)}
           </li>
         </ul>
-      </nav>
+      </nav >
     </header >
   );
 }

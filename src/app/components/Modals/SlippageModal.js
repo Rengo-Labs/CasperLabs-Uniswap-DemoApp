@@ -1,6 +1,6 @@
-import { Typography } from "@material-ui/core";
+import { Button, FormControl, FormHelperText, Input, InputAdornment, Typography } from "@material-ui/core";
 import React from "react";
-import { Button, Col, Modal, Row } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
 import "../../assets/plugins/fontawesome/css/all.min.css";
@@ -10,16 +10,21 @@ function SlippageModal(props) {
     return (
         <Modal show={props.show} onHide={props.handleClose}>
             <Modal.Header closeButton>
-                <Modal.Title> Settings </Modal.Title>
+                <Modal.Title>Transaction Settings <i className="fas fa-cog"></i> </Modal.Title>
             </Modal.Header>
-            <Modal.Body className="text-center"> <i className="fas fa-cog fa-10x"></i></Modal.Body>
             <Modal.Body>
-                <Row className="form-group">
-                    <Col>
-                        <Typography variant="h6" gutterBottom  >Slippage in per cent</Typography>
-                    </Col>
-                    <Col>
-                        <input type='number' step="0.0001" min={0} max={50} className='form-control' style={{ marginBottom: '20px' }} value={props.slippage} onChange={(evt) => {
+                <Typography variant="h6" gutterBottom  >Slippage tolerance</Typography>
+            </Modal.Body>
+            <Modal.Body>
+
+                <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
+                    <Input
+                        step="0.0001"
+                        type='number'
+                        min={0} max={50}
+                        id="standard-adornment-weight"
+                        value={props.slippage}
+                        onChange={(evt) => {
                             if (evt.target.value >= 0 && evt.target.value <= 50) {
                                 props.setSlippage(evt.target.value)
                             }
@@ -30,21 +35,27 @@ function SlippageModal(props) {
                                 props.setSlippage(0)
                             }
 
-                        }} />
-                    </Col>
-                </Row>
-
-
+                        }}
+                        endAdornment={<InputAdornment position="end">%</InputAdornment>}
+                        aria-describedby="standard-weight-helper-text"
+                        inputProps={{
+                            'aria-label': 'weight',
+                        }}
+                    />
+                    <FormHelperText id="standard-weight-helper-text">Slippage</FormHelperText>
+                </FormControl>
 
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="primary" onClick={props.handleClose}>
+                <Button variant="contained" style={{ margin: '10px', backgroundColor: '#ed0b25', color: 'white' }} onClick={props.handleClose}>
                     Confirm
                 </Button>
-                <Button variant="primary" onClick={props.handleClose}>
-                    Close
+                <Button variant="contained" style={{ margin: '10px', backgroundColor: '#ed0b25', color: 'white' }} onClick={() => {
+                    props.setSlippage(0.5)
+                    props.handleClose()
+                }}>
+                    Cancel
                 </Button>
-
             </Modal.Footer>
         </Modal>
 

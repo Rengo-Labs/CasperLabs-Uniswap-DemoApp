@@ -2,7 +2,6 @@ import Typography from '@material-ui/core/Typography';
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
-import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
@@ -81,9 +80,9 @@ function Pairs(props) {
                                                                 <th>Name A/B</th>
                                                                 <th>Symbol A/B</th>
                                                                 <th>Contract Hash A/B</th>
-                                                                <th>Reserve0</th>
-                                                                <th>Reserve1</th>
-                                                                <th>ReserveETH</th>
+                                                                <th>Reserve A</th>
+                                                                <th>Reserve B</th>
+                                                                <th>ReserveCSPR</th>
                                                                 <th>ReserveUSD</th>
 
                                                             </tr>
@@ -120,4 +119,4 @@ function Pairs(props) {
     );
 }
 
-export default windowSize(Pairs);
+export default Pairs;

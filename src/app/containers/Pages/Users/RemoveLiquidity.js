@@ -8,7 +8,6 @@ import { Col, Row } from 'react-bootstrap';
 import RangeSlider from 'react-bootstrap-range-slider';
 import Spinner from "react-bootstrap/Spinner";
 import { useParams } from 'react-router-dom';
-import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
@@ -509,4 +508,4 @@ function RemoveLiquidity(props) {
     );
 }
 
-export default windowSize(RemoveLiquidity);
+export default RemoveLiquidity;

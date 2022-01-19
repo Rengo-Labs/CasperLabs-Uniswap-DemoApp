@@ -4,25 +4,26 @@ import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
-import { CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
+import { CasperServiceByJsonRPC, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
 import Spinner from "react-bootstrap/Spinner";
-import windowSize from "react-window-size";
 import { Some } from "ts-results";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
+import Logo from "../../../assets/img/cspr.png";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
 import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
+import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import HeaderHome from "../../../components/Headers/Header";
 import SlippageModal from '../../../components/Modals/SlippageModal';
-
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -62,14 +63,22 @@ const useStyles = makeStyles((theme) => ({
 function AddLiquidity(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
-    // let [priceInUSD, setPriceInUSD] = useState(0);
+    let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
+    let [mainPurse, setMainPurse] = useState();
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
     let [tokenAAmount, setTokenAAmount] = useState(0);
     let [tokenBAmount, setTokenBAmount] = useState(0);
+    let [tokenABalance, setTokenABalance] = useState(0);
+    let [tokenBBalance, setTokenBBalance] = useState(0);
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
     let [approveBIsLoading, setApproveBIsLoading] = useState(false);
-    let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
+    let [tokenAAllowance, setTokenAAllowance] = useState(0);
+    let [tokenBAllowance, setTokenBAllowance] = useState(0);
+    let [isInvalidPair, setIsInvalidPair] = useState(false);
+    const [tokenList, setTokenList] = useState([])
+    const [istokenList, setIsTokenList] = useState(false)
+    let [isLoading, setIsLoading] = useState(false);
     const [slippage, setSlippage] = useState(0.5);
     const [openSlippage, setOpenSlippage] = useState(false);
     const handleCloseSlippage = () => {
@@ -79,28 +88,30 @@ function AddLiquidity(props) {
         setOpenSlippage(true);
     };
 
-    const [tokenList, setTokenList] = useState([])
-    const [istokenList, setIsTokenList] = useState(false)
     let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
     let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [liquidity, setLiquidity] = useState();
-    let [isLoading, setIsLoading] = useState(false);
-    let [msg, setMsg] = useState("");
 
-
-    let handleSubmitEvent = (event) => {
-        setMsg("");
-        event.preventDefault();
-
-    };
     useEffect(() => {
         axios
             .get('/tokensList')
             .then((res) => {
-                console.log('resresres', res)
-                console.log(res.data.tokens)
+                console.log('tokensList', res)
+                let CSPR =
+                {
+                    address: "",
+                    chainId: 1,
+                    decimals: 9,
+                    logoURI: Logo,
+                    name: "Casper",
+                    symbol: "CSPR",
+                }
+                let holdArr = res.data.tokens;
+                console.log('holdArr', holdArr);
+                holdArr.splice(0, 0, CSPR)
+                console.log('holdArr', holdArr);
+                setTokenList(res.data.tokens);
                 setIsTokenList(true)
-                setTokenList(res.data.tokens)
             })
             .catch((error) => {
                 console.log(error)
@@ -130,34 +141,58 @@ function AddLiquidity(props) {
                 .then((res) => {
                     console.log('resresres', res)
                     console.log(res.data.pairList)
-                    for (let i = 0; i < res.data.pairList.length; i++) {
-                        let address0 = res.data.pairList[i].token0.id.toLowerCase();
-                        let address1 = res.data.pairList[i].token1.id.toLowerCase();
-                        console.log("address0", address0);
-                        console.log("address1", address1);
-                        if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase()) || (address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
-                            console.log('res.data.', res.data.pairList[i]);
-                            setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                            setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                    if (tokenA.name !== "Casper" && tokenB.name !== "Casper") {
 
-                            let param = {
-                                to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
-                                pairid: res.data.pairList[i].id
+                        for (let i = 0; i < res.data.pairList.length; i++) {
+                            let address0 = res.data.pairList[i].token0.id.toLowerCase();
+                            let address1 = res.data.pairList[i].token1.id.toLowerCase();
+                            console.log("address0", address0);
+                            console.log("address1", address1);
+                            if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
+                                setIsInvalidPair(false)
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                liquiditySetter(res.data.pairList[i])
+                                break;
+                            } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
+                                setIsInvalidPair(false)
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                liquiditySetter(res.data.pairList[i])
+                                break;
+                            } else {
+                                setIsInvalidPair(true)
                             }
-                            console.log('await Signer.getSelectedPublicKeyBase64()',
-                                Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
-
-                            axios
-                                .post('/liquidityagainstuserandpair', param)
-                                .then((res1) => {
-                                    console.log('liquidityagainstuserandpair', res1)
-                                    setLiquidity(parseFloat(res1.data.liquidity))
-                                    console.log("res1.data.liquidity", res1.data.liquidity)
-                                })
-                                .catch((error) => {
-                                    console.log(error)
-                                    console.log(error.response)
-                                })
+                        }
+                    } else if ((tokenA.name === "Casper" && tokenB.name === "WCSPR") || (tokenA.name === "WCSPR" && tokenB.name === "Casper")) {
+                        setTokenAAmountPercent(1)
+                        setTokenBAmountPercent(1)
+                    } else if (tokenA.name === "Casper" && tokenB.name === "Casper") {
+                        setTokenAAmountPercent(1)
+                        setTokenBAmountPercent(1)
+                        setIsInvalidPair(true)
+                    } else {
+                        for (let i = 0; i < res.data.pairList.length; i++) {
+                            let name0 = res.data.pairList[i].token0.name;
+                            let name1 = res.data.pairList[i].token1.name;
+                            console.log("name0", name0);
+                            console.log("name1", name1);
+                            if (name0 === "WCSPR") {
+                                console.log('res.WCSPRWCSPR.', res.data.pairList[i]);
+                                setIsInvalidPair(false)
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                liquiditySetter(res.data.pairList[i])
+                                break;
+                            } else if (name1 === "WCSPR") {
+                                setIsInvalidPair(false)
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                liquiditySetter(res.data.pairList[i])
+                                break;
+                            } else {
+                                setIsInvalidPair(true)
+                            }
                         }
                     }
                 })
@@ -166,9 +201,30 @@ function AddLiquidity(props) {
                     console.log(error.response)
                 })
         }
+        function liquiditySetter(pair) {
+            let param = {
+                to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
+                pairid: pair.id
+            }
+            console.log('await Signer.getSelectedPublicKeyBase64()',
+                Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
+
+            axios
+                .post('/liquidityagainstuserandpair', param)
+                .then((res1) => {
+                    console.log('liquidityagainstuserandpair', res1)
+                    setLiquidity(parseFloat(res1.data.liquidity))
+                    console.log("res1.data.liquidity", res1.data.liquidity)
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
+        }
     }, [activePublicKey, tokenA, tokenB]);
 
-    async function approveMakedeploy(contractHash, amount) {
+
+    async function approveMakedeploy(contractHash, amount, tokenApproved) {
         console.log('contractHash', contractHash);
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
@@ -190,6 +246,11 @@ function AddLiquidity(props) {
             try {
                 let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                 let result = await putdeploy(signedDeploy)
+                if (tokenApproved === 'tokenA') {
+                    setTokenAAllowance(amount * 10 ** 9)
+                } else {
+                    setTokenBAllowance(amount * 10 ** 9)
+                }
                 console.log('result', result);
                 let variant = "success";
                 enqueueSnackbar('Approved Successfully', { variant });
@@ -205,7 +266,217 @@ function AddLiquidity(props) {
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
     }
- 
+    useEffect(() => {
+        if (tokenA && tokenA.name !== "Casper" && activePublicKey) {
+            let balanceParam = {
+                contractHash: tokenA.address.slice(5),
+                user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+            }
+            axios
+                .post('/balanceagainstuser', balanceParam)
+                .then((res) => {
+                    console.log('tokenAbalanceagainstuser', res)
+                    console.log(res.data)
+                    setTokenABalance(res.data.balance)
+
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                });
+
+            let allowanceParam = {
+                contractHash: tokenA.address.slice(5),
+                owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
+                spender: ROUTER_PACKAGE_HASH
+            }
+            console.log('allowanceParam0', allowanceParam);
+            axios
+                .post('/allowanceagainstownerandspender', allowanceParam)
+                .then((res) => {
+                    console.log('allowanceagainstownerandspender', res)
+                    console.log(res.data)
+                    setTokenAAllowance(res.data.allowance)
+
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
+        }
+
+
+        if (tokenA && tokenA.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            const client = new CasperServiceByJsonRPC(
+                NODE_ADDRESS
+            );
+            getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                console.log('stateRootHash', stateRootHash);
+                client.getBlockState(
+                    stateRootHash,
+                    CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                    []
+                ).then(result => {
+                    console.log('result', result.Account.mainPurse);
+                    setMainPurse(result.Account.mainPurse)
+                    try {
+                        const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+                        client.getAccountBalance(
+                            stateRootHash,
+                            result.Account.mainPurse
+                        ).then(result => {
+                            console.log('CSPR balance', result.toString());
+                            setTokenABalance(result.toString())
+                        });
+                    } catch (error) {
+                        console.log('error', error);
+                    }
+                });
+            })
+
+        }
+    }, [activePublicKey, tokenA]);
+    useEffect(() => {
+        if (tokenB && tokenB.name !== "Casper" && activePublicKey) {
+            let balanceParam = {
+                contractHash: tokenB.address.slice(5),
+                user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+            }
+            axios
+                .post('/balanceagainstuser', balanceParam)
+                .then((res) => {
+                    console.log('tokenAbalanceagainstuser', res)
+                    console.log(res.data)
+                    setTokenBBalance(res.data.balance)
+
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                });
+
+            let allowanceParam = {
+                contractHash: tokenB.address.slice(5),
+                owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
+                spender: ROUTER_PACKAGE_HASH
+            }
+            console.log('allowanceParam0', allowanceParam);
+            axios
+                .post('/allowanceagainstownerandspender', allowanceParam)
+                .then((res) => {
+                    console.log('allowanceagainstownerandspender', res)
+                    console.log(res.data)
+                    setTokenBAllowance(res.data.allowance)
+
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
+        }
+
+
+        if (tokenB && tokenB.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            const client = new CasperServiceByJsonRPC(
+                NODE_ADDRESS
+            );
+            getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                console.log('stateRootHash', stateRootHash);
+                client.getBlockState(
+                    stateRootHash,
+                    CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                    []
+                ).then(result => {
+                    console.log('result', result.Account.mainPurse);
+                    setMainPurse(result.Account.mainPurse)
+                    try {
+                        const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+                        client.getAccountBalance(
+                            stateRootHash,
+                            result.Account.mainPurse
+                        ).then(result => {
+                            console.log('CSPR balance', result.toString());
+                            setTokenBBalance(result.toString())
+                        });
+                    } catch (error) {
+                        console.log('error', error);
+                    }
+                });
+            })
+
+        }
+    }, [activePublicKey, tokenB]);
+    // useEffect(() => {
+    //     if (tokenB && tokenB.name !== "Casper" && activePublicKey) {
+    //         let param = {
+    //             contractHash: tokenB.address.slice(5),
+    //             user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+    //         }
+    //         axios
+    //             .post('/balanceagainstuser', param)
+    //             .then((res) => {
+    //                 console.log('tokenBbalanceagainstuser', res)
+    //                 console.log(res.data)
+    //                 setTokenBBalance(res.data.balance)
+
+    //             })
+    //             .catch((error) => {
+    //                 console.log(error)
+    //                 console.log(error.response)
+    //             })
+    //     }
+
+    //     console.log("tokenB", tokenB);
+    //     if (tokenB && tokenB.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+    //         const client = new CasperServiceByJsonRPC(
+    //             NODE_ADDRESS
+    //         );
+    //         getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+    //             console.log('stateRootHash', stateRootHash);
+    //             client.getBlockState(
+    //                 stateRootHash,
+    //                 CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+    //                 []
+    //             ).then(result => {
+    //                 console.log('result', result.Account.mainPurse);
+    //                 try {
+    //                     const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+    //                     client.getAccountBalance(
+    //                         stateRootHash,
+    //                         result.Account.mainPurse
+    //                     ).then(result => {
+    //                         console.log('CSPR balance', result.toString());
+    //                         setTokenBBalance(result.toString())
+    //                     });
+    //                 } catch (error) {
+    //                     console.log('error', error);
+    //                 }
+    //             });
+    //         })
+    //     }
+    // }, [activePublicKey, tokenB]);
+    useEffect(() => {
+        if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            const client = new CasperServiceByJsonRPC(
+                NODE_ADDRESS
+            );
+            getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                console.log('stateRootHash', stateRootHash);
+                console.log('CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),', CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),);
+                client.getBlockState(
+                    stateRootHash,
+                    CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                    []
+                ).then(result => {
+                    console.log('result', result.Account.mainPurse);
+                    setMainPurse(result.Account.mainPurse)
+                }).catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
+            })
+        }
+    }, [activePublicKey])
     async function addLiquidityMakeDeploy() {
         setIsLoading(true)
         const publicKeyHex = activePublicKey
@@ -219,8 +490,6 @@ function AddLiquidity(props) {
             const token_BAmount = tokenBAmount;
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
-
-            console.log('tokenAAddress', tokenAAddress);
             const _token_a = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
             );
@@ -230,44 +499,113 @@ function AddLiquidity(props) {
             const pair = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
             );
+            if (tokenA.name === 'Casper') {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                    token: new CLKey(_token_b),
+                    amount_cspr_desired: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9)),
+                    amount_token_desired: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9)),
+                    amount_cspr_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
+                    amount_token_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
+                    to: createRecipientAddress(publicKey),
+                    purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                    deadline: CLValueBuilder.u256(deadline),
+                    pair: new CLOption(Some(new CLKey(_token_b)))
+                });
 
+                let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                let entryPoint = 'add_liquidity_cspr_js_client';
 
-            const runtimeArgs = RuntimeArgs.fromMap({
-                token_a: new CLKey(_token_a),
-                token_b: new CLKey(_token_b),
-                amount_a_desired: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9)),
-                amount_b_desired: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9)),
-                amount_a_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
-                amount_b_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
-                to: createRecipientAddress(publicKey),
-                deadline: CLValueBuilder.u256(deadline),
-                pair: new CLOption(Some(new CLKey(pair)))
-            });
-
-            let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-            let entryPoint = 'add_liquidity_js_client';
-
-            // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-            console.log("make deploy: ", deploy);
-            try {
-                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy)
-                console.log('result', result);
-                let variant = "success";
-                enqueueSnackbar('Liquidity Added Successfully', { variant });
-                setIsLoading(false)
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                console.log("make deploy: ", deploy);
+                try {
+                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                    let result = await putdeploy(signedDeploy)
+                    console.log('result', result);
+                    let variant = "success";
+                    enqueueSnackbar('Liquidity Added Successfully', { variant });
+                    setIsLoading(false)
+                }
+                catch {
+                    let variant = "Error";
+                    enqueueSnackbar('Unable to Add Liquidity', { variant });
+                    setIsLoading(false)
+                }
             }
-            catch {
-                let variant = "Error";
-                enqueueSnackbar('Unable to Add Liquidity', { variant });
-                setIsLoading(false)
+            else if (tokenB.name === 'Casper') {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                    token: new CLKey(_token_a),
+                    amount_token_desired: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9)),
+                    amount_cspr_desired: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9)),
+                    amount_token_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
+                    amount_cspr_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
+                    to: createRecipientAddress(publicKey),
+                    deadline: CLValueBuilder.u256(deadline),
+                    pair: new CLOption(Some(new CLKey(pair)))
+                });
+
+                let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                let entryPoint = 'add_liquidity_cspr_js_client';
+
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                console.log("make deploy: ", deploy);
+                try {
+                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                    let result = await putdeploy(signedDeploy)
+                    console.log('result', result);
+                    let variant = "success";
+                    enqueueSnackbar('Liquidity Added Successfully', { variant });
+                    setIsLoading(false)
+                }
+                catch {
+                    let variant = "Error";
+                    enqueueSnackbar('Unable to Add Liquidity', { variant });
+                    setIsLoading(false)
+                }
+
+            } else {
+
+                const runtimeArgs = RuntimeArgs.fromMap({
+                    token_a: new CLKey(_token_a),
+                    token_b: new CLKey(_token_b),
+                    amount_a_desired: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9)),
+                    amount_b_desired: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9)),
+                    amount_a_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
+                    amount_b_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
+                    to: createRecipientAddress(publicKey),
+                    deadline: CLValueBuilder.u256(deadline),
+                    pair: new CLOption(Some(new CLKey(pair)))
+                });
+
+                let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                let entryPoint = 'add_liquidity_js_client';
+
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                console.log("make deploy: ", deploy);
+                try {
+                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                    let result = await putdeploy(signedDeploy)
+                    console.log('result', result);
+                    let variant = "success";
+                    enqueueSnackbar('Liquidity Added Successfully', { variant });
+                    setIsLoading(false)
+                }
+                catch {
+                    let variant = "Error";
+                    enqueueSnackbar('Unable to Add Liquidity', { variant });
+                    setIsLoading(false)
+                }
+
             }
+
 
         }
         else {
             let variant = "error";
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
+            setIsLoading(false)
         }
     }
     return (
@@ -294,10 +632,13 @@ function AddLiquidity(props) {
                                                     <div className="col-md-12 col-lg-6 login-right">
                                                         <>
                                                             <div className="login-header">
-                                                                <h3 style={{ textAlign: "center" }}>Add Liquidity</h3>
-                                                                <h3 onClick={handleShowSlippage} style={{ textAlign: 'right' }}><i className="fas fa-cog"></i></h3>
+                                                                <h3  >
+                                                                    <div style={{ textAlign: "center" }}>Add Liquidity
+                                                                        <span onClick={handleShowSlippage} style={{ float: 'right' }}><i className="fas fa-cog"></i></span>
+                                                                    </div>
+                                                                </h3>
                                                             </div>
-                                                            <form onSubmit={handleSubmitEvent}>
+                                                            <form>
                                                                 <div className="row">
                                                                     <div className="col-md-12 col-lg-7">
                                                                         <div className="filter-widget">
@@ -341,7 +682,6 @@ function AddLiquidity(props) {
                                                                                     if (e.target.value >= 0) {
                                                                                         setTokenAAmount(e.target.value)
                                                                                         setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
-
                                                                                     } else {
                                                                                         setTokenAAmount(0)
                                                                                         setTokenBAmount(0)
@@ -359,10 +699,15 @@ function AddLiquidity(props) {
                                                                             />
                                                                         )}
                                                                     </div>
-                                                                    {/* <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
-                                                                        {Math.round(tokenAAmount * priceInUSD * 1000) / 1000}$
-                                                                    </div> */}
                                                                 </div>
+                                                                {activePublicKey && tokenA ? (
+                                                                    <>
+                                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                                            <strong>Balance: </strong>{tokenABalance / 10 ** 9}
+                                                                        </Typography>
+
+                                                                    </>
+                                                                ) : (null)}
                                                                 <br></br>
                                                                 <div className="row">
                                                                     <div className="col-md-12 col-lg-7">
@@ -427,10 +772,15 @@ function AddLiquidity(props) {
                                                                             />
                                                                         )}
                                                                     </div>
-                                                                    {/* <div style={{ textAlign: 'center', marginTop: '13px' }} className="col-md-12 col-lg-2">
-                                                                        {Math.round(tokenBAmount * priceInUSD * 1000) / 1000}$
-                                                                    </div> */}
                                                                 </div>
+                                                                {activePublicKey && tokenB ? (
+                                                                    <>
+                                                                        <Typography variant="body2" color="textSecondary" component="p">
+                                                                            <strong>Balance: </strong>{tokenBBalance / 10 ** 9}
+                                                                        </Typography>
+                                                                        <br></br>
+                                                                    </>
+                                                                ) : (null)}
                                                                 {tokenA ? (
                                                                     <div className="card">
                                                                         <CardHeader
@@ -438,12 +788,17 @@ function AddLiquidity(props) {
                                                                             title={tokenA.name}
                                                                             subheader={tokenA.symbol}
                                                                         />
-                                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                                            <strong>Contract Hash: </strong>{tokenA.address}
-                                                                        </Typography>
-                                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                                            <strong>Package Hash: </strong>{tokenA.packageHash}
-                                                                        </Typography>
+                                                                        {tokenA.address !== "" ? (
+                                                                            <>
+                                                                                <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                    <strong>Contract Hash: </strong>{tokenA.address}
+                                                                                </Typography>
+                                                                                <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                    <strong>Package Hash: </strong>{tokenA.packageHash}
+                                                                                </Typography>
+                                                                            </>
+                                                                        ) : (null)}
+
                                                                     </div>
                                                                 ) : (null)}
                                                                 {tokenB ? (
@@ -453,72 +808,81 @@ function AddLiquidity(props) {
                                                                             title={tokenB.name}
                                                                             subheader={tokenB.symbol}
                                                                         />
-                                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                                            <strong>Contract Hash: </strong>{tokenB.address}
-                                                                        </Typography>
-                                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                                            <strong>Package Hash: </strong>{tokenB.packageHash}
-                                                                        </Typography>
+                                                                        {tokenB.address !== "" ? (
+                                                                            <>
+                                                                                <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                    <strong>Contract Hash: </strong>{tokenB.address}
+                                                                                </Typography>
+                                                                                <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                    <strong>Package Hash: </strong>{tokenB.packageHash}
+                                                                                </Typography>
+                                                                            </>
+                                                                        ) : (null)}
+
                                                                     </div>
                                                                 ) : (null)}
                                                                 <Row>
-                                                                    <Col>
-                                                                        {tokenA && tokenAAmount > 0 ? (
-                                                                            approveAIsLoading ? (
-                                                                                <div className="text-center">
-                                                                                    <Spinner
-                                                                                        animation="border"
-                                                                                        role="status"
-                                                                                        style={{ color: "#e84646" }}
-                                                                                    >
-                                                                                        <span className="sr-only">Loading...</span>
-                                                                                    </Spinner>
-                                                                                </div>
-                                                                            ) : (
+
+                                                                    {tokenA && tokenA.name !== 'Casper' && tokenAAmount > 0 && tokenAAmount * 10 ** 9 > tokenAAllowance && !isInvalidPair ? (
+                                                                        approveAIsLoading ? (
+                                                                            <div className="text-center">
+                                                                                <Spinner
+                                                                                    animation="border"
+                                                                                    role="status"
+                                                                                    style={{ color: "#e84646" }}
+                                                                                >
+                                                                                    <span className="sr-only">Loading...</span>
+                                                                                </Spinner>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Col>
                                                                                 <button
                                                                                     className="btn btn-block btn-lg"
                                                                                     onClick={async () => {
                                                                                         setApproveAIsLoading(true)
-                                                                                        await approveMakedeploy(tokenA.address, tokenAAmount)
+                                                                                        await approveMakedeploy(tokenA.address, tokenAAmount, 'tokenA')
                                                                                         setApproveAIsLoading(false)
                                                                                     }
                                                                                     }
                                                                                 >
                                                                                     Approve {tokenA.name}
                                                                                 </button>
-                                                                            )
-                                                                        ) : (null)}
-                                                                    </Col>
-                                                                    <Col>
-                                                                        {tokenB && tokenBAmount > 0 ? (
-                                                                            approveBIsLoading ? (
-                                                                                <div className="text-center">
-                                                                                    <Spinner
-                                                                                        animation="border"
-                                                                                        role="status"
-                                                                                        style={{ color: "#e84646" }}
-                                                                                    >
-                                                                                        <span className="sr-only">Loading...</span>
-                                                                                    </Spinner>
-                                                                                </div>
-                                                                            ) : (
+                                                                            </Col>
+                                                                        )
+                                                                    ) : (null)}
+
+
+                                                                    {tokenB && tokenB.name !== 'Casper' && tokenBAmount > 0 && tokenBAmount * 10 ** 9 > tokenBAllowance && !isInvalidPair ? (
+                                                                        approveBIsLoading ? (
+                                                                            <div className="text-center">
+                                                                                <Spinner
+                                                                                    animation="border"
+                                                                                    role="status"
+                                                                                    style={{ color: "#e84646" }}
+                                                                                >
+                                                                                    <span className="sr-only">Loading...</span>
+                                                                                </Spinner>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Col>
                                                                                 <button
                                                                                     className="btn btn-block btn-lg"
                                                                                     onClick={async () => {
                                                                                         setApproveBIsLoading(true)
-                                                                                        await approveMakedeploy(tokenB.address, tokenBAmount)
+                                                                                        await approveMakedeploy(tokenB.address, tokenBAmount, 'tokenB')
                                                                                         setApproveBIsLoading(false)
                                                                                     }
                                                                                     }
                                                                                 >
                                                                                     Approve {tokenB.name}
                                                                                 </button>
-                                                                            )
-                                                                        ) : (null)}
-                                                                    </Col>
+                                                                            </Col>
+                                                                        )
+                                                                    ) : (null)}
+
                                                                 </Row>
                                                                 <br></br>
-                                                                {tokenA && tokenB ? (
+                                                                {tokenA && tokenB && !isInvalidPair ? (
                                                                     <>
                                                                         <Card>
                                                                             <CardContent>
@@ -536,7 +900,7 @@ function AddLiquidity(props) {
                                                                                 <Row>
                                                                                     <Col>
                                                                                         <CardHeader
-                                                                                            title={(tokenBAmount).toFixed(5)}
+                                                                                            title={(tokenBAmount)}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
@@ -573,22 +937,43 @@ function AddLiquidity(props) {
                                                                 ) : (
                                                                     null
                                                                 )}
-                                                                <div className="text-center">
-                                                                    <p style={{ color: "red" }}>{msg}</p>
-                                                                </div>
 
                                                                 {isLoading ? (
                                                                     <div className="text-center">
                                                                         <Spinner
                                                                             animation="border"
                                                                             role="status"
-                                                                            style={{ color: "#e84646" }}
+                                                                            style={{ color: "#e84646", marginTop: '20px' }}
                                                                         >
                                                                             <span className="sr-only">Loading...</span>
                                                                         </Spinner>
                                                                     </div>
+                                                                ) : isInvalidPair ? (
+                                                                    <button
+                                                                        className="btn btn-block btn-lg"
+                                                                        style={{ marginTop: '20px' }}
+                                                                        disabled
+                                                                    >
+                                                                        Invalid Pair
+                                                                    </button>
+                                                                ) : tokenA && tokenA.name !== "Casper" && tokenAAmount * 10 ** 9 > tokenAAllowance ? (
+                                                                    <button
+                                                                        className="btn btn-block btn-lg "
+                                                                        disabled
+                                                                        style={{ marginTop: '20px' }}
+                                                                    >
+                                                                        Approve {tokenA.name} First
+                                                                    </button>
+                                                                ) : tokenB && tokenB.name !== "Casper" && tokenBAmount * 10 ** 9 > tokenBAllowance ? (
+                                                                    <button
+                                                                        className="btn btn-block btn-lg "
+                                                                        disabled
+                                                                        style={{ marginTop: '20px' }}
+                                                                    >
+                                                                        Approve {tokenB.name} First
+                                                                    </button>
                                                                 ) : (
-                                                                    tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
+                                                                    activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                         <button
                                                                             className="btn btn-block btn-lg"
                                                                             onClick={async () => await addLiquidityMakeDeploy()}
@@ -617,7 +1002,7 @@ function AddLiquidity(props) {
                                                                 )}
                                                             </form>
                                                             <br></br>
-                                                            {tokenA && tokenB && liquidity ? (
+                                                            {tokenA && tokenB && liquidity && !isInvalidPair ? (
                                                                 <Card>
                                                                     <CardContent>
                                                                         <h3>Your Position</h3>
@@ -681,4 +1066,4 @@ function AddLiquidity(props) {
     );
 }
 
-export default windowSize(AddLiquidity);
+export default AddLiquidity;

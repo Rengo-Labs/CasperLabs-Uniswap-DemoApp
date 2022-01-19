@@ -4,7 +4,6 @@ import Typography from '@material-ui/core/Typography';
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
-import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
@@ -162,4 +161,4 @@ function Tokens(props) {
     );
 }
 
-export default windowSize(Tokens);
+export default Tokens;

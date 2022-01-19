@@ -5,7 +5,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import windowSize from "react-window-size";
+import { Alert } from 'reactstrap';
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
@@ -63,25 +63,27 @@ function Pool(props) {
     };
 
     useEffect(() => {
-        let param = {
-            user: activePublicKey
-        }
-        axios
-            .post('/getpairsagainstuser', param)
-            .then((res) => {
-                console.log('resresres', res)
-                console.log(res.data.userpairs)
-                setIsPairList(true)
-                setIsError(false)
-                setError()
-                setuserPairs(res.data.userpairs)
-            })
-            .catch((error) => {
-                console.log(error)
-                console.log(error.response)
-                setIsError(true)
-                setError("There is no pair against this user.")
-            })// eslint-disable-next-line
+        if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            let param = {
+                user: activePublicKey
+            }
+            axios
+                .post('/getpairsagainstuser', param)
+                .then((res) => {
+                    console.log('resresres', res)
+                    console.log(res.data.userpairs)
+                    setIsPairList(true)
+                    setIsError(false)
+                    setError()
+                    setuserPairs(res.data.userpairs)
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                    setIsError(true)
+                    setError("There is no pair against this user.")
+                })
+        }// eslint-disable-next-line
     }, [activePublicKey]);
     return (
 
@@ -89,20 +91,11 @@ function Pool(props) {
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
                     <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Pool"} />
-
                     <div className="card">
                         <div className="container-fluid">
-                            <div
-                                className="content"
-                                style={{ paddingTop: "150px", minHeight: "100vh" }}
-                                position="absolute"
-                            >
+                            <div className="content" style={{ paddingTop: "150px", minHeight: "100vh" }} position="absolute">
                                 <div className="container-fluid">
-                                    <div
-                                        className="row"
-                                        style={{ height: `${props.windowHeight}`, marginRight: "px" }}
-                                    >
-
+                                    <div className="row" style={{ height: `${props.windowHeight}`, marginRight: "px" }}>
                                         <div className="col-md-4 offset-md-4">
                                             <div className="account-content">
                                                 <Link to='/pool/addLiquidity'>
@@ -118,13 +111,13 @@ function Pool(props) {
                                             </div>
                                             <div className="account-content">
                                                 {!ispairList && !isError ? (
-                                                    <Typography>
+                                                    <Alert color="info">
                                                         Connect to a wallet to view your liquidity.
-                                                    </Typography>
+                                                    </Alert>
                                                 ) : isError && error ? (
-                                                    <Typography>
+                                                    <Alert color="info">
                                                         {error}
-                                                    </Typography>
+                                                    </Alert>
                                                 ) : (
                                                     userPairs.map((i, index) => (
                                                         <Accordion key={index} expanded={expanded === index} onChange={handleChange(index)}>
@@ -241,4 +234,4 @@ function Pool(props) {
     );
 }
 
-export default windowSize(Pool);
+export default Pool;

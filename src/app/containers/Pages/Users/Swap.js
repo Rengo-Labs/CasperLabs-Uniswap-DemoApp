@@ -8,7 +8,6 @@ import { CasperServiceByJsonRPC, CLByteArray, CLKey, CLPublicKey, CLValueBuilder
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
-import windowSize from "react-window-size";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import Logo from "../../../assets/img/cspr.png";
@@ -92,7 +91,7 @@ function Swap(props) {
         axios
             .get('/tokensList')
             .then((res) => {
-                console.log('resresres', res)
+                console.log('tokensList', res)
                 console.log(res.data.tokens)
                 let CSPR =
                 {
@@ -103,9 +102,13 @@ function Swap(props) {
                     name: "Casper",
                     symbol: "CSPR",
                 }
+                let holdArr = res.data.tokens;
+                console.log('holdArr', holdArr);
+                holdArr.splice(0, 0, CSPR)
+                console.log('holdArr', holdArr);
                 setTokenList(res.data.tokens);
                 setIsTokenList(true)
-                setTokenList(oldArray => [...oldArray, CSPR])
+                // setTokenList(oldArray => [...oldArray, CSPR])
             })
             .catch((error) => {
                 console.log(error)
@@ -145,12 +148,14 @@ function Swap(props) {
                             console.log("address1", address1);
                             if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                break;
                             } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                break;
                             } else {
                                 setIsInvalidPair(true)
                             }
@@ -165,14 +170,17 @@ function Swap(props) {
                             console.log("name0", name0);
                             console.log("name1", name1);
                             if (name0 === "WCSPR") {
-                                console.log('res.WCSPRWCSPR.', res.data.pairList[i]);
+                                console.log('11111111', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                break;
                             } else if (name1 === "WCSPR") {
+                                console.log('222222', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                break;
                             } else {
                                 setIsInvalidPair(true)
                             }
@@ -243,7 +251,6 @@ function Swap(props) {
                     console.log('result', result.Account.mainPurse);
                     setMainPurse(result.Account.mainPurse)
                     try {
-                        const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
                         client.getAccountBalance(
                             stateRootHash,
                             result.Account.mainPurse
@@ -397,12 +404,7 @@ function Swap(props) {
                         _paths.push(createRecipientAddress(p));
                     }
                     console.log('_paths', _paths);
-                    // const _token_a = new CLByteArray(
-                    //     Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
-                    // );
-                    // const _token_b = new CLByteArray(
-                    //     Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
-                    // );
+
                     const runtimeArgs = RuntimeArgs.fromMap({
                         amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
                         amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
@@ -713,8 +715,11 @@ function Swap(props) {
                                                 <div className="row align-items-center justify-content-center">
                                                     <div className="col-md-12 col-lg-6 login-right">
                                                         <div className="login-header">
-                                                            <h3 style={{ textAlign: "center" }}>Swap</h3>
-                                                            <h3 onClick={handleShowSlippage} style={{ textAlign: 'right' }}><i className="fas fa-cog"></i></h3>
+                                                            <h3  >
+                                                                <div style={{ textAlign: "center" }}>Swap
+                                                                    <span onClick={handleShowSlippage} style={{ float: 'right' }}><i className="fas fa-cog"></i></span>
+                                                                </div>
+                                                            </h3>
                                                         </div>
                                                         <form >
                                                             <div className="row">
@@ -961,7 +966,7 @@ function Swap(props) {
                                                                     Approve {tokenA.name} First
                                                                 </button>
                                                             ) : (
-                                                                tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
+                                                                activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                     <button
                                                                         className="btn btn-block btn-lg"
                                                                         onClick={async () => await swapMakeDeploy()}
@@ -1007,4 +1012,4 @@ function Swap(props) {
     );
 }
 
-export default windowSize(Swap);
+export default Swap;
