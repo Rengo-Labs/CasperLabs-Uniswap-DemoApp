@@ -1,120 +1,153 @@
-import React, { useState } from "react";
+import {
+  Signer
+} from 'casper-js-sdk';
+import Cookies from "js-cookie";
+import { useSnackbar } from 'notistack';
+import React, { useEffect, useState } from "react";
+import { Button, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
-import Logo from "../../assets/img/logo.png";
+import Logo from "../../assets/img/cspr.png";
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import {
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem
-} from "reactstrap";
-import { Modal, Button, Spinner } from "react-bootstrap";
-import Avatar from '@material-ui/core/Avatar';
-import Axios from "axios";
-import Web3 from "web3";
-import jwtDecode from "jwt-decode";
-import Cookies from "js-cookie";
-import NetworkErrorModal from "../Modals/NetworkErrorModal";
-
 
 function HeaderHome(props) {
+  const { enqueueSnackbar } = useSnackbar();
   let [menuOpenedClass, setMenuOpenedClass] = useState();
-  let [dropdownOpen1, setDropdownOpen1] = useState(false);
-  let [isLoading, setIsLoading] = useState(false);
+  let [signerLocked, setSignerLocked] = useState()
+  let [signerConnected, setSignerConnected] = useState(false)
+  let [isLoading] = useState(false);
 
 
-  let [network, setNetwork] = useState(false);
-  const [show, setShow] = useState(false);
+  useEffect(() => {
+    setTimeout(async () => {
+      try {
+        const connected = await checkConnection();
+        setSignerConnected(connected)
+      } catch (err) {
+        console.log(err)
+      }
+    }, 100);
+    if (signerConnected) {
+      let res = getActiveKeyFromSigner()
+      localStorage.setItem("Address", res)
+      props.setActivePublicKey(res)
+    }
+    window.addEventListener('signer:connected', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(true)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:disconnected', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(false)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:tabUpdated', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(msg.detail.isConnected)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:activeKeyChanged', msg => {
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:locked', msg => {
+      setSignerLocked(!msg.detail.isUnlocked);
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:unlocked', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(msg.detail.isConnected)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:initialState', msg => {
+      console.log("Initial State: ", msg.detail);
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(msg.detail.isConnected)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    // eslint-disable-next-line
+  }, []);
+
+
+  async function checkConnection() {
+
+    try {
+      return await Signer.isConnected();
+    }
+    catch {
+      let variant = "Error";
+      enqueueSnackbar('Unable to connect', { variant });
+    }
+  }
+
+  async function getActiveKeyFromSigner() {
+    try {
+      return await Signer.getActivePublicKey();
+    }
+    catch {
+      let variant = "Error";
+      enqueueSnackbar('Unable to get Active Public Key', { variant });
+    }
+
+  }
+  async function connectToSigner() {
+
+    try {
+      return await Signer.sendConnectionRequest();
+    }
+    catch {
+      let variant = "Error";
+      enqueueSnackbar('Unable to send Connection Request', { variant });
+    }
+  }
+
 
   const selectedStyling = {
-    border: "2px solid 'rgb(167,0,0)'",
+    border: "2px solid '#ed0b25'",
     padding: "10px 20px",
     borderRadius: "5px",
     color: '#FFF',
-    backgroundColor: 'rgb(167,0,0)'
+    backgroundColor: '#ed0b25'
   };
   const defaultStyling = {
-    // border: "2px solid rgb(167,0,0)",
+    // border: "2px solid #ed0b25",
     padding: "10px 20px",
     borderRadius: "5px",
     // color: '#FFF',
     // backgroundColor: "#000"
   };
   const selectedNavStyle = {
-    search: props.selectedNav === "search" ? defaultStyling : defaultStyling,
-    Market: props.selectedNav === "Market" ? selectedStyling : defaultStyling,
-    Drops: props.selectedNav === "Drops" ? selectedStyling : defaultStyling,
+    Swap: props.selectedNav === "Swap" ? selectedStyling : defaultStyling,
+    Pool: props.selectedNav === "Pool" ? selectedStyling : defaultStyling,
+    Tokens: props.selectedNav === "Tokens" ? selectedStyling : defaultStyling,
     Home: props.selectedNav === "Home" ? selectedStyling : defaultStyling,
-    Blog: props.selectedNav === "Blog" ? selectedStyling : defaultStyling,
-    Community: props.selectedNav === "Community" ? selectedStyling : defaultStyling,
-    create: props.selectedNav === "create" ? selectedStyling : defaultStyling,
+    Pairs: props.selectedNav === "pairs" ? selectedStyling : defaultStyling,
   };
 
-  let Login = async () => {
-    setIsLoading(true);
-    if (window.ethereum) {
-      window.web3 = new Web3(window.ethereum)
-      await window.ethereum.enable()
-    }
-    else if (window.web3) {
-      window.web3 = new Web3(window.web3.currentProvider)
-    }
-    else {
-      window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
-    }
-
-    const web3 = window.web3
-    const accounts = await web3.eth.getAccounts();
-    const network = await web3.eth.net.getNetworkType()
-    console.log("Account test: ", accounts[0], network);
-    if (network !== 'ropsten') {
-      setNetwork(network);
-      setIsLoading(false);
-
-      handleShow();
-    }
-    else {
-      let loginData = {
-        address: accounts[0],
-        network: network,
-        // roles: 'admin'
-      }
-      Axios.post("user/auth/login", loginData).then(
-        (response) => {
-          console.log("response", response);
-          Cookies.set("Authorization", response.data.token, {
-          });
-          if (response.data.roles === "user") {
-            localStorage.setItem("Address", accounts[0]);
-          }
-          setIsLoading(false);
-          window.location.reload();
-
-        },
-        (error) => {
-          if (process.env.NODE_ENV === "development") {
-            console.log(error);
-            console.log(error.response);
-          }
-          setIsLoading(false);
-        })
-    }
-
-  }
-  let Logout = (e) => {
+  let Disconnect = (e) => {
     console.log("akjdf");
     Cookies.remove("Authorization");
     localStorage.removeItem("Address")
+    props.setActivePublicKey("")
+    try {
+      Signer.disconnectFromSite()
+    }
+    catch {
+      let variant = "Error";
+      enqueueSnackbar('Unable to Disconnect', { variant });
+    }
+
     window.location.reload();
-
-
-    // setTimeout(() => { }, 1);
   };
 
   return (
@@ -127,7 +160,7 @@ function HeaderHome(props) {
           <a
             id="mobile_btn"
             href="/"
-            style={{ color: "rgb(167,0,0)" }}
+            style={{ color: "#ed0b25" }}
             onClick={(e) => {
               e.preventDefault();
               setMenuOpenedClass("menu-opened");
@@ -140,25 +173,17 @@ function HeaderHome(props) {
             </span>
           </a>
 
-          <Link style={{ color: 'rgb(167,0,0)' }} to="/" className="navbar-brand logo">
-            <img src={Logo} alt="Logo" width="130" />
-            {/* Robot Drop */}
+          <Link style={{ color: '#ed0b25' }} to="/" className="navbar-brand logo">
+            <img src={Logo} alt="Logo" width="50" />
           </Link>
-
-          {/* <Link style={{ color: 'rgb(167,0,0)' }} to="/kyc" className="navbar-brand">
-            KYC
-          </Link> */}
         </div>
 
         <div className="main-menu-wrapper">
           <div className="menu-header">
-            {/* <a style={{ color: 'rgb(167,0,0)' }} href="/" className="menu-logo">
-              <img src={Logo} alt="Logo" width="100" height="60" />
-            </a> */}
             <a
               id="menu_close"
               className="menu-close"
-              style={{ color: 'rgb(167,0,0)' }}
+              style={{ color: '#ed0b25' }}
               href="/"
               onClick={(e) => {
                 e.preventDefault();
@@ -175,53 +200,75 @@ function HeaderHome(props) {
               marginTop: "4px",
             }}
           >
-            <li className="login-link ">
-              <a
-                href="/"
-                style={{ paddingLeft: "5px" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMenuOpenedClass("");
-                }}
-              >
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-              </a>
-            </li>
-            <li className="login-link ">
-              <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
 
-                {localStorage.getItem("Address") ? (
-                  <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
-                    <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
-                  </a>
-                ) : (
-                  <>
-                    <span style={selectedNavStyle.Community} onClick={() => Login()}>
-                      Login
-              </span>
-                  </>
-                )}
-              </Link>
+            {localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
+              <li className="login-link ">
+                <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }}>
+                  <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").slice(0, 10)}. . .</span>
+                </a>
+              </li>
+            ) : (signerLocked && signerConnected ? (
+              <li onClick={async () => {
+                await connectToSigner();
+              }} className="login-link ">
+                <a href='#' className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }}>
+                  Unlock Signer
+                </a>
+
+              </li>
+            ) : (
+              <li onClick={async () => {
+                await connectToSigner()
+              }} className="login-link ">
+                <a href='#' className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }}>
+                  Connect to Signer
+                </a>
+              </li>
+            )
+            )}
+
+            <li onClick={() => Disconnect()} className="login-link ">
+              {localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
+                <a href='#' className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }} >
+                  <span style={{ cursor: 'pointer' }} >
+                    Disconnect
+                  </span>
+                </a>
+              ) : (null)}
             </li>
             <li>
-              <a href="/" style={{ color: 'rgb(167,0,0)' }} >
+              <Link to="/" className=" align-items-center justify-content-center text-center" style={{ color: '#ed0b25' }} >
                 <span style={selectedNavStyle.Home}>
                   Home
-                  </span>
-              </a>
-            </li>
-            <li>
-              <Link to="/marketPlace" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Market}>
-                  Market
-                  </span>
+                </span>
               </Link>
             </li>
             <li>
-              <Link to="/auctionDrops" style={{ color: 'rgb(167,0,0)' }} >
-                <span style={selectedNavStyle.Drops}>
-                  Drops
-                  </span>
+              <Link className=" align-items-center justify-content-center text-center" to="/swap" style={{ color: '#ed0b25' }} >
+                <span style={selectedNavStyle.Swap}>
+                  Swap
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link className=" align-items-center justify-content-center text-center" to="/pool" style={{ color: '#ed0b25' }} >
+                <span style={selectedNavStyle.Pool}>
+                  Pool
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link className=" align-items-center justify-content-center text-center" to="/tokens" style={{ color: '#ed0b25' }} >
+                <span style={selectedNavStyle.Tokens}>
+                  Tokens
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link className=" align-items-center justify-content-center text-center" to="/pairs" style={{ color: '#ed0b25' }} >
+                <span style={selectedNavStyle.Pairs}>
+                  Pairs
+                </span>
               </Link>
             </li>
 
@@ -233,52 +280,52 @@ function HeaderHome(props) {
               <Spinner
                 animation="border"
                 role="status"
-                style={{ color: "ff0000" }}
+                style={{ color: "e84646" }}
               >
                 <span className="sr-only">Loading...</span>
               </Spinner>
             </div>
           ) : (
-            localStorage.getItem("Address") ? (
-              <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" style={{ color: 'rgb(167,0,0)' }}>
+            localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
+              <a href={"https://ropsten.etherscan.io/address/" + localStorage.getItem("Address")} target="_blank" rel="noopener noreferrer" style={{ color: '#ed0b25' }}>
                 <span style={{ cursor: 'pointer' }}>{localStorage.getItem("Address").substr(0, 10)}. . .</span>
               </a>
+            ) : (signerLocked && signerConnected ? (
+              <>
+                <Button variant="primary"
+                  className='fade-in-text'
+                  onClick={async () => {
+                    await connectToSigner();
+                  }}
+                >
+                  Unlock Signer
+                </Button>
+
+              </>
             ) : (
               <>
-
-                <span style={{ cursor: 'pointer' }} onClick={() => Login()}>
-                  Login
-            </span>
+                <Button variant="primary"
+                  className='fade-in-text'
+                  onClick={async () => {
+                    await connectToSigner()
+                  }}
+                >
+                  Connect to Signer
+                </Button>
               </>
-            )
+            ))
           )}
 
           </li>
-          <li >
-            {localStorage.getItem("Address") ? (
-              <Link to="/dashboard" style={{ color: 'rgb(167,0,0)' }} >
-                Dashboard
-              </Link>
-
-            ) : (
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            )}
-          </li>
           <li>
-            {localStorage.getItem("Address") ? (
-              <span style={{ cursor: 'pointer' }} onClick={() => Logout()}>
-                Logout
+            {localStorage.getItem("Address") && localStorage.getItem("Address") !== null && localStorage.getItem("Address") !== 'null' ? (
+              <span style={{ cursor: 'pointer' }} onClick={() => Disconnect()}>
+                Disconnect
               </span>
             ) : (null)}
           </li>
         </ul>
-        <NetworkErrorModal
-          show={show}
-          handleClose={handleClose}
-          network={network}
-        >
-        </NetworkErrorModal>
-      </nav>
+      </nav >
     </header >
   );
 }

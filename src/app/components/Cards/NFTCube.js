@@ -10,16 +10,8 @@ import Typography from '@material-ui/core/Typography';
 import React, { useState } from "react";
 import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
-import r1 from '../../assets/img/r1.jpg';
-import r2 from '../../assets/img/r2.jpg';
-import r3 from '../../assets/img/r3.jpg';
-import r4 from '../../assets/img/r4.jpg';
-import r5 from '../../assets/img/r5.jpg';
-import r6 from '../../assets/img/r6.jpg';
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import ReactDOM from "react-dom";
-import Cube from "react-3d-cube";
 
 
 const useStyles = makeStyles({
@@ -68,7 +60,7 @@ function NFTCube(props) {
                             </div>
 
                         ) : (
-                            <div class="mainDiv">
+                            <div className="mainDiv">
                                 <div className="square" onClick={() => {
                                     setHide(true);
                                     setTimeout(() => setHide(false), 10000);

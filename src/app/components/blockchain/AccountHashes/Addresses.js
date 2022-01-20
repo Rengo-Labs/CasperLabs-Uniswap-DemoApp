@@ -1,0 +1,9 @@
+// export const CreateNftAddress = '0x9B2D957D6Da0477be3d7070F30F7524E69976A0d';
+// export const CreateCubeAddress = '0x2fC35aEDBC3d47837F24A746D67782fe9c87C0E8';
+// export const AuctionAddress = "0x21A6256e5BB6Fe4f83F76A9701402ed555bDCFac";
+// export const WethAddress = "0x0a180a76e4466bf68a7f86fb029bed3cccfaaac5";
+// export const MarketPlaceAddress = "0x89c91582cD0098449E066eB5A31fC10986eACBB1";
+export const FACTORY_CONTRACT="32046b7f8ca95d736e6f3fc0daa4ef636d21fc5f79cd08b5e6e4fb57df9238b9"
+export const FACTORY_CONTRACT_PACKAGE="d2cc3ac0c9c364ec0b8e969bd09eb151f9e1b57eecddb900e85abadf2332ebef"
+export const ROUTER_CONTRACT_HASH="9ead9647794274c32a54c40ef51e80b5be856851ea039a6f07a165806d240999"
+export const ROUTER_PACKAGE_HASH="8a74e1ae230936013f3b544182b8011435f4a457d9444fa879ab483fdf829dc8"

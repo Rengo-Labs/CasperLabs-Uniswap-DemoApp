@@ -4,13 +4,15 @@ import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 import App from "./app/containers/App/Application";
 import axios from "axios";
+// import 'bootstrap/dist/css/bootstrap.css'; // or include from a CDN
+// import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 
 // axios.defaults.withCredentials = true;
 
 if (process.env.REACT_APP_BACKEND_SERVER_ADDRESS)
   axios.defaults.baseURL = `${process.env.REACT_APP_BACKEND_SERVER_ADDRESS}`;
 // else axios.defaults.baseURL = `http://localhost:3000`;
-else axios.defaults.baseURL = `https://robot-drop-backend.herokuapp.com/`;
+else axios.defaults.baseURL = `https://casper-uniswap-v2-graphql.herokuapp.com/`;
 
 ReactDOM.render(<App />, document.getElementById("root"));
 

@@ -1,6 +1,6 @@
 {
-  "short_name": "Robot Drop",
-  "name": "Robot Drop",
+  "short_name": "Casper Swap",
+  "name": "Casper Swap",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,8 +8,7 @@
       "type": "image/x-icon"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
+  "start_url": "/",
   "theme_color": "#000000",
   "background_color": "#ffffff"
 }

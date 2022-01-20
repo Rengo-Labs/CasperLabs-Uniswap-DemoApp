@@ -1,26 +1,14 @@
-import React, { useState } from "react";
-
-import { Link } from "react-router-dom";
-
-const style = {
-  minHeight: "500px",
-  backgroundAttachment: "fixed",
-  backgroundPosition: "center",
-  backgroundRepeat: "no-repeat",
-  backgroundSize: "cover",
-};
-
+import React from "react";
 function HomeBanner() {
   return (
     <section className="section section-search">
       <div className="container-fluid">
-        <div className="banner-wrapper" style={{ paddingTop: "90px" }}>
+        <div className="banner-wrapper" style={{ paddingTop: "110px" }}>
           <div className="banner-header text-center" >
-            <h1 style={{ color: 'white' }}>The largest NFT marketplace</h1>
+            <h1 style={{ color: 'white' }}>CASPERSWAP PROTOCOL</h1>
             <p style={{ color: 'white' }}>
-              Buy, sell, and discover rare digital items
+              Swap, earn, and build on the leading decentralized crypto trading protocol.
             </p>
-            {/* <p>using the power of Blockchain.</p> */}
           </div>
         </div>
       </div>

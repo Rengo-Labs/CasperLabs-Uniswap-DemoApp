@@ -1,10 +1,9 @@
 import React from "react";
-// import logo from '../logo.png'
+// import logo from '../cspr.png'
 import "../../assets/css/bootstrap.min.css";
-import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/css/style.css";
-import { Link } from "react-router-dom";
+import "../../assets/plugins/fontawesome/css/all.min.css";
+import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 
 function Footer(props) {
   return (
@@ -18,13 +17,13 @@ function Footer(props) {
               <div className="col-md-6 col-lg-6">
                 <div className="copyright-text">
                   <p className="mb-0">
-                    &copy; 2020 Robot Drop. All rights reserved.
+                    &copy; 2020 Casper Swap. All rights reserved.
                   </p>
                 </div>
               </div>
               <div className="col-md-6 col-lg-6">
                 {/* <!-- Copyright Menu --> */}
-                <div className="copyright-menu">
+                {/* <div className="copyright-menu">
                   <ul className="policy-menu">
                     <li>
                       <Link
@@ -42,7 +41,7 @@ function Footer(props) {
                       </Link>
                     </li>
                   </ul>
-                </div>
+                </div> */}
                 {/* <!-- /Copyright Menu --> */}
               </div>
             </div>
