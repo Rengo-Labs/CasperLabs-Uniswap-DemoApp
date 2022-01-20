@@ -1,9 +1,9 @@
-import { Accordion, AccordionDetails, AccordionSummary, Card, CardContent } from '@material-ui/core/';
+import { Accordion, AccordionDetails, AccordionSummary, Card, CardContent, Container } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Button, Col, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Alert } from 'reactstrap';
 import "../../../assets/css/bootstrap.min.css";
@@ -91,134 +91,102 @@ function Pool(props) {
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
                     <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Pool"} />
-                    <div className="card">
+                    <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div className="content" style={{ paddingTop: "150px", minHeight: "100vh" }} position="absolute">
                                 <div className="container-fluid">
-                                    <div className="row" style={{ height: `${props.windowHeight}`, marginRight: "px" }}>
-                                        <div className="col-md-4 offset-md-4">
+                                    <div className="row" style={{ height: `${props.windowHeight}` }}>
+                                        <div className="col-md-6 offset-md-3">
                                             <div className="account-content">
-                                                <Link to='/pool/addLiquidity'>
-                                                    <Button variant="primary" style={{ margin: '10px' }}>
-                                                        Create Pair
-                                                    </Button>
-                                                </Link>
-                                                <Link to='/pool/addLiquidity'>
-                                                    <Button variant="primary" style={{ margin: '10px' }}>
-                                                        Add Liquidity
-                                                    </Button>
-                                                </Link>
+                                                <h3>
+                                                    My Liquidity Positions
+                                                </h3>
                                             </div>
                                             <div className="account-content">
                                                 {!ispairList && !isError ? (
-                                                    <Alert color="info">
-                                                        Connect to a wallet to view your liquidity.
-                                                    </Alert>
+                                                    <Card style={{ marginBottom: '10px' }} className={classes.root}>
+                                                        <CardContent >
+                                                            <Alert style={{ marginBottom: '0px' }} color="light">
+                                                                Connect to a wallet to view your liquidity.
+                                                            </Alert>
+                                                        </CardContent>
+                                                    </Card>
                                                 ) : isError && error ? (
-                                                    <Alert color="info">
-                                                        {error}
-                                                    </Alert>
+                                                    <Card style={{ marginBottom: '10px' }} className={classes.root}>
+                                                        <CardContent >
+                                                            <Alert style={{ marginBottom: '0px' }} color="light">
+                                                                No liquidity was found
+                                                            </Alert>
+                                                        </CardContent>
+                                                    </Card>
                                                 ) : (
                                                     userPairs.map((i, index) => (
-                                                        <Accordion key={index} expanded={expanded === index} onChange={handleChange(index)}>
+                                                        <Accordion style={{ marginBottom: '10px' }} key={index} expanded={expanded === index} onChange={handleChange(index)}>
                                                             <AccordionSummary
                                                                 expandIcon={<i className="fas fa-chevron-down"></i>}
                                                                 aria-controls="panel1bh-content"
                                                                 id="panel1bh-header"
                                                             >
                                                                 <Typography sx={{ width: '33%', flexShrink: 0 }}>
-                                                                    {i.token0.name}/{i.token1.name}
+                                                                    {i.token0.name} / {i.token1.name}
                                                                 </Typography>
-                                                                {/* <Typography sx={{ color: 'text.secondary' }}>{i.token0.name}/{i.token1.name}</Typography> */}
                                                             </AccordionSummary>
                                                             <AccordionDetails >
-                                                                {/* <Typography sx style={{border:'1px solid'}}> */}
-                                                                <Card className={classes.root}>
+                                                                <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
                                                                     <CardContent>
                                                                         <Row>
-                                                                            <Col>Your total Pool Tokens</Col>
+                                                                            <Col>Your total Pool Tokens:</Col>
                                                                             <Col><Typography>{(i.reserve0 / i.reserve1).toFixed(5)}</Typography></Col>
                                                                         </Row>
                                                                         <Row>
-                                                                            <Col>Pooled {i.token0.name}</Col>
+                                                                            <Col>Pooled {i.token0.name}:</Col>
                                                                             <Col><Typography>{i.reserve0 / 10 ** 9}</Typography></Col>
                                                                         </Row>
                                                                         <Row>
-                                                                            <Col>Pooled {i.token1.name}</Col>
+                                                                            <Col>Pooled {i.token1.name}:</Col>
                                                                             <Col><Typography>{i.reserve1 / 10 ** 9}</Typography></Col>
                                                                         </Row>
                                                                     </CardContent>
-                                                                    <Link to='/pool/addLiquidity'>
-                                                                        <Button variant="primary" style={{ margin: '10px' }}>
-                                                                            Add Liquidity
-                                                                        </Button>
-                                                                    </Link>
-                                                                    <Link to={`/pool/removeLiquidity/${i.token0.id}/${i.token1.id}`}>
-                                                                        <Button variant="primary" style={{ margin: '10px' }}>
-                                                                            Remove Liquidity
-                                                                        </Button>
-                                                                    </Link>
+                                                                    <Container>
+                                                                        <Row>
+                                                                            <Col>
+                                                                                <Link to='/pool/addLiquidity'>
+                                                                                    <button
+                                                                                        className="btn-block btn-primary btn-lg"
+                                                                                        style={{ marginTop: '10px', marginBottom: '10px' }}>
+                                                                                        Add Liquidity
+                                                                                    </button>
+                                                                                </Link>
+                                                                            </Col>
+                                                                            <Col>
+                                                                                <Link to={`/pool/removeLiquidity/${i.token0.id}/${i.token1.id}`}>
+                                                                                    <button
+                                                                                        className="btn-block btn-primary btn-lg"
+                                                                                        style={{ marginTop: '10px', marginBottom: '10px' }}>
+                                                                                        Remove Liquidity
+                                                                                    </button>
+                                                                                </Link>
+                                                                            </Col>
+                                                                        </Row>
+                                                                    </Container>
                                                                 </Card>
                                                                 {/* </Typography> */}
                                                             </AccordionDetails>
                                                         </Accordion>
                                                     ))
                                                 )}
-                                                {/* <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
-                                                        <AccordionSummary
-                                                            expandIcon={<i className="fas fa-chevron-down"></i>}
-                                                            aria-controls="panel2bh-content"
-                                                            id="panel2bh-header"
-                                                        >
-                                                            <Typography sx={{ width: '33%', flexShrink: 0 }}>Users</Typography>
-                                                            <Typography sx={{ color: 'text.secondary' }}>
-                                                                You are currently not an owner
-                                                            </Typography>
-                                                        </AccordionSummary>
-                                                        <AccordionDetails>
-                                                            <Typography>
-                                                                Donec placerat, lectus sed mattis semper, neque lectus feugiat lectus,
-                                                                varius pulvinar diam eros in elit. Pellentesque convallis laoreet
-                                                                laoreet.
-                                                            </Typography>
-                                                        </AccordionDetails>
-                                                    </Accordion>
-                                                    <Accordion expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
-                                                        <AccordionSummary
-                                                            expandIcon={<i className="fas fa-chevron-down"></i>}
-                                                            aria-controls="panel3bh-content"
-                                                            id="panel3bh-header"
-                                                        >
-                                                            <Typography sx={{ width: '33%', flexShrink: 0 }}>
-                                                                Advanced settings
-                                                            </Typography>
-                                                            <Typography sx={{ color: 'text.secondary' }}>
-                                                                Filtering has been entirely disabled for whole web server
-                                                            </Typography>
-                                                        </AccordionSummary>
-                                                        <AccordionDetails>
-                                                            <Typography>
-                                                                Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit
-                                                                amet egestas eros, vitae egestas augue. Duis vel est augue.
-                                                            </Typography>
-                                                        </AccordionDetails>
-                                                    </Accordion>
-                                                    <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
-                                                        <AccordionSummary
-                                                            expandIcon={<i className="fas fa-chevron-down"></i>}
-                                                            aria-controls="panel4bh-content"
-                                                            id="panel4bh-header"
-                                                        >
-                                                            <Typography sx={{ width: '33%', flexShrink: 0 }}>Personal data</Typography>
-                                                        </AccordionSummary>
-                                                        <AccordionDetails>
-                                                            <Typography>
-                                                                Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit
-                                                                amet egestas eros, vitae egestas augue. Duis vel est augue.
-                                                            </Typography>
-                                                        </AccordionDetails>
-                                                    </Accordion> */}
-                                                {/* </Card> */}
+                                                {/* <Link to='/pool/addLiquidity'>
+                                                    <Button variant="primary" style={{ margin: '10px' }}>
+                                                        Create Pair
+                                                    </Button>
+                                                </Link> */}
+                                                <Link to='/pool/addLiquidity'>
+                                                    <button
+                                                        className="btn-block btn-primary btn-lg"
+                                                        style={{ marginBottom: '10px' }}>
+                                                        Add
+                                                    </button>
+                                                </Link>
                                             </div>
                                         </div>
                                     </div>

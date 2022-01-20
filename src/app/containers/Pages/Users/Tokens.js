@@ -1,4 +1,4 @@
-import { Avatar, CardHeader } from '@material-ui/core/';
+import { Avatar } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import axios from "axios";
@@ -8,7 +8,6 @@ import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import Footer from "../../../components/Footers/Footer";
 import HeaderHome from "../../../components/Headers/Header";
 
 
@@ -48,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
         marginBottom: 12,
     },
     avatar: {
-        marginLeft: 40,
+        marginLeft: 0,
     },
 }));
 function Tokens(props) {
@@ -80,7 +79,7 @@ function Tokens(props) {
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
                     <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Tokens"} />
-                    <div className="card">
+                    <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div
                                 className="content"
@@ -116,7 +115,7 @@ function Tokens(props) {
                                                         <thead>
                                                             <tr>
                                                                 <th>#</th>
-                                                                <th style={{ textAlign: 'center' }}>Logo</th>
+                                                                <th >Logo</th>
                                                                 <th>Name</th>
                                                                 <th>Symbol</th>
                                                                 <th>Contract Hash</th>
@@ -130,9 +129,7 @@ function Tokens(props) {
                                                                 <tr key={index}>
                                                                     <td>{index + 1}</td>
                                                                     <td >
-                                                                        <CardHeader
-                                                                            avatar={<Avatar src={i.logoURI} aria-label="Artist" className={classes.avatar} />}
-                                                                        />
+                                                                        <Avatar src={i.logoURI} aria-label="Artist" className={classes.avatar} />
                                                                     </td>
                                                                     <td>{i.name}</td>
                                                                     <td>{i.symbol}</td>
@@ -153,10 +150,7 @@ function Tokens(props) {
                         </div>
                     </div>
                 </div>
-                <Footer position={"relative"} />
             </div>
-
-
         </div >
     );
 }

@@ -6,7 +6,6 @@ import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import Footer from "../../../components/Footers/Footer";
 import HeaderHome from "../../../components/Headers/Header";
 
 function Pairs(props) {
@@ -40,7 +39,7 @@ function Pairs(props) {
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
                     <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"pairs"} />
-                    <div className="card">
+                    <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div
                                 className="content"
@@ -113,7 +112,6 @@ function Pairs(props) {
                         </div>
                     </div>
                 </div>
-                <Footer position={"relative"} />
             </div>
         </div >
     );

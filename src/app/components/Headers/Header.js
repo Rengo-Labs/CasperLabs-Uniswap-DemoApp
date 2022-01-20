@@ -293,6 +293,7 @@ function HeaderHome(props) {
             ) : (signerLocked && signerConnected ? (
               <>
                 <Button variant="primary"
+                  className='fade-in-text'
                   onClick={async () => {
                     await connectToSigner();
                   }}
@@ -304,6 +305,7 @@ function HeaderHome(props) {
             ) : (
               <>
                 <Button variant="primary"
+                  className='fade-in-text'
                   onClick={async () => {
                     await connectToSigner()
                   }}

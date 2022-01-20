@@ -24,6 +24,7 @@ import { createRecipientAddress } from '../../../components/blockchain/Recipient
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import HeaderHome from "../../../components/Headers/Header";
 import SlippageModal from '../../../components/Modals/SlippageModal';
+import { Accordion, AccordionDetails, AccordionSummary } from '@material-ui/core/';
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -87,7 +88,11 @@ function AddLiquidity(props) {
     const handleShowSlippage = () => {
         setOpenSlippage(true);
     };
+    const [expanded, setExpanded] = React.useState(false);
 
+    const handleChange = (panel) => (event, isExpanded) => {
+        setExpanded(isExpanded ? panel : false);
+    };
     let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
     let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [liquidity, setLiquidity] = useState();
@@ -614,7 +619,7 @@ function AddLiquidity(props) {
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
                     <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Pool"} />
-                    <div className="card">
+                    <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div
                                 className="content"
@@ -667,7 +672,7 @@ function AddLiquidity(props) {
                                                                             />
                                                                         </div>
                                                                     </div>
-                                                                    <div className="col-md-12 col-lg-4">
+                                                                    <div className="col-md-12 col-lg-5">
                                                                         {tokenB && tokenA ? (
                                                                             <input
                                                                                 type="number"
@@ -705,10 +710,10 @@ function AddLiquidity(props) {
                                                                         <Typography variant="body2" color="textSecondary" component="p">
                                                                             <strong>Balance: </strong>{tokenABalance / 10 ** 9}
                                                                         </Typography>
-
+                                                                        <br></br>
                                                                     </>
                                                                 ) : (null)}
-                                                                <br></br>
+
                                                                 <div className="row">
                                                                     <div className="col-md-12 col-lg-7">
                                                                         <div className="filter-widget">
@@ -737,7 +742,7 @@ function AddLiquidity(props) {
                                                                             />
                                                                         </div>
                                                                     </div>
-                                                                    <div className="col-md-12 col-lg-4">
+                                                                    <div className="col-md-12 col-lg-5">
                                                                         {tokenB && tokenA ? (
                                                                             <input
                                                                                 type="number"
@@ -782,44 +787,63 @@ function AddLiquidity(props) {
                                                                     </>
                                                                 ) : (null)}
                                                                 {tokenA ? (
-                                                                    <div className="card">
-                                                                        <CardHeader
-                                                                            avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" className={classes.avatar} />}
-                                                                            title={tokenA.name}
-                                                                            subheader={tokenA.symbol}
-                                                                        />
+                                                                    <Accordion key={0} expanded={expanded === 0} onChange={handleChange(0)}>
+                                                                        <AccordionSummary
+                                                                            expandIcon={tokenA.address !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                                                            aria-controls="panel1bh-content"
+                                                                            id="panel1bh-header"
+                                                                        >
+                                                                            <CardHeader
+                                                                                avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" className={classes.avatar} />}
+                                                                                title={tokenA.name}
+                                                                                subheader={tokenA.symbol}
+                                                                            />
+                                                                        </AccordionSummary>
                                                                         {tokenA.address !== "" ? (
-                                                                            <>
-                                                                                <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                    <strong>Contract Hash: </strong>{tokenA.address}
-                                                                                </Typography>
-                                                                                <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                    <strong>Package Hash: </strong>{tokenA.packageHash}
-                                                                                </Typography>
-                                                                            </>
-                                                                        ) : (null)}
+                                                                            <AccordionDetails >
+                                                                                <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
+                                                                                    <CardContent>
+                                                                                        <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                            <strong>Contract Hash: </strong>{tokenA.address}
+                                                                                        </Typography>
+                                                                                        <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                            <strong>Package Hash: </strong>{tokenA.packageHash}
+                                                                                        </Typography>
+                                                                                    </CardContent>
 
-                                                                    </div>
+                                                                                </Card>
+                                                                            </AccordionDetails>
+                                                                        ) : (null)}
+                                                                    </Accordion>
                                                                 ) : (null)}
                                                                 {tokenB ? (
-                                                                    <div className="card">
-                                                                        <CardHeader
-                                                                            avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" className={classes.avatar} />}
-                                                                            title={tokenB.name}
-                                                                            subheader={tokenB.symbol}
-                                                                        />
+                                                                    <Accordion key={1} expanded={expanded === 1} onChange={handleChange(1)}>
+                                                                        <AccordionSummary
+                                                                            expandIcon={tokenB.address !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                                                            aria-controls="panel1bh-content"
+                                                                            id="panel1bh-header"
+                                                                        >
+                                                                            <CardHeader
+                                                                                avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" className={classes.avatar} />}
+                                                                                title={tokenB.name}
+                                                                                subheader={tokenB.symbol}
+                                                                            />
+                                                                        </AccordionSummary>
                                                                         {tokenB.address !== "" ? (
-                                                                            <>
-                                                                                <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                    <strong>Contract Hash: </strong>{tokenB.address}
-                                                                                </Typography>
-                                                                                <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                    <strong>Package Hash: </strong>{tokenB.packageHash}
-                                                                                </Typography>
-                                                                            </>
+                                                                            <AccordionDetails >
+                                                                                <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
+                                                                                    <CardContent>
+                                                                                        <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                            <strong>Contract Hash: </strong>{tokenB.address}
+                                                                                        </Typography>
+                                                                                        <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                            <strong>Package Hash: </strong>{tokenB.packageHash}
+                                                                                        </Typography>
+                                                                                    </CardContent>
+                                                                                </Card>
+                                                                            </AccordionDetails>
                                                                         ) : (null)}
-
-                                                                    </div>
+                                                                    </Accordion>
                                                                 ) : (null)}
                                                                 <Row>
 
@@ -889,23 +913,27 @@ function AddLiquidity(props) {
                                                                                 <Row>
                                                                                     <Col>
                                                                                         <CardHeader
+                                                                                            style={{ margin: '10px' }}
                                                                                             title={tokenAAmount}
                                                                                         />
                                                                                     </Col>
-                                                                                    <Col><CardHeader
-                                                                                        avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" className={classes.avatar} />}
-                                                                                        title={tokenA.name}
-                                                                                    /></Col>
+                                                                                    <Col>
+                                                                                        <CardHeader
+                                                                                            avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" />}
+                                                                                            title={tokenA.name}
+                                                                                        />
+                                                                                    </Col>
                                                                                 </Row>
                                                                                 <Row>
                                                                                     <Col>
                                                                                         <CardHeader
+                                                                                            style={{ margin: '10px' }}
                                                                                             title={(tokenBAmount)}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
                                                                                         <CardHeader
-                                                                                            avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" className={classes.avatar} />}
+                                                                                            avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" />}
                                                                                             title={tokenB.name}
                                                                                         />
                                                                                     </Col>
@@ -913,24 +941,18 @@ function AddLiquidity(props) {
                                                                             </CardContent>
                                                                         </Card>
                                                                         <hr />
-                                                                        <Card>
-                                                                            <CardContent>
-                                                                                <Row>
-                                                                                    <Col>
-                                                                                        <CardHeader style={{ margin: '25px' }}
-                                                                                            subheader={`Price`}
-                                                                                        />
-                                                                                    </Col>
-                                                                                    <Col>
+                                                                        <Card style={{ marginBottom: '20px' }}>
+                                                                            <CardHeader
+                                                                                title={'Price'}
+                                                                            />
 
-                                                                                        <CardHeader
-                                                                                            subheader={`1 ${tokenA.name} = ${(tokenAAmountPercent / tokenBAmountPercent).toFixed(5)} ${tokenB.name}`}
-                                                                                        />
-                                                                                        <CardHeader
-                                                                                            subheader={`1 ${tokenB.name} = ${(tokenBAmountPercent / tokenAAmountPercent).toFixed(5)} ${tokenA.name}`}
-                                                                                        />
-                                                                                    </Col>
-                                                                                </Row>
+                                                                            <CardContent className="text-center" >
+                                                                                <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
+                                                                                    {`1 ${tokenA.name} = ${(tokenAAmountPercent / tokenBAmountPercent).toFixed(5)} ${tokenB.name}`}
+                                                                                </Typography>
+                                                                                <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
+                                                                                    {`1 ${tokenB.name} = ${(tokenBAmountPercent / tokenAAmountPercent).toFixed(5)} ${tokenA.name}`}
+                                                                                </Typography>
                                                                             </CardContent>
                                                                         </Card>
                                                                     </>
@@ -943,7 +965,7 @@ function AddLiquidity(props) {
                                                                         <Spinner
                                                                             animation="border"
                                                                             role="status"
-                                                                            style={{ color: "#e84646", marginTop: '20px' }}
+                                                                            style={{ color: "#e84646" }}
                                                                         >
                                                                             <span className="sr-only">Loading...</span>
                                                                         </Spinner>
@@ -951,7 +973,6 @@ function AddLiquidity(props) {
                                                                 ) : isInvalidPair ? (
                                                                     <button
                                                                         className="btn btn-block btn-lg"
-                                                                        style={{ marginTop: '20px' }}
                                                                         disabled
                                                                     >
                                                                         Invalid Pair
@@ -960,7 +981,6 @@ function AddLiquidity(props) {
                                                                     <button
                                                                         className="btn btn-block btn-lg "
                                                                         disabled
-                                                                        style={{ marginTop: '20px' }}
                                                                     >
                                                                         Approve {tokenA.name} First
                                                                     </button>
@@ -968,7 +988,6 @@ function AddLiquidity(props) {
                                                                     <button
                                                                         className="btn btn-block btn-lg "
                                                                         disabled
-                                                                        style={{ marginTop: '20px' }}
                                                                     >
                                                                         Approve {tokenB.name} First
                                                                     </button>
@@ -977,7 +996,6 @@ function AddLiquidity(props) {
                                                                         <button
                                                                             className="btn btn-block btn-lg"
                                                                             onClick={async () => await addLiquidityMakeDeploy()}
-                                                                            style={{ marginTop: '20px' }}
                                                                         >
                                                                             Supply
                                                                         </button>
@@ -985,7 +1003,6 @@ function AddLiquidity(props) {
                                                                         <button
                                                                             className="btn btn-block btn-lg"
                                                                             disabled
-                                                                            style={{ marginTop: '20px' }}
                                                                         >
                                                                             Connect to Casper Signer
                                                                         </button>
@@ -993,7 +1010,6 @@ function AddLiquidity(props) {
                                                                         <button
                                                                             className="btn btn-block btn-lg"
                                                                             disabled
-                                                                            style={{ marginTop: '20px' }}
                                                                         >
                                                                             Enter an Amount
                                                                         </button>

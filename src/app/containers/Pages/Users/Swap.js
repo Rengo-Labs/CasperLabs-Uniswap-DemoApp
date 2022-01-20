@@ -4,7 +4,7 @@ import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
-import { CasperServiceByJsonRPC, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
+import { CasperServiceByJsonRPC, CLByteArray, CLKey, CLList, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
@@ -22,6 +22,7 @@ import { createRecipientAddress } from '../../../components/blockchain/Recipient
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import HeaderHome from "../../../components/Headers/Header";
 import SlippageModal from '../../../components/Modals/SlippageModal';
+import { Accordion, AccordionDetails, AccordionSummary, Card, CardContent } from '@material-ui/core/';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -87,6 +88,11 @@ function Swap(props) {
     const handleShowSlippage = () => {
         setOpenSlippage(true);
     };
+    const [expanded, setExpanded] = React.useState(false);
+
+    const handleChange = (panel) => (event, isExpanded) => {
+        setExpanded(isExpanded ? panel : false);
+    };
     useEffect(() => {
         axios
             .get('/tokensList')
@@ -148,13 +154,13 @@ function Swap(props) {
                             console.log("address1", address1);
                             if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 break;
                             } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 break;
                             } else {
                                 setIsInvalidPair(true)
@@ -408,7 +414,7 @@ function Swap(props) {
                     const runtimeArgs = RuntimeArgs.fromMap({
                         amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
                         amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
-                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        path: new CLList(_paths),
                         to: createRecipientAddress(publicKey),
                         purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
                         deadline: CLValueBuilder.u256(deadline),
@@ -464,7 +470,7 @@ function Swap(props) {
                     const runtimeArgs = RuntimeArgs.fromMap({
                         amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
                         amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
-                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        path: new CLList(_paths),
                         // to: createRecipientAddress(publicKey),
                         to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
                         deadline: CLValueBuilder.u256(deadline),
@@ -566,7 +572,7 @@ function Swap(props) {
                     const runtimeArgs = RuntimeArgs.fromMap({
                         amount_out: CLValueBuilder.u256(tokenBAmount * 10 ** 9),
                         amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
-                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        path: new CLList(_paths),
                         to: createRecipientAddress(publicKey),
                         purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
                         deadline: CLValueBuilder.u256(deadline),
@@ -612,7 +618,7 @@ function Swap(props) {
                     const runtimeArgs = RuntimeArgs.fromMap({
                         amount_out: CLValueBuilder.u256(tokenBAmount * 10 ** 9),
                         amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
-                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        path: new CLList(_paths),
                         // to: createRecipientAddress(publicKey),
                         to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
                         deadline: CLValueBuilder.u256(deadline),
@@ -658,7 +664,7 @@ function Swap(props) {
                     const runtimeArgs = RuntimeArgs.fromMap({
                         amount_out: CLValueBuilder.u256(tokenBAmount * 10 ** 9),
                         amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
-                        // path: CLValueBuilder.list(CLValueBuilder.list(_paths).data),
+                        path: new CLList(_paths),
                         to: createRecipientAddress(publicKey),
                         deadline: CLValueBuilder.u256(deadline),
                     });
@@ -669,19 +675,19 @@ function Swap(props) {
                     // Set contract installation deploy (unsigned).
                     let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                     console.log("make deploy: ", deploy);
-                    try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy)
-                        console.log('result', result);
-                        let variant = "success";
-                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                        setIsLoading(false)
-                    }
-                    catch {
-                        let variant = "Error";
-                        enqueueSnackbar('Unable to Swap Tokens', { variant });
-                        setIsLoading(false)
-                    }
+                    // try {
+                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                    let result = await putdeploy(signedDeploy)
+                    console.log('result', result);
+                    let variant = "success";
+                    enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                    setIsLoading(false)
+                    // }
+                    // catch {
+                    //     let variant = "Error";
+                    //     enqueueSnackbar('Unable to Swap Tokens', { variant });
+                    //     setIsLoading(false)
+                    // }
                 }
             }
 
@@ -698,7 +704,7 @@ function Swap(props) {
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
                     <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Swap"} />
-                    <div className="card">
+                    <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div
                                 className="content"
@@ -750,7 +756,7 @@ function Swap(props) {
                                                                         />
                                                                     </div>
                                                                 </div>
-                                                                <div className="col-md-12 col-lg-4">
+                                                                <div className="col-md-12 col-lg-5">
                                                                     {tokenB && tokenA ? (
                                                                         <input
                                                                             type="number"
@@ -790,11 +796,9 @@ function Swap(props) {
                                                                     <Typography variant="body2" color="textSecondary" component="p">
                                                                         <strong>Balance: </strong>{tokenABalance / 10 ** 9}
                                                                     </Typography>
-
                                                                 </>
                                                             ) : (null)}
-                                                            <br></br>
-                                                            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                                            <div style={{ textAlign: 'center', margin: '20px' }}>
                                                                 <i className="fas fa-exchange-alt fa-2x fa-rotate-90"></i>
                                                             </div>
                                                             <div className="row">
@@ -826,7 +830,7 @@ function Swap(props) {
                                                                     </div>
                                                                 </div>
 
-                                                                <div className="col-md-12 col-lg-4">
+                                                                <div className="col-md-12 col-lg-5">
                                                                     {tokenB && tokenA ? (
                                                                         <input
                                                                             type="number"
@@ -874,46 +878,65 @@ function Swap(props) {
                                                             ) : (null)}
 
                                                             {tokenA ? (
-                                                                <div className="card">
-                                                                    <CardHeader
-                                                                        avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" className={classes.avatar} />}
-                                                                        title={tokenA.name}
-                                                                        subheader={tokenA.symbol}
-                                                                    />
+                                                                <Accordion key={0} expanded={expanded === 0} onChange={handleChange(0)}>
+                                                                    <AccordionSummary
+                                                                        expandIcon={tokenA.address !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                                                        aria-controls="panel1bh-content"
+                                                                        id="panel1bh-header"
+                                                                    >
+                                                                        <CardHeader
+                                                                            avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" className={classes.avatar} />}
+                                                                            title={tokenA.name}
+                                                                            subheader={tokenA.symbol}
+                                                                        />
+                                                                    </AccordionSummary>
                                                                     {tokenA.address !== "" ? (
-                                                                        <>
-                                                                            <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                <strong>Contract Hash: </strong>{tokenA.address}
-                                                                            </Typography>
-                                                                            <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                <strong>Package Hash: </strong>{tokenA.packageHash}
-                                                                            </Typography>
-                                                                        </>
-                                                                    ) : (null)}
+                                                                        <AccordionDetails >
+                                                                            <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
+                                                                                <CardContent>
+                                                                                    <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                        <strong>Contract Hash: </strong>{tokenA.address}
+                                                                                    </Typography>
+                                                                                    <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                        <strong>Package Hash: </strong>{tokenA.packageHash}
+                                                                                    </Typography>
+                                                                                </CardContent>
 
-                                                                </div>
+                                                                            </Card>
+                                                                        </AccordionDetails>
+                                                                    ) : (null)}
+                                                                </Accordion>
                                                             ) : (null)}
                                                             {tokenB ? (
-                                                                <div className="card">
-                                                                    <CardHeader
-                                                                        avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" className={classes.avatar} />}
-                                                                        title={tokenB.name}
-                                                                        subheader={tokenB.symbol}
-                                                                    />
+                                                                <Accordion key={1} expanded={expanded === 1} onChange={handleChange(1)}>
+                                                                    <AccordionSummary
+                                                                        expandIcon={tokenB.address !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                                                        aria-controls="panel1bh-content"
+                                                                        id="panel1bh-header"
+                                                                    >
+                                                                        <CardHeader
+                                                                            avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" className={classes.avatar} />}
+                                                                            title={tokenB.name}
+                                                                            subheader={tokenB.symbol}
+                                                                        />
+                                                                    </AccordionSummary>
                                                                     {tokenB.address !== "" ? (
-                                                                        <>
-                                                                            <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                <strong>Contract Hash: </strong>{tokenB.address}
-                                                                            </Typography>
-                                                                            <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                <strong>Package Hash: </strong>{tokenB.packageHash}
-                                                                            </Typography>
-                                                                        </>
+                                                                        <AccordionDetails >
+                                                                            <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
+                                                                                <CardContent>
+                                                                                    <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                        <strong>Contract Hash: </strong>{tokenB.address}
+                                                                                    </Typography>
+                                                                                    <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
+                                                                                        <strong>Package Hash: </strong>{tokenB.packageHash}
+                                                                                    </Typography>
+                                                                                </CardContent>
+                                                                            </Card>
+                                                                        </AccordionDetails>
                                                                     ) : (null)}
-
-                                                                </div>
+                                                                </Accordion>
                                                             ) : (null)}
-                                                            <br></br>
+
                                                             {tokenA && tokenA.name !== 'Casper' && tokenAAmount > 0 && tokenAAmount * 10 ** 9 > tokenAAllowance && !isInvalidPair ? (
                                                                 approveAIsLoading ? (
                                                                     <div className="text-center">
@@ -952,7 +975,6 @@ function Swap(props) {
                                                             ) : isInvalidPair ? (
                                                                 <button
                                                                     className="btn btn-block btn-lg"
-                                                                    style={{ marginTop: '20px' }}
                                                                     disabled
                                                                 >
                                                                     Invalid Pair
@@ -961,7 +983,6 @@ function Swap(props) {
                                                                 <button
                                                                     className="btn btn-block btn-lg "
                                                                     disabled
-                                                                    style={{ marginTop: '20px' }}
                                                                 >
                                                                     Approve {tokenA.name} First
                                                                 </button>
@@ -970,7 +991,6 @@ function Swap(props) {
                                                                     <button
                                                                         className="btn btn-block btn-lg"
                                                                         onClick={async () => await swapMakeDeploy()}
-                                                                        style={{ marginTop: '20px' }}
                                                                     >
                                                                         Swap
                                                                     </button>
@@ -978,7 +998,6 @@ function Swap(props) {
                                                                     <button
                                                                         className="btn btn-block btn-lg "
                                                                         disabled
-                                                                        style={{ marginTop: '20px' }}
                                                                     >
                                                                         Connect to Casper Signer
                                                                     </button>
@@ -986,7 +1005,6 @@ function Swap(props) {
                                                                     <button
                                                                         className="btn btn-block btn-lg "
                                                                         disabled
-                                                                        style={{ marginTop: '20px' }}
                                                                     >
                                                                         Enter an Amount
                                                                     </button>

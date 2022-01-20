@@ -281,7 +281,7 @@ function RemoveLiquidity(props) {
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
                     <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Pool"} />
-                    <div className="card">
+                    <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div
                                 className="content"
@@ -417,7 +417,6 @@ function RemoveLiquidity(props) {
                                                                                 <button
                                                                                     className="btn btn-block btn-lg"
                                                                                     onClick={async () => await RemoveLiquidityMakeDeploy()}
-                                                                                    style={{ marginTop: '20px' }}
                                                                                 >
                                                                                     Remove
                                                                                 </button>
@@ -425,7 +424,6 @@ function RemoveLiquidity(props) {
                                                                                 <button
                                                                                     className="btn btn-block btn-lg"
                                                                                     disabled
-                                                                                    style={{ marginTop: '20px' }}
                                                                                 >
                                                                                     Connect to Signer
                                                                                 </button>
@@ -433,7 +431,6 @@ function RemoveLiquidity(props) {
                                                                                 <button
                                                                                     className="btn btn-block btn-lg"
                                                                                     disabled
-                                                                                    style={{ marginTop: '20px' }}
                                                                                 >
                                                                                     Enter an Amount
                                                                                 </button>

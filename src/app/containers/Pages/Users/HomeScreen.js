@@ -17,7 +17,7 @@ function HomeScreen() {
         <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Home"} />
         <div
           className="content"
-          style={{ paddingTop: "100px", minHeight: "100vh" }}
+          style={{ paddingTop: "100px"}}
           position="absolute"
         >
           <HomeBanner />
