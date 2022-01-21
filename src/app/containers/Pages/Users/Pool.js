@@ -76,6 +76,7 @@ function Pool(props) {
                     setIsPairList(true)
                     setIsError(false)
                     setError()
+                    setuserPairs(res.data.userpairs)
                     for (let i = 0; i < res.data.userpairs.length; i++) {
                         let param = {
                             to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),

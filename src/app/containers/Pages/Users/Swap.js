@@ -1,8 +1,7 @@
-import { Avatar, CardHeader } from '@material-ui/core/';
+import { FormControl, FormHelperText, Input, InputAdornment } from "@material-ui/core";
+import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardContent, CardHeader } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
-import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
-import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLList, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
@@ -21,8 +20,10 @@ import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import HeaderHome from "../../../components/Headers/Header";
+import SigningModal from "../../../components/Modals/SigningModal";
 import SlippageModal from '../../../components/Modals/SlippageModal';
-import { Accordion, AccordionDetails, AccordionSummary, Card, CardContent } from '@material-ui/core/';
+import TokenAModal from '../../../components/Modals/TokenAModal';
+import TokenBModal from '../../../components/Modals/TokenBModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -88,10 +89,31 @@ function Swap(props) {
     const handleShowSlippage = () => {
         setOpenSlippage(true);
     };
+    const [openTokenAModal, setOpenTokenAModal] = useState(false);
+    const handleCloseTokenAModal = () => {
+        setOpenTokenAModal(false);
+    };
+    const handleShowTokenAModal = () => {
+        setOpenTokenAModal(true);
+    };
+    const [openTokenBModal, setOpenTokenBModal] = useState(false);
+    const handleCloseTokenBModal = () => {
+        setOpenTokenBModal(false);
+    };
+    const handleShowTokenBModal = () => {
+        setOpenTokenBModal(true);
+    };
     const [expanded, setExpanded] = React.useState(false);
 
     const handleChange = (panel) => (event, isExpanded) => {
         setExpanded(isExpanded ? panel : false);
+    };
+    const [openSigning, setOpenSigning] = useState(false);
+    const handleCloseSigning = () => {
+        setOpenSigning(false);
+    };
+    const handleShowSigning = () => {
+        setOpenSigning(true);
     };
     useEffect(() => {
         axios
@@ -342,7 +364,8 @@ function Swap(props) {
     }, [activePublicKey])
 
 
-    async function approveMakedeploy(contractHash, amount) {
+    async function approveMakeDeploy(contractHash, amount) {
+        handleShowSigning()
         console.log('contractHash', contractHash);
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
@@ -366,16 +389,19 @@ function Swap(props) {
                 let result = await putdeploy(signedDeploy)
                 console.log('result', result);
                 setTokenAAllowance(amount * 10 ** 9)
+                handleCloseSigning()
                 let variant = "success";
                 enqueueSnackbar('Approved Successfully', { variant });
             }
             catch {
+                handleCloseSigning()
                 let variant = "Error";
                 enqueueSnackbar('Unable to Approve', { variant });
             }
 
         }
         else {
+            handleCloseSigning()
             let variant = "error";
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
@@ -384,6 +410,7 @@ function Swap(props) {
 
 
     async function swapMakeDeploy() {
+        handleShowSigning()
         setIsLoading(true)
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
@@ -430,11 +457,13 @@ function Swap(props) {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                         let result = await putdeploy(signedDeploy)
                         console.log('result', result);
+                        handleCloseSigning()
                         let variant = "success";
                         enqueueSnackbar('Tokens Swapped Successfully', { variant });
                         setIsLoading(false)
                     }
                     catch {
+                        handleCloseSigning()
                         let variant = "Error";
                         enqueueSnackbar('Unable to Swap Tokens', { variant });
                         setIsLoading(false)
@@ -486,11 +515,13 @@ function Swap(props) {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                         let result = await putdeploy(signedDeploy)
                         console.log('result', result);
+                        handleCloseSigning()
                         let variant = "success";
                         enqueueSnackbar('Tokens Swapped Successfully', { variant });
                         setIsLoading(false)
                     }
                     catch {
+                        handleCloseSigning()
                         let variant = "Error";
                         enqueueSnackbar('Unable to Swap Tokens', { variant });
                         setIsLoading(false)
@@ -540,11 +571,13 @@ function Swap(props) {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                         let result = await putdeploy(signedDeploy)
                         console.log('result', result);
+                        handleCloseSigning()
                         let variant = "success";
                         enqueueSnackbar('Tokens Swapped Successfully', { variant });
                         setIsLoading(false)
                     }
                     catch {
+                        handleCloseSigning()
                         let variant = "Error";
                         enqueueSnackbar('Unable to Swap Tokens', { variant });
                         setIsLoading(false)
@@ -588,11 +621,13 @@ function Swap(props) {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                         let result = await putdeploy(signedDeploy)
                         console.log('result', result);
+                        handleCloseSigning()
                         let variant = "success";
                         enqueueSnackbar('Tokens Swapped Successfully', { variant });
                         setIsLoading(false)
                     }
                     catch {
+                        handleCloseSigning()
                         let variant = "Error";
                         enqueueSnackbar('Unable to Swap Tokens', { variant });
                         setIsLoading(false)
@@ -634,11 +669,13 @@ function Swap(props) {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                         let result = await putdeploy(signedDeploy)
                         console.log('result', result);
+                        handleCloseSigning()
                         let variant = "success";
                         enqueueSnackbar('Tokens Swapped Successfully', { variant });
                         setIsLoading(false)
                     }
                     catch {
+                        handleCloseSigning()
                         let variant = "Error";
                         enqueueSnackbar('Unable to Swap Tokens', { variant });
                         setIsLoading(false)
@@ -675,24 +712,27 @@ function Swap(props) {
                     // Set contract installation deploy (unsigned).
                     let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                     console.log("make deploy: ", deploy);
-                    // try {
-                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy)
-                    console.log('result', result);
-                    let variant = "success";
-                    enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                    setIsLoading(false)
-                    // }
-                    // catch {
-                    //     let variant = "Error";
-                    //     enqueueSnackbar('Unable to Swap Tokens', { variant });
-                    //     setIsLoading(false)
-                    // }
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy)
+                        console.log('result', result);
+                        handleCloseSigning()
+                        let variant = "success";
+                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        handleCloseSigning()
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Swap Tokens', { variant });
+                        setIsLoading(false)
+                    }
                 }
             }
 
         }
         else {
+            handleCloseSigning()
             let variant = "error";
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
             setIsLoading(false)
@@ -729,153 +769,170 @@ function Swap(props) {
                                                         </div>
                                                         <form >
                                                             <div className="row">
-                                                                <div className="col-md-12 col-lg-7">
+                                                                <div className="col-md-12 col-lg-5">
                                                                     <div className="filter-widget">
-                                                                        <Autocomplete
-                                                                            id="combo-dox-demo"
-                                                                            required
-                                                                            options={tokenList}
-                                                                            disabled={!istokenList}
-                                                                            getOptionLabel={(option) =>
-                                                                                option.name + ',' + option.symbol
-                                                                            }
-                                                                            onChange={(event, value) => {
-                                                                                console.log('event', event);
-                                                                                console.log('value', value);
-                                                                                setTokenA(value)
-                                                                                setTokenBAmount(0)
-                                                                                setTokenAAmount(0)
-                                                                            }}
-                                                                            renderInput={(params) => (
-                                                                                <TextField
-                                                                                    {...params}
-                                                                                    label="Select a token"
-                                                                                    variant="outlined"
+                                                                        {tokenA ? (
+                                                                            <Card
+                                                                                className='custom-card'
+                                                                            >
+                                                                                <CardHeader
+                                                                                    onClick={() => {
+                                                                                        handleShowTokenAModal()
+                                                                                    }}
+                                                                                    avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" />}
+                                                                                    title={tokenA.name}
+                                                                                    subheader={tokenA.symbol}
                                                                                 />
-                                                                            )}
-                                                                        />
+                                                                            </Card>
+                                                                        ) : (
+                                                                            <Card onClick={() => {
+                                                                                handleShowTokenAModal()
+
+                                                                            }} className='custom-card' style={{ padding: '20px' }}>
+                                                                                Select Token  <i style={{ float: 'right' }} className="fas fa-chevron-down"></i>
+                                                                            </Card>
+                                                                        )}
+
                                                                     </div>
                                                                 </div>
-                                                                <div className="col-md-12 col-lg-5">
+                                                                <div className="col-md-12 col-lg-7">
                                                                     {tokenB && tokenA ? (
-                                                                        <input
-                                                                            type="number"
-                                                                            required
-                                                                            value={tokenAAmount}
-                                                                            placeholder={0}
-                                                                            min={0}
-                                                                            step="any"
-                                                                            className="form-control"
-                                                                            onChange={(e) => {
-                                                                                // setTokenAAmount(e.target.value)
-                                                                                if (e.target.value >= 0) {
-                                                                                    setTokenAAmount(e.target.value)
-                                                                                    setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
-                                                                                    setInputSelection('tokenA')
-                                                                                } else {
-                                                                                    setTokenAAmount(0)
-                                                                                    setTokenBAmount(0)
-                                                                                    setInputSelection()
-                                                                                }
-                                                                            }}
-                                                                        />
+                                                                        <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
+                                                                            <Input
+                                                                                step="any"
+                                                                                type='number'
+                                                                                min={0}
+                                                                                id="standard-adornment-weight"
+                                                                                value={tokenAAmount}
+                                                                                onChange={(e) => {
+                                                                                    // setTokenAAmount(e.target.value)
+                                                                                    if (e.target.value >= 0) {
+                                                                                        setTokenAAmount(e.target.value)
+                                                                                        setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
+                                                                                        setInputSelection('tokenA')
+                                                                                    } else {
+                                                                                        setTokenAAmount(0)
+                                                                                        setTokenBAmount(0)
+                                                                                        setInputSelection()
+                                                                                    }
+                                                                                }}
+                                                                                // endAdornment={<InputAdornment position="end">%</InputAdornment>}
+                                                                                aria-describedby="standard-weight-helper-text"
+                                                                                inputProps={{
+                                                                                    'aria-label': 'weight',
+                                                                                }}
+                                                                            />
+                                                                            <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{tokenABalance / 10 ** 9}</FormHelperText>
+                                                                        </FormControl>
                                                                     ) : (
-                                                                        <input
-                                                                            type="number"
-                                                                            required
-                                                                            value={tokenAAmount}
-                                                                            placeholder={0}
-                                                                            className="form-control"
-                                                                            disabled
-                                                                        />
+                                                                        <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
+                                                                            <Input
+                                                                                step="any"
+                                                                                type='number'
+                                                                                min={0}
+                                                                                placeholder="0"
+                                                                                disabled
+                                                                                id="standard-adornment-weight"
+                                                                                // endAdornment={<InputAdornment position="end"></InputAdornment>}
+                                                                                aria-describedby="standard-weight-helper-text"
+                                                                                inputProps={{
+                                                                                    'aria-label': 'weight',
+                                                                                }}
+                                                                            />
+                                                                            <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{0}</FormHelperText>
+                                                                        </FormControl>
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            {activePublicKey && tokenA ? (
-                                                                <>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Balance: </strong>{tokenABalance / 10 ** 9}
-                                                                    </Typography>
-                                                                </>
-                                                            ) : (null)}
                                                             <div style={{ textAlign: 'center', margin: '20px' }}>
                                                                 <i className="fas fa-exchange-alt fa-2x fa-rotate-90"></i>
                                                             </div>
                                                             <div className="row">
-                                                                <div className="col-md-12 col-lg-7">
+                                                                <div className="col-md-12 col-lg-5">
                                                                     <div className="filter-widget">
-                                                                        <Autocomplete
-                                                                            id="combo-dox-demo"
-                                                                            required
-                                                                            options={tokenList}
-                                                                            disabled={!istokenList}
-                                                                            getOptionLabel={(option) =>
-                                                                                option.name + ',' + option.symbol
-                                                                            }
-                                                                            onChange={(event, value) => {
-                                                                                console.log('event', event);
-                                                                                console.log('value', value);
-                                                                                setTokenB(value)
-                                                                                setTokenBAmount(0)
-                                                                                setTokenAAmount(0)
-                                                                            }}
-                                                                            renderInput={(params) => (
-                                                                                <TextField
-                                                                                    {...params}
-                                                                                    label="Select a token"
-                                                                                    variant="outlined"
+                                                                        {tokenB ? (
+                                                                            <Card
+                                                                                className='custom-card'
+                                                                            >
+                                                                                {/* <Row>
+                                                                                    <Col> */}
+                                                                                <CardHeader
+                                                                                    onClick={() => {
+                                                                                        handleShowTokenBModal()
+                                                                                    }}
+                                                                                    avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" />}
+                                                                                    title={tokenB.name}
+                                                                                    subheader={tokenB.symbol}
                                                                                 />
-                                                                            )}
-                                                                        />
+                                                                                {/* </Col> */}
+                                                                                {/* <Col>
+                                                                                        <i style={{ float: 'right', margin: '20px', marginTop: '30px' }} className="fas fa-chevron-down"></i>
+                                                                                    </Col>
+                                                                                </Row> */}
+                                                                            </Card>
+                                                                        ) : (
+                                                                            <Card onClick={() => {
+                                                                                handleShowTokenBModal()
+                                                                            }} style={{ padding: '20px' }}
+                                                                                className='custom-card'
+                                                                            >
+                                                                                Select Token<i style={{ float: 'right' }} className="fas fa-chevron-down"></i>
+                                                                            </Card>
+                                                                        )}
                                                                     </div>
                                                                 </div>
 
-                                                                <div className="col-md-12 col-lg-5">
+                                                                <div className="col-md-12 col-lg-7">
                                                                     {tokenB && tokenA ? (
-                                                                        <input
-                                                                            type="number"
-                                                                            required
-                                                                            value={tokenBAmount}
-                                                                            placeholder={0}
-                                                                            min={0}
-                                                                            step="any"
-                                                                            className="form-control"
-                                                                            onChange={(e) => {
-                                                                                if (e.target.value >= 0) {
-                                                                                    setTokenBAmount(e.target.value)
-                                                                                    setTokenAAmount(e.target.value * (tokenBAmountPercent / tokenAAmountPercent).toFixed(5))
-                                                                                    setInputSelection('tokenB')
-                                                                                }
-                                                                                else {
-                                                                                    setTokenAAmount(0)
-                                                                                    setTokenBAmount(0)
-                                                                                    setInputSelection()
-                                                                                }
 
-                                                                            }}
-                                                                        />
+                                                                        <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
+                                                                            <Input
+                                                                                step="any"
+                                                                                type='number'
+                                                                                min={0} max={50}
+                                                                                id="standard-adornment-weight"
+                                                                                value={tokenBAmount}
+                                                                                onChange={(e) => {
+                                                                                    if (e.target.value >= 0) {
+                                                                                        setTokenBAmount(e.target.value)
+                                                                                        setTokenAAmount(e.target.value * (tokenBAmountPercent / tokenAAmountPercent).toFixed(5))
+                                                                                        setInputSelection('tokenB')
+                                                                                    }
+                                                                                    else {
+                                                                                        setTokenAAmount(0)
+                                                                                        setTokenBAmount(0)
+                                                                                        setInputSelection()
+                                                                                    }
+
+                                                                                }}
+                                                                                // endAdornment={<InputAdornment position="end">%</InputAdornment>}
+                                                                                aria-describedby="standard-weight-helper-text"
+                                                                                inputProps={{
+                                                                                    'aria-label': 'weight',
+                                                                                }}
+                                                                            />
+                                                                            <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{tokenBBalance / 10 ** 9}</FormHelperText>
+                                                                        </FormControl>
                                                                     ) : (
-                                                                        <input
-                                                                            type="number"
-                                                                            required
-                                                                            value={tokenBAmount}
-                                                                            placeholder={0}
-                                                                            style={{ height: '20px' }}
-                                                                            disabled
-                                                                            height='50'
-                                                                            className="form-control"
-                                                                        />
+                                                                        <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
+                                                                            <Input
+                                                                                step="any"
+                                                                                type='number'
+                                                                                min={0}
+                                                                                placeholder="0"
+                                                                                disabled
+                                                                                id="standard-adornment-weight"
+                                                                                // endAdornment={<InputAdornment position="end"></InputAdornment>}
+                                                                                aria-describedby="standard-weight-helper-text"
+                                                                                inputProps={{
+                                                                                    'aria-label': 'weight',
+                                                                                }}
+                                                                            />
+                                                                            <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{0}</FormHelperText>
+                                                                        </FormControl>
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            {activePublicKey && tokenB ? (
-                                                                <>
-                                                                    <Typography variant="body2" color="textSecondary" component="p">
-                                                                        <strong>Balance: </strong>{tokenBBalance / 10 ** 9}
-                                                                    </Typography>
-                                                                    <br></br>
-                                                                </>
-                                                            ) : (null)}
 
                                                             {tokenA ? (
                                                                 <Accordion key={0} expanded={expanded === 0} onChange={handleChange(0)}>
@@ -953,7 +1010,7 @@ function Swap(props) {
                                                                         className="btn-block btn-outline-primary btn-lg"
                                                                         onClick={async () => {
                                                                             setApproveAIsLoading(true)
-                                                                            await approveMakedeploy(tokenA.address, tokenAAmount)
+                                                                            await approveMakeDeploy(tokenA.address, tokenAAmount)
                                                                             setApproveAIsLoading(false)
                                                                         }}
                                                                     >
@@ -1025,6 +1082,9 @@ function Swap(props) {
                 </div>
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
+            <SigningModal show={openSigning} />
+            <TokenAModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenA} setTokenList={setTokenList} tokenList={tokenList} show={openTokenAModal} handleClose={handleCloseTokenAModal} />
+            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenB} setTokenList={setTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} />
 
         </div >
     );

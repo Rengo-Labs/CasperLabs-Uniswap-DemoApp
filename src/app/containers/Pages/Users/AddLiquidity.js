@@ -1,8 +1,6 @@
-import { Avatar, Card, CardContent, CardHeader } from '@material-ui/core/';
+import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardContent, CardHeader, FormControl, FormHelperText, Input } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
-import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
-import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
@@ -23,8 +21,10 @@ import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import HeaderHome from "../../../components/Headers/Header";
+import SigningModal from '../../../components/Modals/SigningModal';
 import SlippageModal from '../../../components/Modals/SlippageModal';
-import { Accordion, AccordionDetails, AccordionSummary } from '@material-ui/core/';
+import TokenAModal from '../../../components/Modals/TokenAModal';
+import TokenBModal from '../../../components/Modals/TokenBModal';
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -88,8 +88,28 @@ function AddLiquidity(props) {
     const handleShowSlippage = () => {
         setOpenSlippage(true);
     };
+    const [openSigning, setOpenSigning] = useState(false);
+    const handleCloseSigning = () => {
+        setOpenSigning(false);
+    };
+    const handleShowSigning = () => {
+        setOpenSigning(true);
+    };
+    const [openTokenAModal, setOpenTokenAModal] = useState(false);
+    const handleCloseTokenAModal = () => {
+        setOpenTokenAModal(false);
+    };
+    const handleShowTokenAModal = () => {
+        setOpenTokenAModal(true);
+    };
+    const [openTokenBModal, setOpenTokenBModal] = useState(false);
+    const handleCloseTokenBModal = () => {
+        setOpenTokenBModal(false);
+    };
+    const handleShowTokenBModal = () => {
+        setOpenTokenBModal(true);
+    };
     const [expanded, setExpanded] = React.useState(false);
-
     const handleChange = (panel) => (event, isExpanded) => {
         setExpanded(isExpanded ? panel : false);
     };
@@ -122,19 +142,6 @@ function AddLiquidity(props) {
                 console.log(error)
                 console.log(error.response)
             })
-        // axios
-        //     .post("priceconversion", {
-        //         symbolforconversion: "CSPR",
-        //         symboltoconvertto: "USD",
-        //         amount: 1
-        //     })
-        //     .then((response) => {
-        //         console.log("response", response.data.worth.USD);
-        //         setPriceInUSD(response.data.worth.USD.price);
-        //     })
-        //     .catch((error) => {
-        //         console.log("response", error.response);
-        //     });
         // eslint-disable-next-line
     }, []);
     useEffect(() => {
@@ -147,7 +154,6 @@ function AddLiquidity(props) {
                     console.log('resresres', res)
                     console.log(res.data.pairList)
                     if (tokenA.name !== "Casper" && tokenB.name !== "Casper") {
-
                         for (let i = 0; i < res.data.pairList.length; i++) {
                             let address0 = res.data.pairList[i].token0.id.toLowerCase();
                             let address1 = res.data.pairList[i].token1.id.toLowerCase();
@@ -169,7 +175,7 @@ function AddLiquidity(props) {
                                 setIsInvalidPair(true)
                             }
                         }
-                    } else if ((tokenA.name === "Casper" && tokenB.name === "WCSPR") || (tokenA.name === "WCSPR" && tokenB.name === "Casper")) {
+                    } else if ((tokenA.name === "Casper" && tokenB.name === "Wrapped Casper") || (tokenA.name === "Wrapped Casper" && tokenB.name === "Casper")) {
                         setTokenAAmountPercent(1)
                         setTokenBAmountPercent(1)
                     } else if (tokenA.name === "Casper" && tokenB.name === "Casper") {
@@ -182,14 +188,14 @@ function AddLiquidity(props) {
                             let name1 = res.data.pairList[i].token1.name;
                             console.log("name0", name0);
                             console.log("name1", name1);
-                            if (name0 === "WCSPR") {
-                                console.log('res.WCSPRWCSPR.', res.data.pairList[i]);
+                            if (name0 === "Wrapped Casper") {
+                                console.log('res.Wrapped CasperWrapped Casper.', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
-                            } else if (name1 === "WCSPR") {
+                            } else if (name1 === "Wrapped Casper") {
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
@@ -213,7 +219,6 @@ function AddLiquidity(props) {
             }
             console.log('await Signer.getSelectedPublicKeyBase64()',
                 Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
-
             axios
                 .post('/liquidityagainstuserandpair', param)
                 .then((res1) => {
@@ -228,8 +233,8 @@ function AddLiquidity(props) {
         }
     }, [activePublicKey, tokenA, tokenB]);
 
-
-    async function approveMakedeploy(contractHash, amount, tokenApproved) {
+    async function approveMakeDeploy(contractHash, amount, tokenApproved) {
+        handleShowSigning()
         console.log('contractHash', contractHash);
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
@@ -241,10 +246,8 @@ function AddLiquidity(props) {
                 spender: createRecipientAddress(spenderByteArray),
                 amount: CLValueBuilder.u256(parseInt(amount * 10 ** 9))
             });
-
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
             let entryPoint = 'approve';
-
             // Set contract installation deploy (unsigned).
             let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
             console.log("make deploy: ", deploy);
@@ -257,16 +260,18 @@ function AddLiquidity(props) {
                     setTokenBAllowance(amount * 10 ** 9)
                 }
                 console.log('result', result);
+                handleCloseSigning()
                 let variant = "success";
                 enqueueSnackbar('Approved Successfully', { variant });
             }
             catch {
+                handleCloseSigning()
                 let variant = "Error";
                 enqueueSnackbar('Unable to Approve', { variant });
             }
-
         }
         else {
+            handleCloseSigning()
             let variant = "error";
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
@@ -309,8 +314,6 @@ function AddLiquidity(props) {
                     console.log(error.response)
                 })
         }
-
-
         if (tokenA && tokenA.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
             const client = new CasperServiceByJsonRPC(
                 NODE_ADDRESS
@@ -338,7 +341,6 @@ function AddLiquidity(props) {
                     }
                 });
             })
-
         }
     }, [activePublicKey, tokenA]);
     useEffect(() => {
@@ -372,15 +374,12 @@ function AddLiquidity(props) {
                     console.log('allowanceagainstownerandspender', res)
                     console.log(res.data)
                     setTokenBAllowance(res.data.allowance)
-
                 })
                 .catch((error) => {
                     console.log(error)
                     console.log(error.response)
                 })
         }
-
-
         if (tokenB && tokenB.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
             const client = new CasperServiceByJsonRPC(
                 NODE_ADDRESS
@@ -411,55 +410,7 @@ function AddLiquidity(props) {
 
         }
     }, [activePublicKey, tokenB]);
-    // useEffect(() => {
-    //     if (tokenB && tokenB.name !== "Casper" && activePublicKey) {
-    //         let param = {
-    //             contractHash: tokenB.address.slice(5),
-    //             user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
-    //         }
-    //         axios
-    //             .post('/balanceagainstuser', param)
-    //             .then((res) => {
-    //                 console.log('tokenBbalanceagainstuser', res)
-    //                 console.log(res.data)
-    //                 setTokenBBalance(res.data.balance)
-
-    //             })
-    //             .catch((error) => {
-    //                 console.log(error)
-    //                 console.log(error.response)
-    //             })
-    //     }
-
-    //     console.log("tokenB", tokenB);
-    //     if (tokenB && tokenB.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
-    //         const client = new CasperServiceByJsonRPC(
-    //             NODE_ADDRESS
-    //         );
-    //         getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
-    //             console.log('stateRootHash', stateRootHash);
-    //             client.getBlockState(
-    //                 stateRootHash,
-    //                 CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
-    //                 []
-    //             ).then(result => {
-    //                 console.log('result', result.Account.mainPurse);
-    //                 try {
-    //                     const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
-    //                     client.getAccountBalance(
-    //                         stateRootHash,
-    //                         result.Account.mainPurse
-    //                     ).then(result => {
-    //                         console.log('CSPR balance', result.toString());
-    //                         setTokenBBalance(result.toString())
-    //                     });
-    //                 } catch (error) {
-    //                     console.log('error', error);
-    //                 }
-    //             });
-    //         })
-    //     }
-    // }, [activePublicKey, tokenB]);
+    
     useEffect(() => {
         if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
             const client = new CasperServiceByJsonRPC(
@@ -483,12 +434,12 @@ function AddLiquidity(props) {
         }
     }, [activePublicKey])
     async function addLiquidityMakeDeploy() {
+        handleShowSigning()
         setIsLoading(true)
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
-
             const tokenAAddress = tokenA.address;
             const tokenBAddress = tokenB.address;
             const token_AAmount = tokenAAmount;
@@ -516,10 +467,8 @@ function AddLiquidity(props) {
                     deadline: CLValueBuilder.u256(deadline),
                     pair: new CLOption(Some(new CLKey(_token_b)))
                 });
-
                 let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
                 let entryPoint = 'add_liquidity_cspr_js_client';
-
                 // Set contract installation deploy (unsigned).
                 let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                 console.log("make deploy: ", deploy);
@@ -531,11 +480,13 @@ function AddLiquidity(props) {
                     setTokenBAllowance(0)
                     setTokenAAmount(0)
                     setTokenBAmount(0)
+                    handleCloseSigning()
                     let variant = "success";
                     enqueueSnackbar('Liquidity Added Successfully', { variant });
                     setIsLoading(false)
                 }
                 catch {
+                    handleCloseSigning()
                     let variant = "Error";
                     enqueueSnackbar('Unable to Add Liquidity', { variant });
                     setIsLoading(false)
@@ -567,18 +518,18 @@ function AddLiquidity(props) {
                     setTokenBAllowance(0)
                     setTokenAAmount(0)
                     setTokenBAmount(0)
+                    handleCloseSigning()
                     let variant = "success";
                     enqueueSnackbar('Liquidity Added Successfully', { variant });
                     setIsLoading(false)
                 }
                 catch {
+                    handleCloseSigning()
                     let variant = "Error";
                     enqueueSnackbar('Unable to Add Liquidity', { variant });
                     setIsLoading(false)
                 }
-
             } else {
-
                 const runtimeArgs = RuntimeArgs.fromMap({
                     token_a: new CLKey(_token_a),
                     token_b: new CLKey(_token_b),
@@ -606,27 +557,26 @@ function AddLiquidity(props) {
                     setTokenBAllowance(0)
                     setTokenAAmount(0)
                     setTokenBAmount(0)
+                    handleCloseSigning()
                     enqueueSnackbar('Liquidity Added Successfully', { variant });
                     setIsLoading(false)
                 }
                 catch {
+                    handleCloseSigning()
                     let variant = "Error";
                     enqueueSnackbar('Unable to Add Liquidity', { variant });
                     setIsLoading(false)
                 }
-
             }
-
-
         }
         else {
+            handleCloseSigning()
             let variant = "error";
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
             setIsLoading(false)
         }
     }
     return (
-
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
@@ -657,147 +607,147 @@ function AddLiquidity(props) {
                                                             </div>
                                                             <form>
                                                                 <div className="row">
-                                                                    <div className="col-md-12 col-lg-7">
+                                                                    <div className="col-md-12 col-lg-5">
                                                                         <div className="filter-widget">
-                                                                            <Autocomplete
-                                                                                id="combo-dox-demo"
-                                                                                required
-                                                                                options={tokenList}
-                                                                                disabled={!istokenList}
-                                                                                getOptionLabel={(option) =>
-                                                                                    option.name + ',' + option.symbol
-                                                                                }
-                                                                                onChange={(event, value) => {
-                                                                                    console.log('event', event);
-                                                                                    console.log('value', value);
-                                                                                    setTokenA(value)
-                                                                                    setTokenBAmount(0)
-                                                                                    setTokenAAmount(0)
-                                                                                }}
-                                                                                renderInput={(params) => (
-                                                                                    <TextField
-                                                                                        {...params}
-                                                                                        label="Select a token"
-                                                                                        variant="outlined"
+                                                                            {tokenA ? (
+                                                                                <Card
+                                                                                    className='custom-card'
+                                                                                >
+                                                                                    <CardHeader
+                                                                                        onClick={() => {
+                                                                                            handleShowTokenAModal()
+                                                                                        }}
+                                                                                        avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" />}
+                                                                                        title={tokenA.name}
+                                                                                        subheader={tokenA.symbol}
                                                                                     />
-                                                                                )}
-                                                                            />
+                                                                                </Card>
+                                                                            ) : (
+                                                                                <Card onClick={() => {
+                                                                                    handleShowTokenAModal()
+
+                                                                                }} className='custom-card' style={{ padding: '20px' }}>
+                                                                                    Select Token  <i style={{ float: 'right' }} className="fas fa-chevron-down"></i>
+                                                                                </Card>
+                                                                            )}
                                                                         </div>
                                                                     </div>
-                                                                    <div className="col-md-12 col-lg-5">
+                                                                    <div className="col-md-12 col-lg-7">
                                                                         {tokenB && tokenA ? (
-                                                                            <input
-                                                                                type="number"
-                                                                                required
-                                                                                value={tokenAAmount}
-                                                                                placeholder={0}
-                                                                                min={0}
-                                                                                step={.01}
-                                                                                className="form-control"
-                                                                                onChange={(e) => {
-                                                                                    // setTokenAAmount(e.target.value)
-                                                                                    if (e.target.value >= 0) {
-                                                                                        setTokenAAmount(e.target.value)
-                                                                                        setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
-                                                                                    } else {
-                                                                                        setTokenAAmount(0)
-                                                                                        setTokenBAmount(0)
-                                                                                    }
-                                                                                }}
-                                                                            />
+                                                                            <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
+                                                                                <Input
+                                                                                    step="any"
+                                                                                    type='number'
+                                                                                    min={0}
+                                                                                    id="standard-adornment-weight"
+                                                                                    value={tokenAAmount}
+                                                                                    onChange={(e) => {
+                                                                                        if (e.target.value >= 0) {
+                                                                                            setTokenAAmount(e.target.value)
+                                                                                            setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
+                                                                                        } else {
+                                                                                            setTokenAAmount(0)
+                                                                                            setTokenBAmount(0)
+                                                                                        }
+                                                                                    }}
+                                                                                    aria-describedby="standard-weight-helper-text"
+                                                                                    inputProps={{
+                                                                                        'aria-label': 'weight',
+                                                                                    }}
+                                                                                />
+                                                                                <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{tokenABalance / 10 ** 9}</FormHelperText>
+                                                                            </FormControl>
                                                                         ) : (
-                                                                            <input
-                                                                                type="number"
-                                                                                required
-                                                                                value={tokenAAmount}
-                                                                                placeholder={0}
-                                                                                className="form-control"
-                                                                                disabled
-                                                                            />
+                                                                            <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
+                                                                                <Input
+                                                                                    step="any"
+                                                                                    type='number'
+                                                                                    min={0}
+                                                                                    placeholder="0"
+                                                                                    disabled
+                                                                                    id="standard-adornment-weight"
+                                                                                    aria-describedby="standard-weight-helper-text"
+                                                                                    inputProps={{
+                                                                                        'aria-label': 'weight',
+                                                                                    }}
+                                                                                />
+                                                                                <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{0}</FormHelperText>
+                                                                            </FormControl>
                                                                         )}
                                                                     </div>
                                                                 </div>
-                                                                {activePublicKey && tokenA ? (
-                                                                    <>
-                                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                                            <strong>Balance: </strong>{tokenABalance / 10 ** 9}
-                                                                        </Typography>
-                                                                        <br></br>
-                                                                    </>
-                                                                ) : (null)}
-
                                                                 <div className="row">
-                                                                    <div className="col-md-12 col-lg-7">
+                                                                    <div className="col-md-12 col-lg-5">
                                                                         <div className="filter-widget">
-                                                                            <Autocomplete
-                                                                                id="combo-dox-demo"
-                                                                                required
-                                                                                options={tokenList}
-                                                                                disabled={!istokenList}
-                                                                                getOptionLabel={(option) =>
-                                                                                    option.name + ',' + option.symbol
-                                                                                }
-                                                                                onChange={(event, value) => {
-                                                                                    console.log('event', event);
-                                                                                    console.log('value', value);
-                                                                                    setTokenB(value)
-                                                                                    setTokenBAmount(0)
-                                                                                    setTokenAAmount(0)
-                                                                                }}
-                                                                                renderInput={(params) => (
-                                                                                    <TextField
-                                                                                        {...params}
-                                                                                        label="Select a token"
-                                                                                        variant="outlined"
+                                                                            {tokenB ? (
+                                                                                <Card
+                                                                                    className='custom-card'
+                                                                                >
+                                                                                    <CardHeader
+                                                                                        onClick={() => {
+                                                                                            handleShowTokenBModal()
+                                                                                        }}
+                                                                                        avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" />}
+                                                                                        title={tokenB.name}
+                                                                                        subheader={tokenB.symbol}
                                                                                     />
-                                                                                )}
-                                                                            />
+                                                                                </Card>
+                                                                            ) : (
+                                                                                <Card onClick={() => {
+                                                                                    handleShowTokenBModal()
+                                                                                }} style={{ padding: '20px' }}
+                                                                                    className='custom-card'
+                                                                                >
+                                                                                    Select Token<i style={{ float: 'right' }} className="fas fa-chevron-down"></i>
+                                                                                </Card>
+                                                                            )}
                                                                         </div>
                                                                     </div>
-                                                                    <div className="col-md-12 col-lg-5">
+                                                                    <div className="col-md-12 col-lg-7">
                                                                         {tokenB && tokenA ? (
-                                                                            <input
-                                                                                type="number"
-                                                                                required
-                                                                                value={tokenBAmount}
-                                                                                placeholder={0}
-                                                                                min={0}
-                                                                                step={.01}
-                                                                                className="form-control"
-                                                                                onChange={(e) => {
-                                                                                    if (e.target.value >= 0) {
-                                                                                        setTokenBAmount(e.target.value)
-                                                                                        setTokenAAmount(e.target.value * (tokenBAmountPercent / tokenAAmountPercent).toFixed(5))
-                                                                                    }
-                                                                                    else {
-                                                                                        setTokenAAmount(0)
-                                                                                        setTokenBAmount(0)
-                                                                                    }
-
-                                                                                }}
-                                                                            />
+                                                                            <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
+                                                                                <Input
+                                                                                    step="any"
+                                                                                    type='number'
+                                                                                    min={0} max={50}
+                                                                                    id="standard-adornment-weight"
+                                                                                    value={tokenBAmount}
+                                                                                    onChange={(e) => {
+                                                                                        if (e.target.value >= 0) {
+                                                                                            setTokenBAmount(e.target.value)
+                                                                                            setTokenAAmount(e.target.value * (tokenBAmountPercent / tokenAAmountPercent).toFixed(5))
+                                                                                        }
+                                                                                        else {
+                                                                                            setTokenAAmount(0)
+                                                                                            setTokenBAmount(0)
+                                                                                        }
+                                                                                    }}
+                                                                                    aria-describedby="standard-weight-helper-text"
+                                                                                    inputProps={{
+                                                                                        'aria-label': 'weight',
+                                                                                    }}
+                                                                                />
+                                                                                <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{tokenBBalance / 10 ** 9}</FormHelperText>
+                                                                            </FormControl>
                                                                         ) : (
-                                                                            <input
-                                                                                type="number"
-                                                                                required
-                                                                                value={tokenBAmount}
-                                                                                placeholder={0}
-                                                                                style={{ height: '20px' }}
-                                                                                disabled
-                                                                                height='50'
-                                                                                className="form-control"
-                                                                            />
+                                                                            <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
+                                                                                <Input
+                                                                                    step="any"
+                                                                                    type='number'
+                                                                                    min={0}
+                                                                                    placeholder="0"
+                                                                                    disabled
+                                                                                    id="standard-adornment-weight"
+                                                                                    aria-describedby="standard-weight-helper-text"
+                                                                                    inputProps={{
+                                                                                        'aria-label': 'weight',
+                                                                                    }}
+                                                                                />
+                                                                                <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{0}</FormHelperText>
+                                                                            </FormControl>
                                                                         )}
                                                                     </div>
                                                                 </div>
-                                                                {activePublicKey && tokenB ? (
-                                                                    <>
-                                                                        <Typography variant="body2" color="textSecondary" component="p">
-                                                                            <strong>Balance: </strong>{tokenBBalance / 10 ** 9}
-                                                                        </Typography>
-                                                                        <br></br>
-                                                                    </>
-                                                                ) : (null)}
                                                                 {tokenA ? (
                                                                     <Accordion key={0} expanded={expanded === 0} onChange={handleChange(0)}>
                                                                         <AccordionSummary
@@ -878,7 +828,7 @@ function AddLiquidity(props) {
                                                                                     className="btn btn-block btn-lg"
                                                                                     onClick={async () => {
                                                                                         setApproveAIsLoading(true)
-                                                                                        await approveMakedeploy(tokenA.address, tokenAAmount, 'tokenA')
+                                                                                        await approveMakeDeploy(tokenA.address, tokenAAmount, 'tokenA')
                                                                                         setApproveAIsLoading(false)
                                                                                     }
                                                                                     }
@@ -909,7 +859,7 @@ function AddLiquidity(props) {
                                                                                     className="btn btn-block btn-lg"
                                                                                     onClick={async () => {
                                                                                         setApproveBIsLoading(true)
-                                                                                        await approveMakedeploy(tokenB.address, tokenBAmount, 'tokenB')
+                                                                                        await approveMakeDeploy(tokenB.address, tokenBAmount, 'tokenB')
                                                                                         setApproveBIsLoading(false)
                                                                                     }
                                                                                     }
@@ -1094,6 +1044,10 @@ function AddLiquidity(props) {
                 </div>
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
+            <SigningModal show={openSigning} />
+            <TokenAModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenA} setTokenList={setTokenList} tokenList={tokenList} show={openTokenAModal} handleClose={handleCloseTokenAModal} />
+            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenB} setTokenList={setTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} />
+
         </div>
     );
 }

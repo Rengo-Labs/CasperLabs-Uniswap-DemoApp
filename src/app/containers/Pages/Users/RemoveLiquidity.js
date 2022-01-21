@@ -1,11 +1,9 @@
-import { Avatar, Card, CardContent, CardHeader, Slider, Box, Typography, FormControlLabel, Checkbox, FormGroup } from '@material-ui/core/';
-import { makeStyles } from '@material-ui/core/styles';
+import { Avatar, Box, Card, CardContent, CardHeader, Checkbox, FormControlLabel, FormGroup, Slider, Typography } from '@material-ui/core/';
 import axios from "axios";
 import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
-import RangeSlider from 'react-bootstrap-range-slider';
 import Spinner from "react-bootstrap/Spinner";
 import { useParams } from 'react-router-dom';
 import "../../../assets/css/bootstrap.min.css";
@@ -20,46 +18,9 @@ import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import HeaderHome from "../../../components/Headers/Header";
+import SigningModal from '../../../components/Modals/SigningModal';
 import SlippageModal from '../../../components/Modals/SlippageModal';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        flexGrow: 1,
-        width: '100%',
-        backgroundColor: theme.palette.background.paper,
-    },
-    badge: {
-        '& > *': {
-            margin: theme.spacing(1),
-        },
-    },
-    backdrop: {
-        zIndex: theme.zIndex.drawer + 1,
-        color: '#fff',
-    },
-    // avatar: {
-    //     height: '20px',
-    //     width: '20px',
-    // },
-    card: {
-        minWidth: 250,
-    },
-    media: {
-        height: 0,
-        paddingTop: '100%', // 16:9
-    },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
-    },
-    title: {
-        fontSize: 14,
-    },
-    pos: {
-        marginBottom: 12,
-    },
-}));
 
 const marks = [
     {
@@ -83,13 +44,10 @@ const marks = [
         label: '100%',
     },
 ];
-// let RecipientType = CLPublicKey | CLAccountHash | CLByteArray;
+
 function RemoveLiquidity(props) {
-    const classes = useStyles();
     let { tokenAAddress, tokenBAddress } = useParams()
-    // console.log("tokenAAddress",tokenAAddress);
     const { enqueueSnackbar } = useSnackbar();
-    // let [priceInUSD, setPriceInUSD] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
     let [isRemoveLiquidityCSPR, setIsRemoveLiquidityCSPR] = useState(false);
@@ -111,6 +69,13 @@ function RemoveLiquidity(props) {
     };
     const handleShowSlippage = () => {
         setOpenSlippage(true);
+    };
+    const [openSigning, setOpenSigning] = useState(false);
+    const handleCloseSigning = () => {
+        setOpenSigning(false);
+    };
+    const handleShowSigning = () => {
+        setOpenSigning(true);
     };
 
     let [isLoading, setIsLoading] = useState(false);
@@ -235,11 +200,11 @@ function RemoveLiquidity(props) {
                     setMainPurse(result.Account.mainPurse)
                 });
             })
-
         }
     }, [activePublicKey]);
 
-    async function approveMakedeploy() {
+    async function approveMakeDeploy() {
+        handleShowSigning()
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
@@ -262,31 +227,30 @@ function RemoveLiquidity(props) {
                 let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                 let result = await putdeploy(signedDeploy)
                 console.log('result', result);
+                handleCloseSigning()
                 let variant = "success";
                 enqueueSnackbar('Approved Successfully', { variant });
             }
             catch {
+                handleCloseSigning()
                 let variant = "Error";
                 enqueueSnackbar('Unable to Approve', { variant });
             }
-
         }
         else {
+            handleCloseSigning()
             let variant = "error";
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
     }
 
-
-
-
     async function RemoveLiquidityMakeDeploy() {
+        handleShowSigning()
         setIsLoading(true)
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
-
             const tokenAAddress = tokenA.address;
             const tokenBAddress = tokenB.address;
             const token_AAmount = (tokenAAmountPercent).toFixed(5);
@@ -294,10 +258,6 @@ function RemoveLiquidity(props) {
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
 
-            // const runtimeArgs = RuntimeArgs.fromMap({
-            //     tokenA: createRecipientAddress(spenderByteArray),
-            //     tokenB: CLValueBuilder.u256(5)
-            // });
             console.log('tokenAAddress', tokenAAddress);
             const _token_a = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
@@ -305,7 +265,6 @@ function RemoveLiquidity(props) {
             const _token_b = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
             );
-
 
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
@@ -327,17 +286,19 @@ function RemoveLiquidity(props) {
                 let result = await putdeploy(signedDeploy)
                 console.log('result', result);
                 let variant = "success";
+                handleCloseSigning()
                 enqueueSnackbar('Liquidity Removed Successfully', { variant });
                 setIsLoading(false)
             }
             catch {
+                handleCloseSigning()
                 let variant = "Error";
                 enqueueSnackbar('Unable to Remove Liquidity', { variant });
                 setIsLoading(false)
             }
-
         }
         else {
+            handleCloseSigning()
             let variant = "error";
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
@@ -359,7 +320,6 @@ function RemoveLiquidity(props) {
                 token = tokenA.address;
                 cspr_Amount = (tokenBAmountPercent).toFixed(5);
                 token_Amount = (tokenAAmountPercent).toFixed(5);
-
             }
             const deadline = 1739598100811;
             const paymentAmount = 20000000000;
@@ -368,8 +328,6 @@ function RemoveLiquidity(props) {
             const _token = new CLByteArray(
                 Uint8Array.from(Buffer.from(token.slice(5), "hex"))
             );
-
-
             const runtimeArgs = RuntimeArgs.fromMap({
                 token: new CLKey(_token),
                 liquidity: CLValueBuilder.u256(Math.round(liquidity * value / 100)),
@@ -390,23 +348,25 @@ function RemoveLiquidity(props) {
                 let result = await putdeploy(signedDeploy)
                 console.log('result', result);
                 let variant = "success";
+                handleCloseSigning()
                 enqueueSnackbar('Liquidity Removed Successfully', { variant });
                 setIsLoading(false)
             }
             catch {
                 let variant = "Error";
+                handleCloseSigning()
                 enqueueSnackbar('Unable to Remove Liquidity', { variant });
                 setIsLoading(false)
             }
-
         }
         else {
             let variant = "error";
+            handleCloseSigning()
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
     }
     function valuetext(value) {
-        console.log('value', value);
+        // console.log('value', value);
         setValue(value)
         setTokenAAmountPercent(tokenAAmount * value / 100)
         setTokenBAmountPercent(tokenBAmount * value / 100)
@@ -455,19 +415,7 @@ function RemoveLiquidity(props) {
                                                                 <div className="login-header" style={{ margin: '40px' }}>
                                                                     <h1 className="neonText" style={{ textAlign: "center" }}>{value}%</h1>
                                                                 </div>
-                                                                {/* <RangeSlider
-                                                                    style={{ width: '250px' }}
-                                                                    value={value}
-                                                                    onChange={e => {
-                                                                        // console.log('e.target.value', e.target.value);
-                                                                        setValue(e.target.value)
-                                                                        setTokenAAmountPercent(tokenAAmount * e.target.value / 100)
-                                                                        setTokenBAmountPercent(tokenBAmount * e.target.value / 100)
-                                                                    }}
-                                                                    tooltipLabel={currentValue => `${currentValue}%`}
-                                                                    tooltip='on'
-                                                                    size='sm'
-                                                                /> */}
+
                                                                 {tokenA && tokenB ? (
                                                                     <>
                                                                         <Card>
@@ -505,7 +453,6 @@ function RemoveLiquidity(props) {
                                                                                 <CardHeader
                                                                                     title={'Price'}
                                                                                 />
-
                                                                                 <CardContent className="text-center" >
                                                                                     <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
                                                                                         {`1 ${tokenA.name} = ${(tokenAAmountPercent / tokenBAmountPercent).toFixed(5)} ${tokenB.name}`}
@@ -535,18 +482,13 @@ function RemoveLiquidity(props) {
                                                                             className="btn btn-block btn-lg"
                                                                             onClick={async () => {
                                                                                 setApproveAIsLoading(true)
-                                                                                await approveMakedeploy()
+                                                                                await approveMakeDeploy()
                                                                                 setApproveAIsLoading(false)
-                                                                            }
-                                                                            }
-                                                                        >
+                                                                            }}>
                                                                             Approve
                                                                         </button>
                                                                     )
                                                                 ) : (null)}
-
-
-
                                                                 {isLoading ? (
                                                                     <div className="text-center">
                                                                         <Spinner
@@ -574,7 +516,6 @@ function RemoveLiquidity(props) {
                                                                                 Remove Liquidity
                                                                             </button>
                                                                         )
-
                                                                     ) : activePublicKey === 'null' || activePublicKey === null || activePublicKey === undefined ? (
                                                                         <button
                                                                             className="btn btn-block btn-lg"
@@ -606,7 +547,6 @@ function RemoveLiquidity(props) {
                                                                         }} value={isRemoveLiquidityCSPR} control={<Checkbox defaultValue={isRemoveLiquidityCSPR} />} label="Remove Liquidity CSPR" />
                                                                     </FormGroup>
                                                                 ) : (null)}
-
                                                             </form>
                                                             <br></br>
                                                             {tokenA && tokenB && liquidity ? (
@@ -636,7 +576,6 @@ function RemoveLiquidity(props) {
                                                                                     subheader={(tokenAAmount).toFixed(5)}
                                                                                 />
                                                                             </Col>
-
                                                                         </Row>
                                                                         <Row>
                                                                             <Col>
@@ -649,7 +588,6 @@ function RemoveLiquidity(props) {
                                                                                     subheader={(tokenBAmount).toFixed(5)}
                                                                                 />
                                                                             </Col>
-
                                                                         </Row>
                                                                     </CardContent>
                                                                 </Card>
@@ -669,6 +607,7 @@ function RemoveLiquidity(props) {
                 </div>
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
+            <SigningModal show={openSigning} />
         </div>
     );
 }
