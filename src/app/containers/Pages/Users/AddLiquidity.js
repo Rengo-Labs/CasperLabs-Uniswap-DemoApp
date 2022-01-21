@@ -4,7 +4,7 @@ import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
-import { CasperServiceByJsonRPC, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
+import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
@@ -512,7 +512,7 @@ function AddLiquidity(props) {
                     amount_cspr_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
                     amount_token_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
                     to: createRecipientAddress(publicKey),
-                    purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                    purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                     deadline: CLValueBuilder.u256(deadline),
                     pair: new CLOption(Some(new CLKey(_token_b)))
                 });
@@ -527,6 +527,10 @@ function AddLiquidity(props) {
                     let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                     let result = await putdeploy(signedDeploy)
                     console.log('result', result);
+                    setTokenAAllowance(0)
+                    setTokenBAllowance(0)
+                    setTokenAAmount(0)
+                    setTokenBAmount(0)
                     let variant = "success";
                     enqueueSnackbar('Liquidity Added Successfully', { variant });
                     setIsLoading(false)
@@ -559,6 +563,10 @@ function AddLiquidity(props) {
                     let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                     let result = await putdeploy(signedDeploy)
                     console.log('result', result);
+                    setTokenAAllowance(0)
+                    setTokenBAllowance(0)
+                    setTokenAAmount(0)
+                    setTokenBAmount(0)
                     let variant = "success";
                     enqueueSnackbar('Liquidity Added Successfully', { variant });
                     setIsLoading(false)
@@ -594,6 +602,10 @@ function AddLiquidity(props) {
                     let result = await putdeploy(signedDeploy)
                     console.log('result', result);
                     let variant = "success";
+                    setTokenAAllowance(0)
+                    setTokenBAllowance(0)
+                    setTokenAAmount(0)
+                    setTokenBAmount(0)
                     enqueueSnackbar('Liquidity Added Successfully', { variant });
                     setIsLoading(false)
                 }
@@ -817,7 +829,7 @@ function AddLiquidity(props) {
                                                                     </Accordion>
                                                                 ) : (null)}
                                                                 {tokenB ? (
-                                                                    <Accordion key={1} expanded={expanded === 1} onChange={handleChange(1)}>
+                                                                    <Accordion style={{ marginBottom: '10px' }} key={1} expanded={expanded === 1} onChange={handleChange(1)}>
                                                                         <AccordionSummary
                                                                             expandIcon={tokenB.address !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
                                                                             aria-controls="panel1bh-content"
@@ -849,15 +861,17 @@ function AddLiquidity(props) {
 
                                                                     {tokenA && tokenA.name !== 'Casper' && tokenAAmount > 0 && tokenAAmount * 10 ** 9 > tokenAAllowance && !isInvalidPair ? (
                                                                         approveAIsLoading ? (
-                                                                            <div className="text-center">
-                                                                                <Spinner
-                                                                                    animation="border"
-                                                                                    role="status"
-                                                                                    style={{ color: "#e84646" }}
-                                                                                >
-                                                                                    <span className="sr-only">Loading...</span>
-                                                                                </Spinner>
-                                                                            </div>
+                                                                            <Col>
+                                                                                <div className="text-center">
+                                                                                    <Spinner
+                                                                                        animation="border"
+                                                                                        role="status"
+                                                                                        style={{ color: "#e84646" }}
+                                                                                    >
+                                                                                        <span className="sr-only">Loading...</span>
+                                                                                    </Spinner>
+                                                                                </div>
+                                                                            </Col>
                                                                         ) : (
                                                                             <Col>
                                                                                 <button
@@ -869,7 +883,7 @@ function AddLiquidity(props) {
                                                                                     }
                                                                                     }
                                                                                 >
-                                                                                    Approve {tokenA.name}
+                                                                                    Approve {tokenA.symbol}
                                                                                 </button>
                                                                             </Col>
                                                                         )
@@ -878,15 +892,17 @@ function AddLiquidity(props) {
 
                                                                     {tokenB && tokenB.name !== 'Casper' && tokenBAmount > 0 && tokenBAmount * 10 ** 9 > tokenBAllowance && !isInvalidPair ? (
                                                                         approveBIsLoading ? (
-                                                                            <div className="text-center">
-                                                                                <Spinner
-                                                                                    animation="border"
-                                                                                    role="status"
-                                                                                    style={{ color: "#e84646" }}
-                                                                                >
-                                                                                    <span className="sr-only">Loading...</span>
-                                                                                </Spinner>
-                                                                            </div>
+                                                                            <Col>
+                                                                                <div className="text-center">
+                                                                                    <Spinner
+                                                                                        animation="border"
+                                                                                        role="status"
+                                                                                        style={{ color: "#e84646" }}
+                                                                                    >
+                                                                                        <span className="sr-only">Loading...</span>
+                                                                                    </Spinner>
+                                                                                </div>
+                                                                            </Col>
                                                                         ) : (
                                                                             <Col>
                                                                                 <button
@@ -898,7 +914,7 @@ function AddLiquidity(props) {
                                                                                     }
                                                                                     }
                                                                                 >
-                                                                                    Approve {tokenB.name}
+                                                                                    Approve {tokenB.symbol}
                                                                                 </button>
                                                                             </Col>
                                                                         )

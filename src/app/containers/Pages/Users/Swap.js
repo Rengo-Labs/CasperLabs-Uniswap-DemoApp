@@ -4,7 +4,7 @@ import TextField from "@material-ui/core/TextField";
 import Typography from '@material-ui/core/Typography';
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
-import { CasperServiceByJsonRPC, CLByteArray, CLKey, CLList, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
+import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLList, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
@@ -166,7 +166,7 @@ function Swap(props) {
                                 setIsInvalidPair(true)
                             }
                         }
-                    } else if ((tokenA.name === "Casper" && tokenB.name === "WCSPR") || (tokenA.name === "WCSPR" && tokenB.name === "Casper")) {
+                    } else if ((tokenA.name === "Casper" && tokenB.name === "Wrapped Casper") || (tokenA.name === "Wrapped Casper" && tokenB.name === "Casper")) {
                         setTokenAAmountPercent(1)
                         setTokenBAmountPercent(1)
                     } else {
@@ -175,13 +175,13 @@ function Swap(props) {
                             let name1 = res.data.pairList[i].token1.name;
                             console.log("name0", name0);
                             console.log("name1", name1);
-                            if (name0 === "WCSPR") {
+                            if (name0 === "Wrapped Casper") {
                                 console.log('11111111', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 break;
-                            } else if (name1 === "WCSPR") {
+                            } else if (name1 === "Wrapped Casper") {
                                 console.log('222222', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
@@ -416,7 +416,7 @@ function Swap(props) {
                         amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
                         to: createRecipientAddress(publicKey),
-                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
                     });
 
@@ -472,7 +472,7 @@ function Swap(props) {
                         amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
                         // to: createRecipientAddress(publicKey),
-                        to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                        to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
                     });
 
@@ -574,7 +574,7 @@ function Swap(props) {
                         amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
                         to: createRecipientAddress(publicKey),
-                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
                     });
 
@@ -620,7 +620,7 @@ function Swap(props) {
                         amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
                         // to: createRecipientAddress(publicKey),
-                        to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), 3),
+                        to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
                     });
 

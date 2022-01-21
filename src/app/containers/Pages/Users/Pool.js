@@ -2,6 +2,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Card, CardContent, Conta
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import axios from "axios";
+import { CLPublicKey } from 'casper-js-sdk';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -75,7 +76,29 @@ function Pool(props) {
                     setIsPairList(true)
                     setIsError(false)
                     setError()
-                    setuserPairs(res.data.userpairs)
+                    for (let i = 0; i < res.data.userpairs.length; i++) {
+                        let param = {
+                            to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
+                            pairid: res.data.userpairs[i].id
+                        }
+                        console.log('await Signer.getSelectedPublicKeyBase64()',
+                            Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
+
+                        axios
+                            .post('/liquidityagainstuserandpair', param)
+                            .then((res1) => {
+                                console.log('liquidityagainstuserandpair', res1)
+                                // setLiquidity(res1.data.liquidity)
+                                res.data.userpairs[i].liquidity = res1.data.liquidity
+                                console.log("res.data.userpairs[i]", res.data.userpairs[i])
+                                setuserPairs(res.data.userpairs)
+                            })
+                            .catch((error) => {
+                                console.log(error)
+                                console.log(error.response)
+                            })
+                    }
+                    
                 })
                 .catch((error) => {
                     console.log(error)
@@ -138,6 +161,14 @@ function Pool(props) {
                                                                             <Col>Your total Pool Tokens:</Col>
                                                                             <Col><Typography>{(i.reserve0 / i.reserve1).toFixed(5)}</Typography></Col>
                                                                         </Row>
+
+                                                                        {i.liquidity ? (
+                                                                            <Row>
+                                                                                <Col>Your Liquidity:</Col>
+                                                                                <Col><Typography>{(i.liquidity / 10 ** 9)}</Typography></Col>
+                                                                            </Row>
+                                                                        ) : (null)}
+
                                                                         <Row>
                                                                             <Col>Pooled {i.token0.name}:</Col>
                                                                             <Col><Typography>{i.reserve0 / 10 ** 9}</Typography></Col>
@@ -154,7 +185,7 @@ function Pool(props) {
                                                                                     <button
                                                                                         className="btn-block btn-primary btn-lg"
                                                                                         style={{ marginTop: '10px', marginBottom: '10px' }}>
-                                                                                        Add Liquidity
+                                                                                        Add
                                                                                     </button>
                                                                                 </Link>
                                                                             </Col>
@@ -163,7 +194,7 @@ function Pool(props) {
                                                                                     <button
                                                                                         className="btn-block btn-primary btn-lg"
                                                                                         style={{ marginTop: '10px', marginBottom: '10px' }}>
-                                                                                        Remove Liquidity
+                                                                                        Remove
                                                                                     </button>
                                                                                 </Link>
                                                                             </Col>
@@ -184,7 +215,7 @@ function Pool(props) {
                                                     <button
                                                         className="btn-block btn-primary btn-lg"
                                                         style={{ marginBottom: '10px' }}>
-                                                        Add
+                                                        Add Liquidity
                                                     </button>
                                                 </Link>
                                             </div>

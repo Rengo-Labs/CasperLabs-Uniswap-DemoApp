@@ -1,7 +1,7 @@
-import { Avatar, Card, CardContent, CardHeader } from '@material-ui/core/';
+import { Avatar, Card, CardContent, CardHeader, Slider, Box, Typography, FormControlLabel, Checkbox, FormGroup } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
 import axios from "axios";
-import { CLByteArray, CLKey, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
+import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
@@ -13,7 +13,9 @@ import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
 import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
+import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
@@ -35,10 +37,10 @@ const useStyles = makeStyles((theme) => ({
         zIndex: theme.zIndex.drawer + 1,
         color: '#fff',
     },
-    avatar: {
-        height: '20px',
-        width: '20px',
-    },
+    // avatar: {
+    //     height: '20px',
+    //     width: '20px',
+    // },
     card: {
         minWidth: 250,
     },
@@ -58,6 +60,29 @@ const useStyles = makeStyles((theme) => ({
         marginBottom: 12,
     },
 }));
+
+const marks = [
+    {
+        value: 0,
+        label: '0%',
+    },
+    {
+        value: 25,
+        label: '25%',
+    },
+    {
+        value: 50,
+        label: '50%',
+    },
+    {
+        value: 75,
+        label: '75%',
+    },
+    {
+        value: 100,
+        label: '100%',
+    },
+];
 // let RecipientType = CLPublicKey | CLAccountHash | CLByteArray;
 function RemoveLiquidity(props) {
     const classes = useStyles();
@@ -67,6 +92,8 @@ function RemoveLiquidity(props) {
     // let [priceInUSD, setPriceInUSD] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
+    let [isRemoveLiquidityCSPR, setIsRemoveLiquidityCSPR] = useState(false);
+    let [pairAllowance, setpairAllowance] = useState(0);
     let [tokenAAmount, setTokenAAmount] = useState(0);
     let [tokenBAmount, setTokenBAmount] = useState(0);
     let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
@@ -78,6 +105,7 @@ function RemoveLiquidity(props) {
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
     const [slippage, setSlippage] = useState(0.5);
     const [openSlippage, setOpenSlippage] = useState(false);
+    let [mainPurse, setMainPurse] = useState();
     const handleCloseSlippage = () => {
         setOpenSlippage(false);
     };
@@ -125,51 +153,90 @@ function RemoveLiquidity(props) {
         // eslint-disable-next-line
     }, []);
     useEffect(() => {
-        let param = {
-            user: activePublicKey
-        }
-        axios
-            .post('/getpairsagainstuser', param)
-            .then((res) => {
-                console.log('9', res)
-                console.log(res.data.userpairs)
-                for (let i = 0; i < res.data.userpairs.length; i++) {
-                    let address0 = res.data.userpairs[i].token0.id.toLowerCase();
-                    let address1 = res.data.userpairs[i].token1.id.toLowerCase();
-                    if ((address0.includes(tokenAAddress.toLowerCase()) && address1.includes(tokenBAddress.toLowerCase())) || (address0.includes(tokenBAddress.toLowerCase()) && address1.includes(tokenAAddress.toLowerCase()))) {
-                        console.log('res.data.', res.data.userpairs[i]);
-                        setTokenAAmount((res.data.userpairs[i].reserve0 / 10 ** 9))
-                        setTokenBAmount((res.data.userpairs[i].reserve1 / 10 ** 9))
-                        setPairHash(res.data.userpairs[i].id)
-                        setTokenAAmountPercent(((res.data.userpairs[i].reserve0 * value / 100) / 10 ** 9))
-                        setTokenBAmountPercent(((res.data.userpairs[i].reserve1 * value / 100) / 10 ** 9))
+        if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            let param = {
+                user: activePublicKey
+            }
+            axios
+                .post('/getpairsagainstuser', param)
+                .then((res) => {
+                    console.log('9', res)
+                    console.log(res.data.userpairs)
+                    for (let i = 0; i < res.data.userpairs.length; i++) {
+                        let address0 = res.data.userpairs[i].token0.id.toLowerCase();
+                        let address1 = res.data.userpairs[i].token1.id.toLowerCase();
+                        if ((address0.includes(tokenAAddress.toLowerCase()) && address1.includes(tokenBAddress.toLowerCase())) || (address0.includes(tokenBAddress.toLowerCase()) && address1.includes(tokenAAddress.toLowerCase()))) {
+                            console.log('res.data.', res.data.userpairs[i]);
+                            setTokenAAmount((res.data.userpairs[i].reserve0 / 10 ** 9))
+                            setTokenBAmount((res.data.userpairs[i].reserve1 / 10 ** 9))
+                            setPairHash(res.data.userpairs[i].id)
+                            setTokenAAmountPercent(((res.data.userpairs[i].reserve0 * value / 100) / 10 ** 9))
+                            setTokenBAmountPercent(((res.data.userpairs[i].reserve1 * value / 100) / 10 ** 9))
 
-                        let param = {
-                            to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
-                            pairid: res.data.userpairs[i].id
+                            let param = {
+                                to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
+                                pairid: res.data.userpairs[i].id
+                            }
+                            console.log('await Signer.getSelectedPublicKeyBase64()',
+                                Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
+
+                            axios
+                                .post('/liquidityagainstuserandpair', param)
+                                .then((res1) => {
+                                    console.log('liquidityagainstuserandpair', res1)
+                                    setLiquidity(res1.data.liquidity)
+                                    console.log("res1.data.liquidity", res1.data.liquidity)
+                                })
+                                .catch((error) => {
+                                    console.log(error)
+                                    console.log(error.response)
+                                })
+                            let allowanceParam = {
+                                contractHash: res.data.userpairs[i].id,
+                                owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
+                                spender: ROUTER_PACKAGE_HASH
+                            }
+                            console.log('allowanceParam0', allowanceParam);
+                            axios
+                                .post('/allowanceagainstownerandspenderpaircontract', allowanceParam)
+                                .then((res) => {
+                                    console.log('allowanceagainstownerandspenderpaircontract', res)
+                                    console.log(res.data)
+                                    setpairAllowance(res.data.allowance)
+
+                                })
+                                .catch((error) => {
+                                    console.log(error)
+                                    console.log(error.response)
+                                })
+
                         }
-                        console.log('await Signer.getSelectedPublicKeyBase64()',
-                            Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
-
-                        axios
-                            .post('/liquidityagainstuserandpair', param)
-                            .then((res1) => {
-                                console.log('liquidityagainstuserandpair', res1)
-                                setLiquidity(res1.data.liquidity)
-                                console.log("res1.data.liquidity", res1.data.liquidity)
-                            })
-                            .catch((error) => {
-                                console.log(error)
-                                console.log(error.response)
-                            })
-
                     }
-                }
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
+        }// eslint-disable-next-line
+    }, [tokenAAddress, tokenBAddress, activePublicKey]);
+    useEffect(() => {
+        if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            const client = new CasperServiceByJsonRPC(
+                NODE_ADDRESS
+            );
+            getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                console.log('stateRootHash', stateRootHash);
+                client.getBlockState(
+                    stateRootHash,
+                    CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                    []
+                ).then(result => {
+                    console.log('result', result.Account.mainPurse);
+                    setMainPurse(result.Account.mainPurse)
+                });
             })
-            .catch((error) => {
-                console.log(error)
-                console.log(error.response)
-            })// eslint-disable-next-line
+
+        }
     }, [activePublicKey]);
 
     async function approveMakedeploy() {
@@ -275,6 +342,76 @@ function RemoveLiquidity(props) {
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
     }
+    async function RemoveLiquidityCSPRMakeDeploy() {
+        setIsLoading(true)
+        const publicKeyHex = activePublicKey
+        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
+            const publicKey = CLPublicKey.fromHex(publicKeyHex);
+            const caller = ROUTER_CONTRACT_HASH;
+            let token
+            let cspr_Amount
+            let token_Amount
+            if (tokenA.symbol === "WCSPR") {
+                token = tokenB.address;
+                cspr_Amount = (tokenAAmountPercent).toFixed(5);
+                token_Amount = (tokenBAmountPercent).toFixed(5);
+            } else {
+                token = tokenA.address;
+                cspr_Amount = (tokenBAmountPercent).toFixed(5);
+                token_Amount = (tokenAAmountPercent).toFixed(5);
+
+            }
+            const deadline = 1739598100811;
+            const paymentAmount = 20000000000;
+
+            console.log('token', token);
+            const _token = new CLByteArray(
+                Uint8Array.from(Buffer.from(token.slice(5), "hex"))
+            );
+
+
+            const runtimeArgs = RuntimeArgs.fromMap({
+                token: new CLKey(_token),
+                liquidity: CLValueBuilder.u256(Math.round(liquidity * value / 100)),
+                amount_cspr_min: CLValueBuilder.u256(parseInt(cspr_Amount * 10 ** 9 - (cspr_Amount * 10 ** 9) * slippage / 100)),
+                amount_token_min: CLValueBuilder.u256(parseInt(token_Amount * 10 ** 9 - (token_Amount * 10 ** 9) * slippage / 100)),
+                to: createRecipientAddress(publicKey),
+                to_purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
+                deadline: CLValueBuilder.u256(deadline),
+            });
+            let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+            let entryPoint = 'remove_liquidity_cspr_js_client';
+
+            // Set contract installation deploy (unsigned).
+            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+            console.log("make deploy: ", deploy);
+            try {
+                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                let result = await putdeploy(signedDeploy)
+                console.log('result', result);
+                let variant = "success";
+                enqueueSnackbar('Liquidity Removed Successfully', { variant });
+                setIsLoading(false)
+            }
+            catch {
+                let variant = "Error";
+                enqueueSnackbar('Unable to Remove Liquidity', { variant });
+                setIsLoading(false)
+            }
+
+        }
+        else {
+            let variant = "error";
+            enqueueSnackbar('Connect to Casper Signer Please', { variant });
+        }
+    }
+    function valuetext(value) {
+        console.log('value', value);
+        setValue(value)
+        setTokenAAmountPercent(tokenAAmount * value / 100)
+        setTokenBAmountPercent(tokenBAmount * value / 100)
+        return `${value}%`;
+    }
     return (
 
         <div className="account-page">
@@ -302,9 +439,23 @@ function RemoveLiquidity(props) {
                                                                 <h3 style={{ textAlign: "center" }}>Remove Liquidity</h3>
                                                                 <h3 onClick={handleShowSlippage} style={{ textAlign: 'right' }}><i className="fas fa-cog"></i></h3>
                                                             </div>
-                                                            <form style={{ textAlign: "center" }}>
+                                                            <form>
                                                                 <br></br>
-                                                                <RangeSlider
+                                                                <Box style={{ margin: '10px' }}>
+                                                                    <Slider
+                                                                        style={{ color: '#ed0b25' }}
+                                                                        aria-label="Custom marks"
+                                                                        defaultValue={25}
+                                                                        getAriaValueText={valuetext}
+                                                                        step={1}
+                                                                        valueLabelDisplay="auto"
+                                                                        marks={marks}
+                                                                    />
+                                                                </Box>
+                                                                <div className="login-header" style={{ margin: '40px' }}>
+                                                                    <h1 className="neonText" style={{ textAlign: "center" }}>{value}%</h1>
+                                                                </div>
+                                                                {/* <RangeSlider
                                                                     style={{ width: '250px' }}
                                                                     value={value}
                                                                     onChange={e => {
@@ -316,7 +467,7 @@ function RemoveLiquidity(props) {
                                                                     tooltipLabel={currentValue => `${currentValue}%`}
                                                                     tooltip='on'
                                                                     size='sm'
-                                                                />
+                                                                /> */}
                                                                 {tokenA && tokenB ? (
                                                                     <>
                                                                         <Card>
@@ -327,10 +478,11 @@ function RemoveLiquidity(props) {
                                                                                             title={tokenAAmountPercent.toFixed(5)}
                                                                                         />
                                                                                     </Col>
-                                                                                    <Col><CardHeader
-                                                                                        avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" className={classes.avatar} />}
-                                                                                        title={tokenA.name}
-                                                                                    /></Col>
+                                                                                    <Col>
+                                                                                        <CardHeader
+                                                                                            avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" />}
+                                                                                            title={tokenA.name}
+                                                                                        /></Col>
                                                                                 </Row>
                                                                                 <Row>
                                                                                     <Col>
@@ -340,108 +492,124 @@ function RemoveLiquidity(props) {
                                                                                     </Col>
                                                                                     <Col>
                                                                                         <CardHeader
-                                                                                            avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" className={classes.avatar} />}
+                                                                                            avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" />}
                                                                                             title={tokenB.name}
                                                                                         />
                                                                                     </Col>
                                                                                 </Row>
                                                                             </CardContent>
                                                                         </Card>
-                                                                        <hr />
-                                                                        <Card>
-                                                                            <CardContent>
-                                                                                <Row>
-                                                                                    <Col>
-                                                                                        <CardHeader style={{ margin: '25px' }}
-                                                                                            subheader={`Price`}
-                                                                                        />
-                                                                                    </Col>
-                                                                                    <Col>
+                                                                        <br />
+                                                                        {activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined ? (
+                                                                            <Card style={{ marginBottom: '20px' }}>
+                                                                                <CardHeader
+                                                                                    title={'Price'}
+                                                                                />
 
-                                                                                        <CardHeader
-                                                                                            subheader={`1 ${tokenA.name} = ${(tokenBAmount / tokenAAmount).toFixed(5)} ${tokenB.name}`}
-                                                                                        />
-                                                                                        <CardHeader
-                                                                                            subheader={`1 ${tokenB.name} = ${(tokenAAmount / tokenBAmount).toFixed(5)} ${tokenA.name}`}
-                                                                                        />
-                                                                                    </Col>
-                                                                                </Row>
-                                                                            </CardContent>
-                                                                        </Card>
+                                                                                <CardContent className="text-center" >
+                                                                                    <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
+                                                                                        {`1 ${tokenA.name} = ${(tokenAAmountPercent / tokenBAmountPercent).toFixed(5)} ${tokenB.name}`}
+                                                                                    </Typography>
+                                                                                    <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
+                                                                                        {`1 ${tokenB.name} = ${(tokenBAmountPercent / tokenAAmountPercent).toFixed(5)} ${tokenA.name}`}
+                                                                                    </Typography>
+                                                                                </CardContent>
+                                                                            </Card>) : (null)}
                                                                     </>
                                                                 ) : (
                                                                     null
                                                                 )}
-                                                                <Row>
-                                                                    <Col>
-                                                                        {tokenA && tokenAAmount > 0 && tokenB && tokenBAmount > 0 ? (
-                                                                            approveAIsLoading ? (
-                                                                                <div className="text-center" style={{ marginTop: '20px' }}>
-                                                                                    <Spinner
-                                                                                        animation="border"
-                                                                                        role="status"
-                                                                                        style={{ color: "#e84646" }}
-                                                                                    >
-                                                                                        <span className="sr-only">Loading...</span>
-                                                                                    </Spinner>
-                                                                                </div>
-                                                                            ) : (
-                                                                                <button
-                                                                                    className="btn btn-block btn-lg"
-                                                                                    style={{ marginTop: '20px' }}
-                                                                                    onClick={async () => {
-                                                                                        setApproveAIsLoading(true)
-                                                                                        await approveMakedeploy()
-                                                                                        setApproveAIsLoading(false)
-                                                                                    }
-                                                                                    }
-                                                                                >
-                                                                                    Approve
-                                                                                </button>
-                                                                            )
-                                                                        ) : (null)}
-                                                                    </Col>
-                                                                    <Col>
-                                                                        {isLoading ? (
-                                                                            <div className="text-center" style={{ marginTop: '20px' }}>
-                                                                                <Spinner
-                                                                                    animation="border"
-                                                                                    role="status"
-                                                                                    style={{ color: "#e84646" }}
-                                                                                >
-                                                                                    <span className="sr-only">Loading...</span>
-                                                                                </Spinner>
-                                                                            </div>
-                                                                        ) : (
-                                                                            tokenAAmountPercent !== 0 && tokenBAmountPercent !== 0 && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
-                                                                                <button
-                                                                                    className="btn btn-block btn-lg"
-                                                                                    onClick={async () => await RemoveLiquidityMakeDeploy()}
-                                                                                >
-                                                                                    Remove
-                                                                                </button>
-                                                                            ) : activePublicKey === 'null' || activePublicKey === null || activePublicKey === undefined ? (
-                                                                                <button
-                                                                                    className="btn btn-block btn-lg"
-                                                                                    disabled
-                                                                                >
-                                                                                    Connect to Signer
-                                                                                </button>
-                                                                            ) : (
-                                                                                <button
-                                                                                    className="btn btn-block btn-lg"
-                                                                                    disabled
-                                                                                >
-                                                                                    Enter an Amount
-                                                                                </button>
-                                                                            )
+                                                                {tokenA && tokenAAmount > 0 && tokenB && tokenBAmount > 0 && (liquidity) * value / 100 > pairAllowance ? (
+                                                                    approveAIsLoading ? (
+                                                                        <div className="text-center">
+                                                                            <Spinner
+                                                                                animation="border"
+                                                                                role="status"
+                                                                                style={{ color: "#e84646", marginBottom: '10px' }}
+                                                                            >
+                                                                                <span className="sr-only">Loading...</span>
+                                                                            </Spinner>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <button
+                                                                            className="btn btn-block btn-lg"
+                                                                            onClick={async () => {
+                                                                                setApproveAIsLoading(true)
+                                                                                await approveMakedeploy()
+                                                                                setApproveAIsLoading(false)
+                                                                            }
+                                                                            }
+                                                                        >
+                                                                            Approve
+                                                                        </button>
+                                                                    )
+                                                                ) : (null)}
 
-                                                                        )}
-                                                                    </Col>
-                                                                </Row>
+
+
+                                                                {isLoading ? (
+                                                                    <div className="text-center">
+                                                                        <Spinner
+                                                                            animation="border"
+                                                                            role="status"
+                                                                            style={{ color: "#e84646", marginTop: '10px' }}
+                                                                        >
+                                                                            <span className="sr-only">Loading...</span>
+                                                                        </Spinner>
+                                                                    </div>
+                                                                ) : (
+                                                                    (liquidity) * value / 100 <= pairAllowance && tokenAAmountPercent !== 0 && tokenBAmountPercent !== 0 && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
+                                                                        isRemoveLiquidityCSPR ? (
+                                                                            <button
+                                                                                className="btn btn-block btn-lg"
+                                                                                onClick={async () => await RemoveLiquidityCSPRMakeDeploy()}
+                                                                            >
+                                                                                Remove Liquidity CSPR
+                                                                            </button>
+                                                                        ) : (
+                                                                            <button
+                                                                                className="btn btn-block btn-lg"
+                                                                                onClick={async () => await RemoveLiquidityMakeDeploy()}
+                                                                            >
+                                                                                Remove Liquidity
+                                                                            </button>
+                                                                        )
+
+                                                                    ) : activePublicKey === 'null' || activePublicKey === null || activePublicKey === undefined ? (
+                                                                        <button
+                                                                            className="btn btn-block btn-lg"
+                                                                            disabled
+                                                                        >
+                                                                            Connect to Signer
+                                                                        </button>
+                                                                    ) : isRemoveLiquidityCSPR ? (
+                                                                        <button
+                                                                            className="btn btn-block btn-lg"
+                                                                            disabled
+                                                                        >
+                                                                            Remove Liquidity CSPR
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button
+                                                                            className="btn btn-block btn-lg"
+                                                                            disabled
+                                                                        >
+                                                                            Remove Liquidity
+                                                                        </button>
+                                                                    )
+                                                                )}
+                                                                {(tokenA && tokenB) && (tokenA.symbol === "WCSPR" || tokenB.symbol === "WCSPR") ? (
+                                                                    <FormGroup>
+                                                                        <FormControlLabel onClick={() => {
+                                                                            setIsRemoveLiquidityCSPR(!isRemoveLiquidityCSPR)
+
+                                                                        }} value={isRemoveLiquidityCSPR} control={<Checkbox defaultValue={isRemoveLiquidityCSPR} />} label="Remove Liquidity CSPR" />
+                                                                    </FormGroup>
+                                                                ) : (null)}
+
                                                             </form>
                                                             <br></br>
-                                                            {tokenA && tokenB ? (
+                                                            {tokenA && tokenB && liquidity ? (
                                                                 <Card>
                                                                     <CardContent>
                                                                         <h3>Your Position</h3>
