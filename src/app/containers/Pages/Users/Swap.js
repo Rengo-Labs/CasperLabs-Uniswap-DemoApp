@@ -1,9 +1,9 @@
-import { FormControl, FormHelperText, Input, InputAdornment } from "@material-ui/core";
+import { FormControl, FormHelperText, Input } from "@material-ui/core";
 import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardContent, CardHeader } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import axios from "axios";
-import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLList, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
+import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLList, CLPublicKey, CLString, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/Spinner";
@@ -12,7 +12,7 @@ import "../../../assets/css/style.css";
 import Logo from "../../../assets/img/cspr.png";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH, WRAPPED_CASPER_CONTRACT_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
 import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
@@ -176,8 +176,8 @@ function Swap(props) {
                             console.log("address1", address1);
                             if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 break;
                             } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
                                 setIsInvalidPair(false)
@@ -197,17 +197,29 @@ function Swap(props) {
                             let name1 = res.data.pairList[i].token1.name;
                             console.log("name0", name0);
                             console.log("name1", name1);
-                            if (name0 === "Wrapped Casper") {
-                                console.log('11111111', res.data.pairList[i]);
+                            if (name0 === "Wrapped Casper" && tokenA.name === "Casper") {
+                                console.log('1', res.data.pairList[i]);
+                                setIsInvalidPair(false)
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                break;
+                            } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper") {
+                                console.log('2', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 break;
-                            } else if (name1 === "Wrapped Casper") {
-                                console.log('222222', res.data.pairList[i]);
+                            } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper") {
+                                console.log('3', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                break;
+                            } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper") {
+                                console.log('4', res.data.pairList[i]);
+                                setIsInvalidPair(false)
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 break;
                             } else {
                                 setIsInvalidPair(true)
@@ -415,13 +427,13 @@ function Swap(props) {
         const publicKeyHex = activePublicKey
         if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
             const deadline = 1739598100811;
-            const paymentAmount = 20000000000;
+            const paymentAmount = 5000000000;
             if (inputSelection === "tokenA") {
                 if (tokenA.name === 'Casper') {
                     console.log("swap_exact_cspr_for_token");
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
-                    const tokenAAddress = tokenA.address;
+                    const tokenAAddress = WRAPPED_CASPER_CONTRACT_HASH;
                     const tokenBAddress = tokenB.address;
                     const amount_in = tokenAAmount;
                     const amount_out_min = tokenBAmount;
@@ -429,12 +441,12 @@ function Swap(props) {
 
                     console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    let path = [tokenAAddress, tokenBAddress]
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
-                        _paths.push(createRecipientAddress(p));
+                        const p = new CLString(path[i]);
+                        _paths.push(p);
                     }
                     console.log('_paths', _paths);
 
@@ -473,34 +485,27 @@ function Swap(props) {
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
                     const tokenAAddress = tokenA.address;
-                    const tokenBAddress = tokenB.address;
+                    const tokenBAddress = WRAPPED_CASPER_CONTRACT_HASH;
                     const amount_in = tokenAAmount;
                     const amount_out_min = tokenBAmount;
 
 
                     console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    let path = [tokenAAddress, tokenBAddress]
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
-                        _paths.push(createRecipientAddress(p));
+                        const p = new CLString(path[i]);
+                        _paths.push(p);
                     }
                     console.log('_paths', _paths);
-                    // const _token_a = new CLByteArray(
-                    //     Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
-                    // );
-                    // const _token_b = new CLByteArray(
-                    //     Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
-                    // );
                     console.log('mainPurse', mainPurse);
                     console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
                     const runtimeArgs = RuntimeArgs.fromMap({
                         amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
                         amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
-                        // to: createRecipientAddress(publicKey),
                         to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
                     });
@@ -538,25 +543,18 @@ function Swap(props) {
 
                     console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    let path = [tokenAAddress, tokenBAddress]
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
-                        _paths.push(createRecipientAddress(p));
+                        const p = new CLString(path[i]);
+                        _paths.push(p);
                     }
                     console.log('_paths', _paths);
-                    const _token_a = new CLByteArray(
-                        Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
-                    );
-                    const _token_b = new CLByteArray(
-                        Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
-                    );
                     const runtimeArgs = RuntimeArgs.fromMap({
                         amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
                         amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
-                        token_a: new CLKey(_token_a),
-                        token_b: new CLKey(_token_b),
+                        path: new CLList(_paths),
                         to: createRecipientAddress(publicKey),
                         deadline: CLValueBuilder.u256(deadline),
                     });
@@ -588,17 +586,17 @@ function Swap(props) {
                     console.log("swap_cspr_for_exact_token");
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
-                    const tokenAAddress = tokenA.address;
+                    const tokenAAddress = WRAPPED_CASPER_CONTRACT_HASH;
                     const tokenBAddress = tokenB.address;
 
                     console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    let path = [tokenAAddress, tokenBAddress]
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
-                        _paths.push(createRecipientAddress(p));
+                        const p = new CLString(path[i]);
+                        _paths.push(p);
                     }
                     console.log('_paths', _paths);
                     console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
@@ -637,16 +635,16 @@ function Swap(props) {
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
                     const tokenAAddress = tokenA.address;
-                    const tokenBAddress = tokenB.address;
+                    const tokenBAddress = WRAPPED_CASPER_CONTRACT_HASH;
 
                     console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    let path = [tokenAAddress, tokenBAddress]
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
-                        _paths.push(createRecipientAddress(p));
+                        const p = new CLString(path[i]);
+                        _paths.push(p);
                     }
                     console.log('_paths', _paths);
 
@@ -689,12 +687,12 @@ function Swap(props) {
 
                     console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress.slice(5), tokenBAddress.slice(5)]
+                    let path = [tokenAAddress, tokenBAddress]
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLByteArray(Uint8Array.from(Buffer.from(path[i], "hex")));
-                        _paths.push(createRecipientAddress(p));
+                        const p = new CLString(path[i]);
+                        _paths.push(p);
                     }
                     console.log('_paths', _paths);
 

@@ -188,22 +188,38 @@ function AddLiquidity(props) {
                             let name1 = res.data.pairList[i].token1.name;
                             console.log("name0", name0);
                             console.log("name1", name1);
-                            if (name0 === "Wrapped Casper") {
-                                console.log('res.Wrapped CasperWrapped Casper.', res.data.pairList[i]);
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                liquiditySetter(res.data.pairList[i])
-                                break;
-                            } else if (name1 === "Wrapped Casper") {
+                            if (name0 === "Wrapped Casper" && tokenA.name === "Casper") {
+                                console.log('1', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
+                            } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper") {
+                                console.log('2', res.data.pairList[i]);
+                                setIsInvalidPair(false)
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                liquiditySetter(res.data.pairList[i])
+                                break;
+                            } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper") {
+                                console.log('3', res.data.pairList[i]);
+                                setIsInvalidPair(false)
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                liquiditySetter(res.data.pairList[i])
+                                break;
+                            } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper") {
+                                console.log('4', res.data.pairList[i]);
+                                setIsInvalidPair(false)
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                liquiditySetter(res.data.pairList[i])
+                                break;
                             } else {
                                 setIsInvalidPair(true)
                             }
+
                         }
                     }
                 })
@@ -410,7 +426,7 @@ function AddLiquidity(props) {
 
         }
     }, [activePublicKey, tokenB]);
-    
+
     useEffect(() => {
         if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
             const client = new CasperServiceByJsonRPC(
@@ -445,7 +461,7 @@ function AddLiquidity(props) {
             const token_AAmount = tokenAAmount;
             const token_BAmount = tokenBAmount;
             const deadline = 1739598100811;
-            const paymentAmount = 20000000000;
+            const paymentAmount = 10000000000;
             const _token_a = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
             );
@@ -808,7 +824,6 @@ function AddLiquidity(props) {
                                                                     </Accordion>
                                                                 ) : (null)}
                                                                 <Row>
-
                                                                     {tokenA && tokenA.name !== 'Casper' && tokenAAmount > 0 && tokenAAmount * 10 ** 9 > tokenAAllowance && !isInvalidPair ? (
                                                                         approveAIsLoading ? (
                                                                             <Col>
@@ -822,7 +837,16 @@ function AddLiquidity(props) {
                                                                                     </Spinner>
                                                                                 </div>
                                                                             </Col>
-                                                                        ) : (
+                                                                        ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenABalance < tokenAAmount * 10 ** 9 ? (
+                                                                            <Col>
+                                                                                <button
+                                                                                    className="btn btn-block btn-lg "
+                                                                                    disabled
+                                                                                >
+                                                                                    Insuffucient Balance
+                                                                                </button>
+                                                                            </Col>
+                                                                        ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined ? (
                                                                             <Col>
                                                                                 <button
                                                                                     className="btn btn-block btn-lg"
@@ -834,6 +858,15 @@ function AddLiquidity(props) {
                                                                                     }
                                                                                 >
                                                                                     Approve {tokenA.symbol}
+                                                                                </button>
+                                                                            </Col>
+                                                                        ) : (
+                                                                            <Col>
+                                                                                <button
+                                                                                    className="btn btn-block btn-lg"
+                                                                                    disabled
+                                                                                >
+                                                                                    Connect to Signer First
                                                                                 </button>
                                                                             </Col>
                                                                         )
@@ -853,7 +886,16 @@ function AddLiquidity(props) {
                                                                                     </Spinner>
                                                                                 </div>
                                                                             </Col>
-                                                                        ) : (
+                                                                        ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenBBalance < tokenBAmount * 10 ** 9 ? (
+                                                                            <Col>
+                                                                                <button
+                                                                                    className="btn btn-block btn-lg "
+                                                                                    disabled
+                                                                                >
+                                                                                    Insuffucient Balance
+                                                                                </button>
+                                                                            </Col>
+                                                                        ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined ? (
                                                                             <Col>
                                                                                 <button
                                                                                     className="btn btn-block btn-lg"
@@ -865,6 +907,15 @@ function AddLiquidity(props) {
                                                                                     }
                                                                                 >
                                                                                     Approve {tokenB.symbol}
+                                                                                </button>
+                                                                            </Col>
+                                                                        ) : (
+                                                                            <Col>
+                                                                                <button
+                                                                                    className="btn btn-block btn-lg"
+                                                                                    disabled
+                                                                                >
+                                                                                    Connect to Signer First
                                                                                 </button>
                                                                             </Col>
                                                                         )
@@ -942,6 +993,13 @@ function AddLiquidity(props) {
                                                                         disabled
                                                                     >
                                                                         Invalid Pair
+                                                                    </button>
+                                                                ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && (tokenABalance < tokenAAmount * 10 ** 9 || tokenBBalance < tokenBAmount * 10 ** 9) ? (
+                                                                    <button
+                                                                        className="btn btn-block btn-lg "
+                                                                        disabled
+                                                                    >
+                                                                        Insuffucient Balance
                                                                     </button>
                                                                 ) : tokenA && tokenA.name !== "Casper" && tokenAAmount * 10 ** 9 > tokenAAllowance ? (
                                                                     <button

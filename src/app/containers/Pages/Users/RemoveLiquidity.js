@@ -256,7 +256,7 @@ function RemoveLiquidity(props) {
             const token_AAmount = (tokenAAmountPercent).toFixed(5);
             const token_BAmount = (tokenBAmountPercent).toFixed(5);
             const deadline = 1739598100811;
-            const paymentAmount = 20000000000;
+            const paymentAmount = 5000000000;
 
             console.log('tokenAAddress', tokenAAddress);
             const _token_a = new CLByteArray(
@@ -322,7 +322,7 @@ function RemoveLiquidity(props) {
                 token_Amount = (tokenAAmountPercent).toFixed(5);
             }
             const deadline = 1739598100811;
-            const paymentAmount = 20000000000;
+            const paymentAmount = 5000000000;
 
             console.log('token', token);
             const _token = new CLByteArray(
@@ -455,10 +455,10 @@ function RemoveLiquidity(props) {
                                                                                 />
                                                                                 <CardContent className="text-center" >
                                                                                     <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
-                                                                                        {`1 ${tokenA.name} = ${(tokenAAmountPercent / tokenBAmountPercent).toFixed(5)} ${tokenB.name}`}
+                                                                                        {`1 ${tokenA.name} = ${(tokenBAmountPercent / tokenAAmountPercent).toFixed(5)} ${tokenB.name}`}
                                                                                     </Typography>
                                                                                     <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
-                                                                                        {`1 ${tokenB.name} = ${(tokenBAmountPercent / tokenAAmountPercent).toFixed(5)} ${tokenA.name}`}
+                                                                                        {`1 ${tokenB.name} = ${(tokenAAmountPercent / tokenBAmountPercent).toFixed(5)} ${tokenA.name}`}
                                                                                     </Typography>
                                                                                 </CardContent>
                                                                             </Card>) : (null)}
