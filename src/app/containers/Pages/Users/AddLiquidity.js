@@ -81,6 +81,8 @@ function AddLiquidity(props) {
     const [istokenList, setIsTokenList] = useState(false)
     let [isLoading, setIsLoading] = useState(false);
     const [slippage, setSlippage] = useState(0.5);
+    const [reserve0, setReserve0] = useState(1)
+    const [reserve1, setReserve1] = useState(1)
     const [openSlippage, setOpenSlippage] = useState(false);
     const handleCloseSlippage = () => {
         setOpenSlippage(false);
@@ -144,6 +146,39 @@ function AddLiquidity(props) {
             })
         // eslint-disable-next-line
     }, []);
+    useEffect(() => {
+        if (tokenA && tokenB) {
+            let pathParamsArr = [
+                tokenA.symbol,
+                tokenB.symbol,
+            ]
+            if (tokenA.symbol === "CSPR") {
+                pathParamsArr[0] = "WCSPR"
+
+            } else if (tokenB.symbol === "CSPR") {
+                pathParamsArr[1] = "WCSPR"
+            }
+
+            let pathResParam = {
+                path: pathParamsArr
+            }
+            console.log("pathResParam", pathResParam);
+            axios
+                .post('/getpathreserves', pathResParam)
+                .then((res) => {
+                    console.log('getpathreserves', res)
+                    setReserve0(res.data.reserve0)
+                    setReserve1(res.data.reserve1)
+                })
+                .catch((error) => {
+                    setReserve0(1)
+                    setReserve1(1)
+                    console.log(error)
+                    console.log(error.response)
+                })
+        }
+
+    }, [tokenA, tokenB]);
     useEffect(() => {
         if (tokenA && tokenB) {
             console.log("tokenA", tokenA);
@@ -660,7 +695,7 @@ function AddLiquidity(props) {
                                                                                     onChange={(e) => {
                                                                                         if (e.target.value >= 0) {
                                                                                             setTokenAAmount(e.target.value)
-                                                                                            setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
+                                                                                            setTokenBAmount(e.target.value * reserve0)
                                                                                         } else {
                                                                                             setTokenAAmount(0)
                                                                                             setTokenBAmount(0)
@@ -731,7 +766,7 @@ function AddLiquidity(props) {
                                                                                     onChange={(e) => {
                                                                                         if (e.target.value >= 0) {
                                                                                             setTokenBAmount(e.target.value)
-                                                                                            setTokenAAmount(e.target.value * (tokenBAmountPercent / tokenAAmountPercent).toFixed(5))
+                                                                                            setTokenAAmount(e.target.value * reserve1)
                                                                                         }
                                                                                         else {
                                                                                             setTokenAAmount(0)
@@ -931,7 +966,7 @@ function AddLiquidity(props) {
                                                                                     <Col>
                                                                                         <CardHeader
                                                                                             style={{ margin: '10px' }}
-                                                                                            title={tokenAAmount}
+                                                                                            title={parseFloat(tokenAAmount).toFixed(5)}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
@@ -945,7 +980,7 @@ function AddLiquidity(props) {
                                                                                     <Col>
                                                                                         <CardHeader
                                                                                             style={{ margin: '10px' }}
-                                                                                            title={(tokenBAmount)}
+                                                                                            title={parseFloat(tokenBAmount).toFixed(5)}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
@@ -965,10 +1000,10 @@ function AddLiquidity(props) {
 
                                                                             <CardContent className="text-center" >
                                                                                 <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
-                                                                                    {`1 ${tokenA.name} = ${(tokenAAmountPercent / tokenBAmountPercent).toFixed(5)} ${tokenB.name}`}
+                                                                                    {`1 ${tokenA.name} = ${reserve0} ${tokenB.name}`}
                                                                                 </Typography>
                                                                                 <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
-                                                                                    {`1 ${tokenB.name} = ${(tokenBAmountPercent / tokenAAmountPercent).toFixed(5)} ${tokenA.name}`}
+                                                                                    {`1 ${tokenB.name} = ${reserve1} ${tokenA.name}`}
                                                                                 </Typography>
                                                                             </CardContent>
                                                                         </Card>

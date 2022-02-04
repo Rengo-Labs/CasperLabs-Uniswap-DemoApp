@@ -1,5 +1,4 @@
 import { Avatar, Card, CardHeader } from "@material-ui/core";
-import { styled } from "@material-ui/styles";
 import React from "react";
 import { Modal } from "react-bootstrap";
 import "../../assets/css/bootstrap.min.css";
@@ -8,19 +7,8 @@ import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 
 
-const options = {
-    shouldForwardProp: (prop) => prop !== 'hoverShadow',
-};
-const StyledCard = styled(
-    Card,
-    options,
-)(({ theme, hoverShadow = 1 }) => ({
-    ':hover': {
-        boxShadow: theme.shadows[hoverShadow],
-    },
-}));
 
-function TokenBModal(props) {
+function TokenAModal(props) {
     return (
         <Modal show={props.show} onHide={props.handleClose}>
             <Modal.Header closeButton>
@@ -60,4 +48,4 @@ function TokenBModal(props) {
     );
 }
 
-export default TokenBModal;
+export default TokenAModal;

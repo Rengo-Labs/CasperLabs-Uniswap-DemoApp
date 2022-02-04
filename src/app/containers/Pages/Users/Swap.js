@@ -12,7 +12,7 @@ import "../../../assets/css/style.css";
 import Logo from "../../../assets/img/cspr.png";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
-import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH, WRAPPED_CASPER_CONTRACT_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
 import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
@@ -73,13 +73,16 @@ function Swap(props) {
     let [tokenBAmount, setTokenBAmount] = useState(0);
     let [tokenABalance, setTokenABalance] = useState(0);
     let [tokenBBalance, setTokenBBalance] = useState(0);
-    let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
-    let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
     let [tokenAAllowance, setTokenAAllowance] = useState(0);
     let [isInvalidPair, setIsInvalidPair] = useState(false);
     const [tokenList, setTokenList] = useState([])
     const [istokenList, setIsTokenList] = useState(false)
+    const [swapPath, setSwapPath] = useState([])
+    const [reserve0, setReserve0] = useState(1)
+    const [reserve1, setReserve1] = useState(1)
+
+
     let [isLoading, setIsLoading] = useState(false);
     const [slippage, setSlippage] = useState(0.5);
     const [openSlippage, setOpenSlippage] = useState(false);
@@ -160,83 +163,52 @@ function Swap(props) {
     }, []);
     useEffect(() => {
         if (tokenA && tokenB) {
-            console.log("tokenA", tokenA);
-            console.log("tokenB", tokenB);
-            axios
-                .get('/getpairlist')
-                .then((res) => {
-                    console.log('resresres', res)
-                    console.log(res.data.pairList)
-                    if (tokenA.name !== "Casper" && tokenB.name !== "Casper") {
+            let pathParams = {
+                tokenASymbol: tokenA.symbol,
+                tokenBSymbol: tokenB.symbol,
+            }
+            if (tokenA.symbol === "CSPR") {
+                pathParams.tokenASymbol = "WCSPR"
 
-                        for (let i = 0; i < res.data.pairList.length; i++) {
-                            let address0 = res.data.pairList[i].token0.id.toLowerCase();
-                            let address1 = res.data.pairList[i].token1.id.toLowerCase();
-                            console.log("address0", address0);
-                            console.log("address1", address1);
-                            if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                break;
-                            } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                break;
-                            } else {
-                                setIsInvalidPair(true)
-                            }
-                        }
-                    } else if ((tokenA.name === "Casper" && tokenB.name === "Wrapped Casper") || (tokenA.name === "Wrapped Casper" && tokenB.name === "Casper")) {
-                        setTokenAAmountPercent(1)
-                        setTokenBAmountPercent(1)
-                    } else {
-                        for (let i = 0; i < res.data.pairList.length; i++) {
-                            let name0 = res.data.pairList[i].token0.name;
-                            let name1 = res.data.pairList[i].token1.name;
-                            console.log("name0", name0);
-                            console.log("name1", name1);
-                            if (name0 === "Wrapped Casper" && tokenA.name === "Casper") {
-                                console.log('1', res.data.pairList[i]);
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                break;
-                            } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper") {
-                                console.log('2', res.data.pairList[i]);
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                break;
-                            } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper") {
-                                console.log('3', res.data.pairList[i]);
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                break;
-                            } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper") {
-                                console.log('4', res.data.pairList[i]);
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                break;
-                            } else {
-                                setIsInvalidPair(true)
-                            }
-                        }
+            } else if (tokenB.symbol === "CSPR") {
+                pathParams.tokenBSymbol = "WCSPR"
+            }
+
+            console.log('pathParams', pathParams);
+            axios
+                .post('/getpath', pathParams)
+                .then((res) => {
+                    console.log('getPath', res)
+                    setIsInvalidPair(false);
+                    setSwapPath(res.data.pathwithcontractHash)
+                    let pathResParam = {
+                        path: res.data.path
                     }
+                    console.log("pathResParam", pathResParam);
+                    axios
+                        .post('/getpathreserves', pathResParam)
+                        .then((res) => {
+                            console.log('getpathreserves', res)
+                            setReserve0(res.data.reserve0)
+                            setReserve1(res.data.reserve1)
+                        })
+                        .catch((error) => {
+                            console.log(error)
+                            console.log(error.response)
+                        })
+
+
                 })
                 .catch((error) => {
+                    setIsInvalidPair(true);
+                    setReserve0(1)
+                    setReserve1(1)
                     console.log(error)
                     console.log(error.response)
                 })
         }
-        else {
-            setTokenAAmountPercent(0)
-            setTokenBAmountPercent(0)
-        }
-    }, [activePublicKey, tokenA, tokenB]);
+
+    }, [tokenA, tokenB]);
     useEffect(() => {
         if (tokenA && tokenA.name !== "Casper" && activePublicKey) {
             let balanceParam = {
@@ -433,19 +405,15 @@ function Swap(props) {
                     console.log("swap_exact_cspr_for_token");
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
-                    const tokenAAddress = WRAPPED_CASPER_CONTRACT_HASH;
-                    const tokenBAddress = tokenB.address;
                     const amount_in = tokenAAmount;
                     const amount_out_min = tokenBAmount;
 
-
-                    console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress, tokenBAddress]
+                    let path = swapPath
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLString(path[i]);
+                        const p = new CLString('hash-'.concat(path[i]));
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
@@ -484,19 +452,15 @@ function Swap(props) {
                     console.log("swap_exact_token_for_cspr");
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
-                    const tokenAAddress = tokenA.address;
-                    const tokenBAddress = WRAPPED_CASPER_CONTRACT_HASH;
                     const amount_in = tokenAAmount;
                     const amount_out_min = tokenBAmount;
 
-
-                    console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress, tokenBAddress]
+                    let path = swapPath
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLString(path[i]);
+                        const p = new CLString('hash-'.concat(path[i]));
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
@@ -535,19 +499,14 @@ function Swap(props) {
                     console.log("swap_exact_token_for_token");
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
-                    const tokenAAddress = tokenA.address;
-                    const tokenBAddress = tokenB.address;
                     const amount_in = tokenAAmount;
                     const amount_out_min = tokenBAmount;
-
-
-                    console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress, tokenBAddress]
+                    let path = swapPath
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLString(path[i]);
+                        const p = new CLString('hash-'.concat(path[i]));
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
@@ -586,16 +545,12 @@ function Swap(props) {
                     console.log("swap_cspr_for_exact_token");
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
-                    const tokenAAddress = WRAPPED_CASPER_CONTRACT_HASH;
-                    const tokenBAddress = tokenB.address;
-
-                    console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress, tokenBAddress]
+                    let path = swapPath
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLString(path[i]);
+                        const p = new CLString('hash-'.concat(path[i]));
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
@@ -634,16 +589,12 @@ function Swap(props) {
                     console.log("swap_token_for_exact_cspr");
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
-                    const tokenAAddress = tokenA.address;
-                    const tokenBAddress = WRAPPED_CASPER_CONTRACT_HASH;
-
-                    console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress, tokenBAddress]
+                    let path = swapPath
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLString(path[i]);
+                        const p = new CLString('hash-'.concat(path[i]));
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
@@ -682,16 +633,12 @@ function Swap(props) {
                     console.log("swap_token_for_exact_token");
                     const publicKey = CLPublicKey.fromHex(publicKeyHex);
                     const caller = ROUTER_CONTRACT_HASH;
-                    const tokenAAddress = tokenA.address;
-                    const tokenBAddress = tokenB.address;
-
-                    console.log('tokenAAddress', tokenAAddress);
                     console.log('publicKeyHex', publicKeyHex);
-                    let path = [tokenAAddress, tokenBAddress]
+                    let path = swapPath
                     console.log('path', path);
                     let _paths = [];
                     for (let i = 0; i < path.length; i++) {
-                        const p = new CLString(path[i]);
+                        const p = new CLString('hash-'.concat(path[i]));
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
@@ -806,8 +753,9 @@ function Swap(props) {
                                                                                     // setTokenAAmount(e.target.value)
                                                                                     if (e.target.value >= 0) {
                                                                                         setTokenAAmount(e.target.value)
-                                                                                        setTokenBAmount(e.target.value * (tokenAAmountPercent / tokenBAmountPercent).toFixed(5))
+                                                                                        setTokenBAmount(e.target.value * reserve0)
                                                                                         setInputSelection('tokenA')
+
                                                                                     } else {
                                                                                         setTokenAAmount(0)
                                                                                         setTokenBAmount(0)
@@ -891,9 +839,11 @@ function Swap(props) {
                                                                                 id="standard-adornment-weight"
                                                                                 value={tokenBAmount}
                                                                                 onChange={(e) => {
+                                                                                    // 1:10
+
                                                                                     if (e.target.value >= 0) {
                                                                                         setTokenBAmount(e.target.value)
-                                                                                        setTokenAAmount(e.target.value * (tokenBAmountPercent / tokenAAmountPercent).toFixed(5))
+                                                                                        setTokenAAmount(e.target.value * reserve1)
                                                                                         setInputSelection('tokenB')
                                                                                     }
                                                                                     else {
