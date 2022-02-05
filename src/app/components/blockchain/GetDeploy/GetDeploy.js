@@ -1,7 +1,7 @@
 import { CasperClient } from "casper-js-sdk";
 import { sleep } from "../Sleep/Sleep";
 
-export async function getDeploy(NODE_URL, deployHash) {
+export async function getDeploy(NODE_URL, deployHash,enqueueSnackbar) {
     const client = new CasperClient(NODE_URL);
     let i = 1000;
     while (i !== 0) {
@@ -13,6 +13,8 @@ export async function getDeploy(NODE_URL, deployHash) {
                 return deploy;
             } else {
                 // @ts-ignore
+                let variant = "error";
+                        enqueueSnackbar(raw.execution_results[0].result.Failure.error_message, { variant });
                 throw Error("Contract execution: " + raw.execution_results[0].result.Failure.error_message);
             }
         } else {

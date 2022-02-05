@@ -304,7 +304,7 @@ function AddLiquidity(props) {
             console.log("make deploy: ", deploy);
             try {
                 let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy)
+                let result = await putdeploy(signedDeploy, enqueueSnackbar)
                 if (tokenApproved === 'tokenA') {
                     setTokenAAllowance(amount * 10 ** 9)
                 } else {
@@ -329,71 +329,77 @@ function AddLiquidity(props) {
     }
     useEffect(() => {
         if (tokenA && tokenA.name !== "Casper" && activePublicKey) {
-            let balanceParam = {
-                contractHash: tokenA.address.slice(5),
-                user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
-            }
-            axios
-                .post('/balanceagainstuser', balanceParam)
-                .then((res) => {
-                    console.log('tokenAbalanceagainstuser', res)
-                    console.log(res.data)
-                    setTokenABalance(res.data.balance)
-
-                })
-                .catch((error) => {
-                    console.log(error)
-                    console.log(error.response)
-                });
-
-            let allowanceParam = {
-                contractHash: tokenA.address.slice(5),
-                owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
-                spender: ROUTER_PACKAGE_HASH
-            }
-            console.log('allowanceParam0', allowanceParam);
-            axios
-                .post('/allowanceagainstownerandspender', allowanceParam)
-                .then((res) => {
-                    console.log('allowanceagainstownerandspender', res)
-                    console.log(res.data)
-                    setTokenAAllowance(res.data.allowance)
-
-                })
-                .catch((error) => {
-                    console.log(error)
-                    console.log(error.response)
-                })
+            getTokenBalance();
         }
         if (tokenA && tokenA.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
-            const client = new CasperServiceByJsonRPC(
-                NODE_ADDRESS
-            );
-            getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
-                console.log('stateRootHash', stateRootHash);
-                client.getBlockState(
-                    stateRootHash,
-                    CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
-                    []
-                ).then(result => {
-                    console.log('result', result.Account.mainPurse);
-                    setMainPurse(result.Account.mainPurse)
-                    try {
-                        const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
-                        client.getAccountBalance(
-                            stateRootHash,
-                            result.Account.mainPurse
-                        ).then(result => {
-                            console.log('CSPR balance', result.toString());
-                            setTokenABalance(result.toString())
-                        });
-                    } catch (error) {
-                        console.log('error', error);
-                    }
-                });
-            })
+            getCurrencyBalance()
         }
     }, [activePublicKey, tokenA]);
+    function getCurrencyBalance() {
+        const client = new CasperServiceByJsonRPC(
+            NODE_ADDRESS
+        );
+        getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+            console.log('stateRootHash', stateRootHash);
+            client.getBlockState(
+                stateRootHash,
+                CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                []
+            ).then(result => {
+                console.log('result', result.Account.mainPurse);
+                setMainPurse(result.Account.mainPurse)
+                try {
+                    const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+                    client.getAccountBalance(
+                        stateRootHash,
+                        result.Account.mainPurse
+                    ).then(result => {
+                        console.log('CSPR balance', result.toString());
+                        setTokenABalance(result.toString())
+                    });
+                } catch (error) {
+                    console.log('error', error);
+                }
+            });
+        })
+    }
+    function getTokenBalance() {
+        let balanceParam = {
+            contractHash: tokenA.address.slice(5),
+            user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+        }
+        axios
+            .post('/balanceagainstuser', balanceParam)
+            .then((res) => {
+                console.log('tokenAbalanceagainstuser', res)
+                console.log(res.data)
+                setTokenABalance(res.data.balance)
+
+            })
+            .catch((error) => {
+                console.log(error)
+                console.log(error.response)
+            });
+
+        let allowanceParam = {
+            contractHash: tokenA.address.slice(5),
+            owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
+            spender: ROUTER_PACKAGE_HASH
+        }
+        console.log('allowanceParam0', allowanceParam);
+        axios
+            .post('/allowanceagainstownerandspender', allowanceParam)
+            .then((res) => {
+                console.log('allowanceagainstownerandspender', res)
+                console.log(res.data)
+                setTokenAAllowance(res.data.allowance)
+
+            })
+            .catch((error) => {
+                console.log(error)
+                console.log(error.response)
+            })
+    }
     useEffect(() => {
         if (tokenB && tokenB.name !== "Casper" && activePublicKey) {
             let balanceParam = {
@@ -525,12 +531,13 @@ function AddLiquidity(props) {
                 console.log("make deploy: ", deploy);
                 try {
                     let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy)
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
                     console.log('result', result);
                     setTokenAAllowance(0)
                     setTokenBAllowance(0)
                     setTokenAAmount(0)
                     setTokenBAmount(0)
+                    getCurrencyBalance()
                     handleCloseSigning()
                     let variant = "success";
                     enqueueSnackbar('Liquidity Added Successfully', { variant });
@@ -563,12 +570,13 @@ function AddLiquidity(props) {
                 console.log("make deploy: ", deploy);
                 try {
                     let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy)
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
                     console.log('result', result);
                     setTokenAAllowance(0)
                     setTokenBAllowance(0)
                     setTokenAAmount(0)
                     setTokenBAmount(0)
+                    getCurrencyBalance()
                     handleCloseSigning()
                     let variant = "success";
                     enqueueSnackbar('Liquidity Added Successfully', { variant });
@@ -601,13 +609,14 @@ function AddLiquidity(props) {
                 console.log("make deploy: ", deploy);
                 try {
                     let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy)
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
                     console.log('result', result);
                     let variant = "success";
                     setTokenAAllowance(0)
                     setTokenBAllowance(0)
                     setTokenAAmount(0)
                     setTokenBAmount(0)
+                    getTokenBalance()
                     handleCloseSigning()
                     enqueueSnackbar('Liquidity Added Successfully', { variant });
                     setIsLoading(false)

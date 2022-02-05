@@ -225,7 +225,7 @@ function RemoveLiquidity(props) {
             console.log("make deploy: ", deploy);
             try {
                 let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy)
+                let result = await putdeploy(signedDeploy, enqueueSnackbar)
                 console.log('result', result);
                 handleCloseSigning()
                 let variant = "success";
@@ -283,7 +283,7 @@ function RemoveLiquidity(props) {
             console.log("make deploy: ", deploy);
             try {
                 let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy)
+                let result = await putdeploy(signedDeploy, enqueueSnackbar)
                 console.log('result', result);
                 let variant = "success";
                 handleCloseSigning()
@@ -345,7 +345,7 @@ function RemoveLiquidity(props) {
             console.log("make deploy: ", deploy);
             try {
                 let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy)
+                let result = await putdeploy(signedDeploy, enqueueSnackbar)
                 console.log('result', result);
                 let variant = "success";
                 handleCloseSigning()

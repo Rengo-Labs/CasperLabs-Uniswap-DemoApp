@@ -370,7 +370,7 @@ function Swap(props) {
             console.log("make deploy: ", deploy);
             try {
                 let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy)
+                let result = await putdeploy(signedDeploy, enqueueSnackbar)
                 console.log('result', result);
                 setTokenAAllowance(parseInt(amount * 10 ** 9))
                 handleCloseSigning()
@@ -435,7 +435,7 @@ function Swap(props) {
                     console.log("make deploy: ", deploy);
                     try {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
                         console.log('result', result);
                         handleCloseSigning()
                         let variant = "success";
@@ -482,7 +482,7 @@ function Swap(props) {
                     console.log("make deploy: ", deploy);
                     try {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
                         console.log('result', result);
                         handleCloseSigning()
                         let variant = "success";
@@ -526,7 +526,7 @@ function Swap(props) {
                     console.log("make deploy: ", deploy);
                     try {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
                         console.log('result', result);
                         handleCloseSigning()
                         let variant = "success";
@@ -572,7 +572,7 @@ function Swap(props) {
                     console.log("make deploy: ", deploy);
                     try {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
                         console.log('result', result);
                         handleCloseSigning()
                         let variant = "success";
@@ -615,7 +615,7 @@ function Swap(props) {
                     console.log("make deploy: ", deploy);
                     try {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
                         console.log('result', result);
                         handleCloseSigning()
                         let variant = "success";
@@ -658,7 +658,7 @@ function Swap(props) {
                     console.log("make deploy: ", deploy);
                     try {
                         let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
                         console.log('result', result);
                         handleCloseSigning()
                         let variant = "success";
@@ -953,12 +953,12 @@ function Swap(props) {
                                                                         </Spinner>
                                                                     </div>
                                                                 ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenABalance < tokenAAmount * 10 ** 9 ? (
-                                                                        <button
-                                                                            className="btn btn-block btn-lg "
-                                                                            disabled
-                                                                        >
-                                                                            Insufficient Balance
-                                                                        </button>
+                                                                    <button
+                                                                        className="btn btn-block btn-lg "
+                                                                        disabled
+                                                                    >
+                                                                        Insufficient Balance
+                                                                    </button>
                                                                 ) : (
                                                                     <button
                                                                         className="btn-block btn-outline-primary btn-lg"
@@ -990,14 +990,14 @@ function Swap(props) {
                                                                 >
                                                                     Invalid Pair
                                                                 </button>
-                                                            )  : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenABalance < tokenAAmount * 10 ** 9 ? (
+                                                            ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenABalance < tokenAAmount * 10 ** 9 ? (
                                                                 <button
                                                                     className="btn btn-block btn-lg "
                                                                     disabled
                                                                 >
                                                                     Insufficient Balance
                                                                 </button>
-                                                            ): tokenA && tokenA.name !== "Casper" && tokenAAmount * 10 ** 9 > tokenAAllowance ? (
+                                                            ) : tokenA && tokenA.name !== "Casper" && tokenAAmount * 10 ** 9 > tokenAAllowance ? (
                                                                 <button
                                                                     className="btn btn-block btn-lg "
                                                                     disabled
