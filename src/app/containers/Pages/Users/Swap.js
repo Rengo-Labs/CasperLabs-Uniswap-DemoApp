@@ -359,7 +359,7 @@ function Swap(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(amount * 10 ** 9)
+                amount: CLValueBuilder.u256(parseInt(amount * 10 ** 9))
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
@@ -372,7 +372,7 @@ function Swap(props) {
                 let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
                 let result = await putdeploy(signedDeploy)
                 console.log('result', result);
-                setTokenAAllowance(amount * 10 ** 9)
+                setTokenAAllowance(parseInt(amount * 10 ** 9))
                 handleCloseSigning()
                 let variant = "success";
                 enqueueSnackbar('Approved Successfully', { variant });
@@ -467,7 +467,7 @@ function Swap(props) {
                     console.log('mainPurse', mainPurse);
                     console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
                     const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
+                        amount_in: CLValueBuilder.u256(parseInt(amount_in * 10 ** 9)),
                         amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
                         to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
@@ -511,7 +511,7 @@ function Swap(props) {
                     }
                     console.log('_paths', _paths);
                     const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
+                        amount_in: CLValueBuilder.u256(parseInt(amount_in * 10 ** 9)),
                         amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
                         to: createRecipientAddress(publicKey),
@@ -556,7 +556,7 @@ function Swap(props) {
                     console.log('_paths', _paths);
                     console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
                     const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_out: CLValueBuilder.u256(tokenBAmount * 10 ** 9),
+                        amount_out: CLValueBuilder.u256(parseInt(tokenBAmount * 10 ** 9)),
                         amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
                         to: createRecipientAddress(publicKey),
@@ -600,10 +600,9 @@ function Swap(props) {
                     console.log('_paths', _paths);
 
                     const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_out: CLValueBuilder.u256(tokenBAmount * 10 ** 9),
+                        amount_out: CLValueBuilder.u256(parseInt(tokenBAmount * 10 ** 9)),
                         amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
-                        // to: createRecipientAddress(publicKey),
                         to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
                     });
@@ -644,7 +643,7 @@ function Swap(props) {
                     console.log('_paths', _paths);
 
                     const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_out: CLValueBuilder.u256(tokenBAmount * 10 ** 9),
+                        amount_out: CLValueBuilder.u256(parseInt(tokenBAmount * 10 ** 9)),
                         amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
                         path: new CLList(_paths),
                         to: createRecipientAddress(publicKey),
@@ -953,6 +952,13 @@ function Swap(props) {
                                                                             <span className="sr-only">Loading...</span>
                                                                         </Spinner>
                                                                     </div>
+                                                                ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenABalance < tokenAAmount * 10 ** 9 ? (
+                                                                        <button
+                                                                            className="btn btn-block btn-lg "
+                                                                            disabled
+                                                                        >
+                                                                            Insufficient Balance
+                                                                        </button>
                                                                 ) : (
                                                                     <button
                                                                         className="btn-block btn-outline-primary btn-lg"
@@ -984,7 +990,14 @@ function Swap(props) {
                                                                 >
                                                                     Invalid Pair
                                                                 </button>
-                                                            ) : tokenA && tokenA.name !== "Casper" && tokenAAmount * 10 ** 9 > tokenAAllowance ? (
+                                                            )  : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenABalance < tokenAAmount * 10 ** 9 ? (
+                                                                <button
+                                                                    className="btn btn-block btn-lg "
+                                                                    disabled
+                                                                >
+                                                                    Insufficient Balance
+                                                                </button>
+                                                            ): tokenA && tokenA.name !== "Casper" && tokenAAmount * 10 ** 9 > tokenAAllowance ? (
                                                                 <button
                                                                     className="btn btn-block btn-lg "
                                                                     disabled

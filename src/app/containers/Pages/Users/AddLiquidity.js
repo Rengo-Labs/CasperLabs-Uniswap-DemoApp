@@ -878,7 +878,7 @@ function AddLiquidity(props) {
                                                                                     className="btn btn-block btn-lg "
                                                                                     disabled
                                                                                 >
-                                                                                    Insuffucient Balance
+                                                                                    Insufficient Balance
                                                                                 </button>
                                                                             </Col>
                                                                         ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined ? (
@@ -927,7 +927,7 @@ function AddLiquidity(props) {
                                                                                     className="btn btn-block btn-lg "
                                                                                     disabled
                                                                                 >
-                                                                                    Insuffucient Balance
+                                                                                    Insufficient Balance
                                                                                 </button>
                                                                             </Col>
                                                                         ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined ? (
@@ -1034,7 +1034,7 @@ function AddLiquidity(props) {
                                                                         className="btn btn-block btn-lg "
                                                                         disabled
                                                                     >
-                                                                        Insuffucient Balance
+                                                                        Insufficient Balance
                                                                     </button>
                                                                 ) : tokenA && tokenA.name !== "Casper" && tokenAAmount * 10 ** 9 > tokenAAllowance ? (
                                                                     <button
