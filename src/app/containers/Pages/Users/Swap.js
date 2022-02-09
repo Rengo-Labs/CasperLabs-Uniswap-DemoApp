@@ -5,7 +5,9 @@ import Typography from '@material-ui/core/Typography';
 import axios from "axios";
 import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLList, CLPublicKey, CLString, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
+import numeral from "numeral";
 import React, { useEffect, useState } from "react";
+import { Col, Row } from "react-bootstrap";
 import Spinner from "react-bootstrap/Spinner";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
@@ -60,6 +62,7 @@ const useStyles = makeStyles((theme) => ({
         marginBottom: 12,
     },
 }));
+const regex = /^\s*-?(\d+(\.\d{1,9})?|\.\d{1,9})\s*$/;
 // let RecipientType = CLPublicKey | CLAccountHash | CLByteArray;
 function Swap(props) {
     const classes = useStyles();
@@ -682,8 +685,9 @@ function Swap(props) {
             setIsLoading(false)
         }
     }
+    console.log("tokenAAmount", tokenAAmount);
+    console.log("tokenBAmount", tokenBAmount);
     return (
-
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
@@ -749,16 +753,20 @@ function Swap(props) {
                                                                                 id="standard-adornment-weight"
                                                                                 value={tokenAAmount}
                                                                                 onChange={(e) => {
-                                                                                    // setTokenAAmount(e.target.value)
-                                                                                    if (e.target.value >= 0) {
-                                                                                        setTokenAAmount(e.target.value)
-                                                                                        setTokenBAmount(e.target.value * reserve0)
-                                                                                        setInputSelection('tokenA')
+                                                                                    if (regex.test(e.target.value)) {
+                                                                                        if (e.target.value >= 0) {
+                                                                                            setTokenAAmount(e.target.value)
+                                                                                            setTokenBAmount(parseFloat(e.target.value * reserve0).toFixed(9))
+                                                                                            setInputSelection('tokenA')
 
+                                                                                        } else {
+                                                                                            setTokenAAmount(0)
+                                                                                            setTokenBAmount(0)
+                                                                                            setInputSelection()
+                                                                                        }
                                                                                     } else {
-                                                                                        setTokenAAmount(0)
-                                                                                        setTokenBAmount(0)
-                                                                                        setInputSelection()
+                                                                                        setTokenAAmount()
+                                                                                        setTokenBAmount()
                                                                                     }
                                                                                 }}
                                                                                 // endAdornment={<InputAdornment position="end">%</InputAdornment>}
@@ -767,7 +775,7 @@ function Swap(props) {
                                                                                     'aria-label': 'weight',
                                                                                 }}
                                                                             />
-                                                                            <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{tokenABalance / 10 ** 9}</FormHelperText>
+                                                                            <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{(tokenABalance / 10 ** 9).toFixed(9)}</FormHelperText>
                                                                         </FormControl>
                                                                     ) : (
                                                                         <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
@@ -778,7 +786,6 @@ function Swap(props) {
                                                                                 placeholder="0"
                                                                                 disabled
                                                                                 id="standard-adornment-weight"
-                                                                                // endAdornment={<InputAdornment position="end"></InputAdornment>}
                                                                                 aria-describedby="standard-weight-helper-text"
                                                                                 inputProps={{
                                                                                     'aria-label': 'weight',
@@ -799,8 +806,6 @@ function Swap(props) {
                                                                             <Card
                                                                                 className='custom-card'
                                                                             >
-                                                                                {/* <Row>
-                                                                                    <Col> */}
                                                                                 <CardHeader
                                                                                     onClick={() => {
                                                                                         handleShowTokenBModal()
@@ -809,11 +814,6 @@ function Swap(props) {
                                                                                     title={tokenB.name}
                                                                                     subheader={tokenB.symbol}
                                                                                 />
-                                                                                {/* </Col> */}
-                                                                                {/* <Col>
-                                                                                        <i style={{ float: 'right', margin: '20px', marginTop: '30px' }} className="fas fa-chevron-down"></i>
-                                                                                    </Col>
-                                                                                </Row> */}
                                                                             </Card>
                                                                         ) : (
                                                                             <Card onClick={() => {
@@ -838,16 +838,20 @@ function Swap(props) {
                                                                                 id="standard-adornment-weight"
                                                                                 value={tokenBAmount}
                                                                                 onChange={(e) => {
-                                                                                    // 1:10
-
-                                                                                    if (e.target.value >= 0) {
-                                                                                        setTokenBAmount(e.target.value)
-                                                                                        setTokenAAmount(e.target.value * reserve1)
-                                                                                        setInputSelection('tokenB')
-                                                                                    }
-                                                                                    else {
-                                                                                        setTokenAAmount(0)
-                                                                                        setTokenBAmount(0)
+                                                                                    if (regex.test(e.target.value)) {
+                                                                                        if (e.target.value >= 0) {
+                                                                                            setTokenBAmount(e.target.value)
+                                                                                            setTokenAAmount(parseFloat(e.target.value * reserve1).toFixed(9))
+                                                                                            setInputSelection('tokenB')
+                                                                                        }
+                                                                                        else {
+                                                                                            setTokenAAmount(0)
+                                                                                            setTokenBAmount(0)
+                                                                                            setInputSelection()
+                                                                                        }
+                                                                                    } else {
+                                                                                        setTokenAAmount()
+                                                                                        setTokenBAmount()
                                                                                         setInputSelection()
                                                                                     }
 
@@ -858,7 +862,7 @@ function Swap(props) {
                                                                                     'aria-label': 'weight',
                                                                                 }}
                                                                             />
-                                                                            <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{tokenBBalance / 10 ** 9}</FormHelperText>
+                                                                            <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{(tokenBBalance / 10 ** 9).toFixed(9)}</FormHelperText>
                                                                         </FormControl>
                                                                     ) : (
                                                                         <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
@@ -973,6 +977,62 @@ function Swap(props) {
                                                                 )
                                                             ) : (null)}
                                                             <br></br>
+                                                            {tokenA && tokenB && !isInvalidPair ? (
+                                                                <>
+                                                                    <Card>
+                                                                        <CardContent>
+                                                                            <Row>
+                                                                                <Col>
+                                                                                    <CardHeader
+                                                                                        style={{ margin: '10px' }}
+                                                                                        title={numeral(tokenAAmount).format('0,0.000000000')}
+                                                                                    />
+                                                                                </Col>
+                                                                                <Col>
+                                                                                    <CardHeader
+                                                                                        avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" />}
+                                                                                        title={tokenA.name}
+                                                                                    />
+                                                                                </Col>
+                                                                            </Row>
+                                                                            <Row>
+                                                                                <Col>
+                                                                                    <CardHeader
+                                                                                        style={{ margin: '10px' }}
+                                                                                        title={numeral(tokenBAmount).format('0,0.000000000')}
+                                                                                    />
+                                                                                </Col>
+                                                                                <Col>
+                                                                                    <CardHeader
+                                                                                        avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" />}
+                                                                                        title={tokenB.name}
+                                                                                    />
+                                                                                </Col>
+                                                                            </Row>
+                                                                        </CardContent>
+                                                                    </Card>
+                                                                    <hr />
+                                                                    <Row style={{ marginBottom: '20px' }}>
+                                                                        <Col xs={2} md={2}>
+                                                                            <CardHeader
+                                                                                subheader={'Price'}
+                                                                            />
+                                                                        </Col>
+                                                                        <Col xs={10} md={10}>
+                                                                            <CardContent className="text-right" >
+                                                                                <Typography variant="body2" component="p">
+                                                                                    {`1 ${tokenA.name} = ${numeral(reserve0).format('0,0.000000000')} ${tokenB.name}`}
+                                                                                </Typography>
+                                                                                <Typography variant="body2" component="p">
+                                                                                    {`1 ${tokenB.name} = ${numeral(reserve1).format('0,0.000000000')} ${tokenA.name}`}
+                                                                                </Typography>
+                                                                            </CardContent>
+                                                                        </Col>
+                                                                    </Row>
+                                                                </>
+                                                            ) : (
+                                                                null
+                                                            )}
                                                             {isLoading ? (
                                                                 <div className="text-center">
                                                                     <Spinner
@@ -1005,7 +1065,7 @@ function Swap(props) {
                                                                     Approve {tokenA.name} First
                                                                 </button>
                                                             ) : (
-                                                                activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
+                                                                activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== '0.000000000' && tokenBAmount !== '0.000000000' && tokenAAmount !== null && tokenBAmount !== null && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                     <button
                                                                         className="btn btn-block btn-lg"
                                                                         onClick={async () => await swapMakeDeploy()}
@@ -1045,7 +1105,7 @@ function Swap(props) {
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
             <SigningModal show={openSigning} />
             <TokenAModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenA} setTokenList={setTokenList} tokenList={tokenList} show={openTokenAModal} handleClose={handleCloseTokenAModal} />
-            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenB} setTokenList={setTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} />
+            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenB} setToken={setTokenB} setTokenList={setTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} />
 
         </div >
     );

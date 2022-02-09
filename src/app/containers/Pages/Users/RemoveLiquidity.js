@@ -2,6 +2,7 @@ import { Avatar, Box, Card, CardContent, CardHeader, Checkbox, FormControlLabel,
 import axios from "axios";
 import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
+import numeral from 'numeral';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
 import Spinner from "react-bootstrap/Spinner";
@@ -396,9 +397,13 @@ function RemoveLiquidity(props) {
                                                     <div className="col-md-12 col-lg-6 login-right">
                                                         <>
                                                             <div className="login-header">
-                                                                <h3 style={{ textAlign: "center" }}>Remove Liquidity</h3>
-                                                                <h3 onClick={handleShowSlippage} style={{ textAlign: 'right' }}><i className="fas fa-cog"></i></h3>
+                                                                <h3  >
+                                                                    <div style={{ textAlign: "center" }}>Remove Liquidity
+                                                                        <span onClick={handleShowSlippage} style={{ float: 'right' }}><i className="fas fa-cog"></i></span>
+                                                                    </div>
+                                                                </h3>
                                                             </div>
+
                                                             <form>
                                                                 <br></br>
                                                                 <Box style={{ margin: '10px' }}>
@@ -423,7 +428,7 @@ function RemoveLiquidity(props) {
                                                                                 <Row>
                                                                                     <Col>
                                                                                         <CardHeader
-                                                                                            title={tokenAAmountPercent.toFixed(5)}
+                                                                                            title={numeral(tokenAAmountPercent).format('0,0.000000000')}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
@@ -435,7 +440,7 @@ function RemoveLiquidity(props) {
                                                                                 <Row>
                                                                                     <Col>
                                                                                         <CardHeader
-                                                                                            title={tokenBAmountPercent.toFixed(5)}
+                                                                                            title={numeral(tokenBAmountPercent).format('0,0.000000000')}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
@@ -449,19 +454,25 @@ function RemoveLiquidity(props) {
                                                                         </Card>
                                                                         <br />
                                                                         {activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined ? (
-                                                                            <Card style={{ marginBottom: '20px' }}>
-                                                                                <CardHeader
-                                                                                    title={'Price'}
-                                                                                />
-                                                                                <CardContent className="text-center" >
-                                                                                    <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
-                                                                                        {`1 ${tokenA.name} = ${(tokenBAmountPercent / tokenAAmountPercent).toFixed(5)} ${tokenB.name}`}
-                                                                                    </Typography>
-                                                                                    <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
-                                                                                        {`1 ${tokenB.name} = ${(tokenAAmountPercent / tokenBAmountPercent).toFixed(5)} ${tokenA.name}`}
-                                                                                    </Typography>
-                                                                                </CardContent>
-                                                                            </Card>) : (null)}
+                                                                            <Row style={{ marginBottom: '20px' }}>
+                                                                                <Col xs={2} md={2}>
+                                                                                    <CardHeader
+                                                                                        subheader={'Price'}
+                                                                                    />
+                                                                                </Col>
+                                                                                <Col xs={10} md={10}>
+                                                                                    <CardContent className="text-right" >
+                                                                                        <Typography variant="body2" component="p">
+                                                                                            {`1 ${tokenA.name} = ${numeral(tokenBAmountPercent / tokenAAmountPercent).format('0,0.000000000')} ${tokenB.name}`}
+                                                                                        </Typography>
+                                                                                        <Typography variant="body2" component="p">
+                                                                                            {`1 ${tokenB.name} = ${numeral(tokenAAmountPercent / tokenBAmountPercent).format('0,0.000000000')} ${tokenA.name}`}
+                                                                                        </Typography>
+                                                                                    </CardContent>
+                                                                                </Col>
+                                                                            </Row>
+
+                                                                        ) : (null)}
                                                                     </>
                                                                 ) : (
                                                                     null
@@ -477,6 +488,13 @@ function RemoveLiquidity(props) {
                                                                                 <span className="sr-only">Loading...</span>
                                                                             </Spinner>
                                                                         </div>
+                                                                    ) : activePublicKey === 'null' || activePublicKey === null || activePublicKey === undefined ? (
+                                                                        <button
+                                                                            className="btn btn-block btn-lg "
+                                                                            disabled
+                                                                        >
+                                                                            Approve
+                                                                        </button>
                                                                     ) : (
                                                                         <button
                                                                             className="btn btn-block btn-lg"
@@ -500,7 +518,7 @@ function RemoveLiquidity(props) {
                                                                         </Spinner>
                                                                     </div>
                                                                 ) : (
-                                                                    (liquidity) * value / 100 <= pairAllowance && tokenAAmountPercent !== 0 && tokenBAmountPercent !== 0 && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
+                                                                    activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && (liquidity) * value / 100 <= pairAllowance && tokenAAmountPercent !== 0 && tokenBAmountPercent !== 0 && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                         isRemoveLiquidityCSPR ? (
                                                                             <button
                                                                                 className="btn btn-block btn-lg"
@@ -608,7 +626,7 @@ function RemoveLiquidity(props) {
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
             <SigningModal show={openSigning} />
-        </div>
+        </div >
     );
 }
 

@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography';
 import axios from "axios";
 import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
+import numeral from 'numeral';
 import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
 import Spinner from "react-bootstrap/Spinner";
@@ -60,6 +61,7 @@ const useStyles = makeStyles((theme) => ({
         marginBottom: 12,
     },
 }));
+const regex = /^\s*-?(\d+(\.\d{1,9})?|\.\d{1,9})\s*$/;
 // let RecipientType = CLPublicKey | CLAccountHash | CLByteArray;
 function AddLiquidity(props) {
     const classes = useStyles();
@@ -196,14 +198,14 @@ function AddLiquidity(props) {
                             console.log("address1", address1);
                             if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
                             } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
                             } else {
@@ -226,29 +228,29 @@ function AddLiquidity(props) {
                             if (name0 === "Wrapped Casper" && tokenA.name === "Casper") {
                                 console.log('1', res.data.pairList[i]);
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
                             } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper") {
                                 console.log('2', res.data.pairList[i]);
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
                             } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper") {
                                 console.log('3', res.data.pairList[i]);
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
                             } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper") {
                                 console.log('4', res.data.pairList[i]);
                                 setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9))
+                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
+                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
                             } else {
@@ -274,7 +276,7 @@ function AddLiquidity(props) {
                 .post('/liquidityagainstuserandpair', param)
                 .then((res1) => {
                     console.log('liquidityagainstuserandpair', res1)
-                    setLiquidity(parseFloat(res1.data.liquidity))
+                    setLiquidity(parseFloat(res1.data.liquidity).toFixed(9))
                     console.log("res1.data.liquidity", res1.data.liquidity)
                 })
                 .catch((error) => {
@@ -702,12 +704,19 @@ function AddLiquidity(props) {
                                                                                     id="standard-adornment-weight"
                                                                                     value={tokenAAmount}
                                                                                     onChange={(e) => {
-                                                                                        if (e.target.value >= 0) {
-                                                                                            setTokenAAmount(e.target.value)
-                                                                                            setTokenBAmount(e.target.value * reserve0)
+                                                                                        console.log('regex.test(e.target.value)', regex.test(e.target.value));
+                                                                                        if (regex.test(e.target.value)) {
+
+                                                                                            if (e.target.value >= 0) {
+                                                                                                setTokenAAmount(e.target.value)
+                                                                                                setTokenBAmount(parseFloat(e.target.value * reserve0).toFixed(9))
+                                                                                            } else {
+                                                                                                setTokenAAmount(0)
+                                                                                                setTokenBAmount(0)
+                                                                                            }
                                                                                         } else {
-                                                                                            setTokenAAmount(0)
-                                                                                            setTokenBAmount(0)
+                                                                                            setTokenAAmount()
+                                                                                            setTokenBAmount()
                                                                                         }
                                                                                     }}
                                                                                     aria-describedby="standard-weight-helper-text"
@@ -715,7 +724,7 @@ function AddLiquidity(props) {
                                                                                         'aria-label': 'weight',
                                                                                     }}
                                                                                 />
-                                                                                <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{tokenABalance / 10 ** 9}</FormHelperText>
+                                                                                <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{(tokenABalance / 10 ** 9).toFixed(9)}</FormHelperText>
                                                                             </FormControl>
                                                                         ) : (
                                                                             <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
@@ -773,13 +782,18 @@ function AddLiquidity(props) {
                                                                                     id="standard-adornment-weight"
                                                                                     value={tokenBAmount}
                                                                                     onChange={(e) => {
-                                                                                        if (e.target.value >= 0) {
-                                                                                            setTokenBAmount(e.target.value)
-                                                                                            setTokenAAmount(e.target.value * reserve1)
-                                                                                        }
-                                                                                        else {
-                                                                                            setTokenAAmount(0)
-                                                                                            setTokenBAmount(0)
+                                                                                        if (regex.test(e.target.value)) {
+                                                                                            if (e.target.value >= 0) {
+                                                                                                setTokenBAmount(e.target.value)
+                                                                                                setTokenAAmount(parseFloat(e.target.value * reserve1).toFixed(9))
+                                                                                            }
+                                                                                            else {
+                                                                                                setTokenAAmount(0)
+                                                                                                setTokenBAmount(0)
+                                                                                            }
+                                                                                        } else {
+                                                                                            setTokenAAmount()
+                                                                                            setTokenBAmount()
                                                                                         }
                                                                                     }}
                                                                                     aria-describedby="standard-weight-helper-text"
@@ -787,7 +801,7 @@ function AddLiquidity(props) {
                                                                                         'aria-label': 'weight',
                                                                                     }}
                                                                                 />
-                                                                                <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{tokenBBalance / 10 ** 9}</FormHelperText>
+                                                                                <FormHelperText id="standard-weight-helper-text"><strong>Balance: </strong>{(tokenBBalance / 10 ** 9).toFixed(9)}</FormHelperText>
                                                                             </FormControl>
                                                                         ) : (
                                                                             <FormControl fullWidth variant="standard" sx={{ m: 1, mt: 3, width: '25ch' }}>
@@ -975,7 +989,7 @@ function AddLiquidity(props) {
                                                                                     <Col>
                                                                                         <CardHeader
                                                                                             style={{ margin: '10px' }}
-                                                                                            title={parseFloat(tokenAAmount).toFixed(5)}
+                                                                                            title={numeral(tokenAAmount).format('0,0.000000000')}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
@@ -989,7 +1003,7 @@ function AddLiquidity(props) {
                                                                                     <Col>
                                                                                         <CardHeader
                                                                                             style={{ margin: '10px' }}
-                                                                                            title={parseFloat(tokenBAmount).toFixed(5)}
+                                                                                            title={numeral(tokenBAmount).format('0,0.000000000')}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
@@ -1002,20 +1016,23 @@ function AddLiquidity(props) {
                                                                             </CardContent>
                                                                         </Card>
                                                                         <hr />
-                                                                        <Card style={{ marginBottom: '20px' }}>
-                                                                            <CardHeader
-                                                                                title={'Price'}
-                                                                            />
-
-                                                                            <CardContent className="text-center" >
-                                                                                <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
-                                                                                    {`1 ${tokenA.name} = ${reserve0} ${tokenB.name}`}
-                                                                                </Typography>
-                                                                                <Typography variant="body1" style={{ color: '#ed0b25' }} component="p">
-                                                                                    {`1 ${tokenB.name} = ${reserve1} ${tokenA.name}`}
-                                                                                </Typography>
-                                                                            </CardContent>
-                                                                        </Card>
+                                                                        <Row style={{ marginBottom: '20px' }}>
+                                                                            <Col xs={2} md={2}>
+                                                                                <CardHeader
+                                                                                    subheader={'Price'}
+                                                                                />
+                                                                            </Col>
+                                                                            <Col xs={10} md={10}>
+                                                                                <CardContent className="text-right" >
+                                                                                    <Typography variant="body2" component="p">
+                                                                                        {`1 ${tokenA.name} = ${numeral(reserve0).format('0,0.000000000')} ${tokenB.name}`}
+                                                                                    </Typography>
+                                                                                    <Typography variant="body2" component="p">
+                                                                                        {`1 ${tokenB.name} = ${numeral(reserve1).format('0,0.000000000')} ${tokenA.name}`}
+                                                                                    </Typography>
+                                                                                </CardContent>
+                                                                            </Col>
+                                                                        </Row>
                                                                     </>
                                                                 ) : (
                                                                     null
@@ -1060,7 +1077,7 @@ function AddLiquidity(props) {
                                                                         Approve {tokenB.name} First
                                                                     </button>
                                                                 ) : (
-                                                                    activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
+                                                                    activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== '0.000000000' && tokenBAmount !== '0.000000000' && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                         <button
                                                                             className="btn btn-block btn-lg"
                                                                             onClick={async () => await addLiquidityMakeDeploy()}
@@ -1098,7 +1115,7 @@ function AddLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={liquidity / 10 ** 9}
+                                                                                    subheader={numeral(liquidity / 10 ** 9).format('0,0.000000000')}
                                                                                 />
                                                                             </Col>
                                                                         </Row>
@@ -1110,7 +1127,7 @@ function AddLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={(tokenAAmountPercent).toFixed(5)}
+                                                                                    subheader={numeral(tokenAAmountPercent).format('0,0.000000000')}
                                                                                 />
                                                                             </Col>
 
@@ -1123,7 +1140,7 @@ function AddLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={(tokenBAmountPercent).toFixed(5)}
+                                                                                    subheader={numeral(tokenBAmountPercent).format('0,0.000000000')}
                                                                                 />
                                                                             </Col>
 
@@ -1148,7 +1165,7 @@ function AddLiquidity(props) {
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
             <SigningModal show={openSigning} />
             <TokenAModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenA} setTokenList={setTokenList} tokenList={tokenList} show={openTokenAModal} handleClose={handleCloseTokenAModal} />
-            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenB} setTokenList={setTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} />
+            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenB} setToken={setTokenB} setTokenList={setTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} />
 
         </div>
     );

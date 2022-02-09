@@ -8,7 +8,7 @@ import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 
 function SlippageModal(props) {
     return (
-        <Modal show={props.show} onHide={props.handleClose}>
+        <Modal centered show={props.show} onHide={props.handleClose}>
             <Modal.Header closeButton>
                 <Modal.Title>Transaction Settings <i className="fas fa-cog"></i> </Modal.Title>
             </Modal.Header>

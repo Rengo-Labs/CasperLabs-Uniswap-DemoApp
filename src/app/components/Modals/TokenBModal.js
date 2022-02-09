@@ -8,7 +8,7 @@ import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 
 function TokenBModal(props) {
     return (
-        <Modal show={props.show} onHide={props.handleClose}>
+        <Modal centered show={props.show} onHide={props.handleClose}>
             <Modal.Header closeButton>
                 <Modal.Title>Select Token </Modal.Title>
             </Modal.Header>
