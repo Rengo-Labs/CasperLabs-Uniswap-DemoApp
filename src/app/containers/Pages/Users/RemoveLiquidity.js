@@ -215,7 +215,8 @@ function RemoveLiquidity(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(Math.round(liquidity * value / 100))
+                // eslint-disable-next-line
+                amount: CLValueBuilder.u256(BigInt(Math.round(liquidity * value / 100)).toString())
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
@@ -229,6 +230,25 @@ function RemoveLiquidity(props) {
                 let result = await putdeploy(signedDeploy, enqueueSnackbar)
                 console.log('result', result);
                 handleCloseSigning()
+                let allowanceParam = {
+                    contractHash: pair,
+                    owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
+                    spender: ROUTER_PACKAGE_HASH
+                }
+                console.log('allowanceParam0', allowanceParam);
+                axios
+                    .post('/allowanceagainstownerandspenderpaircontract', allowanceParam)
+                    .then((res) => {
+                        console.log('allowanceagainstownerandspenderpaircontract', res)
+                        console.log(res.data)
+                        setpairAllowance(res.data.allowance)
+
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                        console.log(error.response)
+                    })
+
                 let variant = "success";
                 enqueueSnackbar('Approved Successfully', { variant });
             }
@@ -270,9 +290,12 @@ function RemoveLiquidity(props) {
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
-                liquidity: CLValueBuilder.u256(Math.round(liquidity * value / 100)),
-                amount_a_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
-                amount_b_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
+                // eslint-disable-next-line
+                liquidity: CLValueBuilder.u256(BigInt(Math.round(liquidity * value / 100)).toString()),
+                // eslint-disable-next-line
+                amount_a_min: CLValueBuilder.u256(BigInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100).toString()),
+                // eslint-disable-next-line
+                amount_b_min: CLValueBuilder.u256(BigInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100).toString()),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
             });

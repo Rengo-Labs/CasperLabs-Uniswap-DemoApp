@@ -21,6 +21,7 @@ import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAdd
 import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
+import { convertToStr } from "../../../components/ConvertToString/ConvertToString";
 import HeaderHome from "../../../components/Headers/Header";
 import SigningModal from "../../../components/Modals/SigningModal";
 import SlippageModal from '../../../components/Modals/SlippageModal';
@@ -360,30 +361,37 @@ function Swap(props) {
             const spender = ROUTER_PACKAGE_HASH;
             const spenderByteArray = new CLByteArray(Uint8Array.from(Buffer.from(spender, 'hex')));
             const paymentAmount = 5000000000;
-            const runtimeArgs = RuntimeArgs.fromMap({
-                spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(parseInt(amount * 10 ** 9))
-            });
-
-            let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
-            let entryPoint = 'approve';
-
-            // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-            console.log("make deploy: ", deploy);
             try {
-                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                console.log('result', result);
-                setTokenAAllowance(parseInt(amount * 10 ** 9))
-                handleCloseSigning()
-                let variant = "success";
-                enqueueSnackbar('Approved Successfully', { variant });
+                const runtimeArgs = RuntimeArgs.fromMap({
+                    spender: createRecipientAddress(spenderByteArray),
+                    amount: CLValueBuilder.u256(convertToStr(amount))
+                });
+
+                let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
+                let entryPoint = 'approve';
+
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                console.log("make deploy: ", deploy);
+                try {
+                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                    console.log('result', result);
+                    setTokenAAllowance(parseInt(amount * 10 ** 9))
+                    handleCloseSigning()
+                    let variant = "success";
+                    enqueueSnackbar('Approved Successfully', { variant });
+                }
+                catch {
+                    handleCloseSigning()
+                    let variant = "Error";
+                    enqueueSnackbar('Unable to Approve', { variant });
+                }
             }
             catch {
                 handleCloseSigning()
                 let variant = "Error";
-                enqueueSnackbar('Unable to Approve', { variant });
+                enqueueSnackbar('Input values are too large', { variant });
             }
 
         }
@@ -420,36 +428,42 @@ function Swap(props) {
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
-
-                    const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_in: CLValueBuilder.u256(amount_in * 10 ** 9),
-                        amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
-                        path: new CLList(_paths),
-                        to: createRecipientAddress(publicKey),
-                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
-                        deadline: CLValueBuilder.u256(deadline),
-                    });
-
-                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                    let entryPoint = 'swap_exact_cspr_for_tokens_js_client';
-
-                    // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                    console.log("make deploy: ", deploy);
                     try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
-                        handleCloseSigning()
-                        let variant = "success";
-                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                        setIsLoading(false)
+                        const runtimeArgs = RuntimeArgs.fromMap({
+                            amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
+                            amount_out_min: CLValueBuilder.u256(convertToStr(amount_out_min - (amount_out_min) * slippage / 100)),
+                            path: new CLList(_paths),
+                            to: createRecipientAddress(publicKey),
+                            purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
+                            deadline: CLValueBuilder.u256(deadline),
+                        });
+
+                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                        let entryPoint = 'swap_exact_cspr_for_tokens_js_client';
+
+                        // Set contract installation deploy (unsigned).
+                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                        console.log("make deploy: ", deploy);
+                        try {
+                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                            console.log('result', result);
+                            handleCloseSigning()
+                            let variant = "success";
+                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                            setIsLoading(false)
+                        }
+                        catch {
+                            handleCloseSigning()
+                            let variant = "Error";
+                            enqueueSnackbar('Unable to Swap Tokens', { variant });
+                            setIsLoading(false)
+                        }
                     }
                     catch {
                         handleCloseSigning()
                         let variant = "Error";
-                        enqueueSnackbar('Unable to Swap Tokens', { variant });
-                        setIsLoading(false)
+                        enqueueSnackbar('Input values are too large', { variant });
                     }
                 } else if (tokenB.name === "Casper") {
                     console.log("swap_exact_token_for_cspr");
@@ -469,34 +483,41 @@ function Swap(props) {
                     console.log('_paths', _paths);
                     console.log('mainPurse', mainPurse);
                     console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
-                    const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_in: CLValueBuilder.u256(parseInt(amount_in * 10 ** 9)),
-                        amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
-                        path: new CLList(_paths),
-                        to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
-                        deadline: CLValueBuilder.u256(deadline),
-                    });
-
-                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                    let entryPoint = 'swap_exact_tokens_for_cspr_js_client';
-
-                    // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                    console.log("make deploy: ", deploy);
                     try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
-                        handleCloseSigning()
-                        let variant = "success";
-                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                        setIsLoading(false)
+                        const runtimeArgs = RuntimeArgs.fromMap({
+                            amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
+                            amount_out_min: CLValueBuilder.u256(convertToStr(amount_out_min - (amount_out_min) * slippage / 100)),
+                            path: new CLList(_paths),
+                            to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
+                            deadline: CLValueBuilder.u256(deadline),
+                        });
+
+                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                        let entryPoint = 'swap_exact_tokens_for_cspr_js_client';
+
+                        // Set contract installation deploy (unsigned).
+                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                        console.log("make deploy: ", deploy);
+                        try {
+                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                            console.log('result', result);
+                            handleCloseSigning()
+                            let variant = "success";
+                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                            setIsLoading(false)
+                        }
+                        catch {
+                            handleCloseSigning()
+                            let variant = "Error";
+                            enqueueSnackbar('Unable to Swap Tokens', { variant });
+                            setIsLoading(false)
+                        }
                     }
                     catch {
                         handleCloseSigning()
                         let variant = "Error";
-                        enqueueSnackbar('Unable to Swap Tokens', { variant });
-                        setIsLoading(false)
+                        enqueueSnackbar('Input values are too large', { variant });
                     }
                 } else {
                     console.log("swap_exact_token_for_token");
@@ -513,34 +534,43 @@ function Swap(props) {
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
-                    const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_in: CLValueBuilder.u256(parseInt(amount_in * 10 ** 9)),
-                        amount_out_min: CLValueBuilder.u256(parseInt(amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100)),
-                        path: new CLList(_paths),
-                        to: createRecipientAddress(publicKey),
-                        deadline: CLValueBuilder.u256(deadline),
-                    });
-
-                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                    let entryPoint = 'swap_exact_tokens_for_tokens_js_client';
-
-                    // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                    console.log("make deploy: ", deploy);
+                    console.log("amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100", amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100);
+                    console.log("amount_out_min - (amount_out_min) * slippage / 100", amount_out_min - (amount_out_min) * slippage / 100);
                     try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
-                        handleCloseSigning()
-                        let variant = "success";
-                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                        setIsLoading(false)
+                        const runtimeArgs = RuntimeArgs.fromMap({
+                            amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
+                            amount_out_min: CLValueBuilder.u256(convertToStr(amount_out_min - (amount_out_min) * slippage / 100)),
+                            path: new CLList(_paths),
+                            to: createRecipientAddress(publicKey),
+                            deadline: CLValueBuilder.u256(deadline),
+                        });
+
+                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                        let entryPoint = 'swap_exact_tokens_for_tokens_js_client';
+
+                        // Set contract installation deploy (unsigned).
+                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                        console.log("make deploy: ", deploy);
+                        try {
+                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                            console.log('result', result);
+                            handleCloseSigning()
+                            let variant = "success";
+                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                            setIsLoading(false)
+                        }
+                        catch {
+                            handleCloseSigning()
+                            let variant = "Error";
+                            enqueueSnackbar('Unable to Swap Tokens', { variant });
+                            setIsLoading(false)
+                        }
                     }
                     catch {
                         handleCloseSigning()
                         let variant = "Error";
-                        enqueueSnackbar('Unable to Swap Tokens', { variant });
-                        setIsLoading(false)
+                        enqueueSnackbar('Input values are too large', { variant });
                     }
                 }
             } else if (inputSelection === "tokenB") {
@@ -558,35 +588,42 @@ function Swap(props) {
                     }
                     console.log('_paths', _paths);
                     console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
-                    const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_out: CLValueBuilder.u256(parseInt(tokenBAmount * 10 ** 9)),
-                        amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
-                        path: new CLList(_paths),
-                        to: createRecipientAddress(publicKey),
-                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
-                        deadline: CLValueBuilder.u256(deadline),
-                    });
-
-                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                    let entryPoint = 'swap_cspr_for_exact_tokens_js_client';
-
-                    // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                    console.log("make deploy: ", deploy);
                     try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
-                        handleCloseSigning()
-                        let variant = "success";
-                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                        setIsLoading(false)
+                        const runtimeArgs = RuntimeArgs.fromMap({
+                            amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
+                            amount_in_max: CLValueBuilder.u256(convertToStr(tokenAAmount + (tokenAAmount) * slippage / 100)),
+                            path: new CLList(_paths),
+                            to: createRecipientAddress(publicKey),
+                            purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
+                            deadline: CLValueBuilder.u256(deadline),
+                        });
+
+                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                        let entryPoint = 'swap_cspr_for_exact_tokens_js_client';
+
+                        // Set contract installation deploy (unsigned).
+                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                        console.log("make deploy: ", deploy);
+                        try {
+                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                            console.log('result', result);
+                            handleCloseSigning()
+                            let variant = "success";
+                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                            setIsLoading(false)
+                        }
+                        catch {
+                            handleCloseSigning()
+                            let variant = "Error";
+                            enqueueSnackbar('Unable to Swap Tokens', { variant });
+                            setIsLoading(false)
+                        }
                     }
                     catch {
                         handleCloseSigning()
                         let variant = "Error";
-                        enqueueSnackbar('Unable to Swap Tokens', { variant });
-                        setIsLoading(false)
+                        enqueueSnackbar('Input values are too large', { variant });
                     }
                 } else if (tokenB.name === "Casper") {
                     console.log("swap_token_for_exact_cspr");
@@ -601,35 +638,41 @@ function Swap(props) {
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
-
-                    const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_out: CLValueBuilder.u256(parseInt(tokenBAmount * 10 ** 9)),
-                        amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
-                        path: new CLList(_paths),
-                        to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
-                        deadline: CLValueBuilder.u256(deadline),
-                    });
-
-                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                    let entryPoint = 'swap_tokens_for_exact_cspr_js_client';
-
-                    // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                    console.log("make deploy: ", deploy);
                     try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
-                        handleCloseSigning()
-                        let variant = "success";
-                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                        setIsLoading(false)
+                        const runtimeArgs = RuntimeArgs.fromMap({
+                            amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
+                            amount_in_max: CLValueBuilder.u256(convertToStr(tokenAAmount + (tokenAAmount) * slippage / 100)),
+                            path: new CLList(_paths),
+                            to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
+                            deadline: CLValueBuilder.u256(deadline),
+                        });
+
+                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                        let entryPoint = 'swap_tokens_for_exact_cspr_js_client';
+
+                        // Set contract installation deploy (unsigned).
+                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                        console.log("make deploy: ", deploy);
+                        try {
+                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                            console.log('result', result);
+                            handleCloseSigning()
+                            let variant = "success";
+                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                            setIsLoading(false)
+                        }
+                        catch {
+                            handleCloseSigning()
+                            let variant = "Error";
+                            enqueueSnackbar('Unable to Swap Tokens', { variant });
+                            setIsLoading(false)
+                        }
                     }
                     catch {
                         handleCloseSigning()
                         let variant = "Error";
-                        enqueueSnackbar('Unable to Swap Tokens', { variant });
-                        setIsLoading(false)
+                        enqueueSnackbar('Input values are too large', { variant });
                     }
                 } else {
                     console.log("swap_token_for_exact_token");
@@ -644,35 +687,41 @@ function Swap(props) {
                         _paths.push(p);
                     }
                     console.log('_paths', _paths);
-
-                    const runtimeArgs = RuntimeArgs.fromMap({
-                        amount_out: CLValueBuilder.u256(parseInt(tokenBAmount * 10 ** 9)),
-                        amount_in_max: CLValueBuilder.u256(parseInt(tokenAAmount * 10 ** 9 + (tokenAAmount * 10 ** 9) * slippage / 100)),
-                        path: new CLList(_paths),
-                        to: createRecipientAddress(publicKey),
-                        deadline: CLValueBuilder.u256(deadline),
-                    });
-
-                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                    let entryPoint = 'swap_tokens_for_exact_tokens_js_client';
-
-                    // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                    console.log("make deploy: ", deploy);
                     try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
-                        handleCloseSigning()
-                        let variant = "success";
-                        enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                        setIsLoading(false)
+                        const runtimeArgs = RuntimeArgs.fromMap({
+                            amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
+                            amount_in_max: CLValueBuilder.u256(convertToStr(tokenAAmount + (tokenAAmount) * slippage / 100)),
+                            path: new CLList(_paths),
+                            to: createRecipientAddress(publicKey),
+                            deadline: CLValueBuilder.u256(deadline),
+                        });
+
+                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                        let entryPoint = 'swap_tokens_for_exact_tokens_js_client';
+
+                        // Set contract installation deploy (unsigned).
+                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                        console.log("make deploy: ", deploy);
+                        try {
+                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                            console.log('result', result);
+                            handleCloseSigning()
+                            let variant = "success";
+                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
+                            setIsLoading(false)
+                        }
+                        catch {
+                            handleCloseSigning()
+                            let variant = "Error";
+                            enqueueSnackbar('Unable to Swap Tokens', { variant });
+                            setIsLoading(false)
+                        }
                     }
                     catch {
                         handleCloseSigning()
                         let variant = "Error";
-                        enqueueSnackbar('Unable to Swap Tokens', { variant });
-                        setIsLoading(false)
+                        enqueueSnackbar('Input values are too large', { variant });
                     }
                 }
             }
@@ -765,8 +814,8 @@ function Swap(props) {
                                                                                             setInputSelection()
                                                                                         }
                                                                                     } else {
-                                                                                        setTokenAAmount()
-                                                                                        setTokenBAmount()
+                                                                                        setTokenAAmount(tokenAAmount)
+                                                                                        setTokenBAmount(tokenBAmount)
                                                                                     }
                                                                                 }}
                                                                                 // endAdornment={<InputAdornment position="end">%</InputAdornment>}
@@ -850,9 +899,8 @@ function Swap(props) {
                                                                                             setInputSelection()
                                                                                         }
                                                                                     } else {
-                                                                                        setTokenAAmount()
-                                                                                        setTokenBAmount()
-                                                                                        setInputSelection()
+                                                                                        setTokenAAmount(tokenAAmount)
+                                                                                        setTokenBAmount(tokenBAmount)
                                                                                     }
 
                                                                                 }}
@@ -956,7 +1004,7 @@ function Swap(props) {
                                                                             <span className="sr-only">Loading...</span>
                                                                         </Spinner>
                                                                     </div>
-                                                                ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && tokenABalance < tokenAAmount * 10 ** 9 ? (
+                                                                ) : activePublicKey === 'null' || activePublicKey === null || activePublicKey === undefined || tokenABalance < tokenAAmount * 10 ** 9 ? (
                                                                     <button
                                                                         className="btn btn-block btn-lg "
                                                                         disabled

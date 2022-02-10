@@ -21,6 +21,7 @@ import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAdd
 import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
+import { convertToStr } from '../../../components/ConvertToString/ConvertToString';
 import HeaderHome from "../../../components/Headers/Header";
 import SigningModal from '../../../components/Modals/SigningModal';
 import SlippageModal from '../../../components/Modals/SlippageModal';
@@ -295,32 +296,39 @@ function AddLiquidity(props) {
             const spender = ROUTER_PACKAGE_HASH;
             const spenderByteArray = new CLByteArray(Uint8Array.from(Buffer.from(spender, 'hex')));
             const paymentAmount = 5000000000;
-            const runtimeArgs = RuntimeArgs.fromMap({
-                spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(parseInt(amount * 10 ** 9))
-            });
-            let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
-            let entryPoint = 'approve';
-            // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-            console.log("make deploy: ", deploy);
             try {
-                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                if (tokenApproved === 'tokenA') {
-                    setTokenAAllowance(amount * 10 ** 9)
-                } else {
-                    setTokenBAllowance(amount * 10 ** 9)
+                const runtimeArgs = RuntimeArgs.fromMap({
+                    spender: createRecipientAddress(spenderByteArray),
+                    amount: CLValueBuilder.u256(convertToStr(amount))
+                });
+                let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
+                let entryPoint = 'approve';
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                console.log("make deploy: ", deploy);
+                try {
+                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                    if (tokenApproved === 'tokenA') {
+                        setTokenAAllowance(amount * 10 ** 9)
+                    } else {
+                        setTokenBAllowance(amount * 10 ** 9)
+                    }
+                    console.log('result', result);
+                    handleCloseSigning()
+                    let variant = "success";
+                    enqueueSnackbar('Approved Successfully', { variant });
                 }
-                console.log('result', result);
-                handleCloseSigning()
-                let variant = "success";
-                enqueueSnackbar('Approved Successfully', { variant });
+                catch {
+                    handleCloseSigning()
+                    let variant = "Error";
+                    enqueueSnackbar('Unable to Approve', { variant });
+                }
             }
             catch {
                 handleCloseSigning()
                 let variant = "Error";
-                enqueueSnackbar('Unable to Approve', { variant });
+                enqueueSnackbar('Input values are too large', { variant });
             }
         }
         else {
@@ -515,118 +523,144 @@ function AddLiquidity(props) {
                 Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
             );
             if (tokenA.name === 'Casper') {
-                const runtimeArgs = RuntimeArgs.fromMap({
-                    token: new CLKey(_token_b),
-                    amount_cspr_desired: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9)),
-                    amount_token_desired: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9)),
-                    amount_cspr_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
-                    amount_token_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
-                    to: createRecipientAddress(publicKey),
-                    purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
-                    deadline: CLValueBuilder.u256(deadline),
-                    pair: new CLOption(Some(new CLKey(_token_b)))
-                });
-                let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                let entryPoint = 'add_liquidity_cspr_js_client';
-                // Set contract installation deploy (unsigned).
-                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                console.log("make deploy: ", deploy);
                 try {
-                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                    console.log('result', result);
-                    setTokenAAllowance(0)
-                    setTokenBAllowance(0)
-                    setTokenAAmount(0)
-                    setTokenBAmount(0)
-                    getCurrencyBalance()
-                    handleCloseSigning()
-                    let variant = "success";
-                    enqueueSnackbar('Liquidity Added Successfully', { variant });
-                    setIsLoading(false)
+                    const runtimeArgs = RuntimeArgs.fromMap({
+                        token: new CLKey(_token_b),
+                        amount_cspr_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
+                        amount_token_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
+                        amount_cspr_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
+                        amount_token_min: CLValueBuilder.u256(convertToStr(token_BAmount - (token_BAmount) * slippage / 100)),
+                        to: createRecipientAddress(publicKey),
+                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
+                        deadline: CLValueBuilder.u256(deadline),
+                        pair: new CLOption(Some(new CLKey(_token_b)))
+                    });
+                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                    let entryPoint = 'add_liquidity_cspr_js_client';
+                    // Set contract installation deploy (unsigned).
+                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    console.log("make deploy: ", deploy);
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                        console.log('result', result);
+                        setTokenAAllowance(0)
+                        setTokenBAllowance(0)
+                        setTokenAAmount(0)
+                        setTokenBAmount(0)
+                        getCurrencyBalance()
+                        handleCloseSigning()
+                        let variant = "success";
+                        enqueueSnackbar('Liquidity Added Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        handleCloseSigning()
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Add Liquidity', { variant });
+                        setIsLoading(false)
+                    }
                 }
                 catch {
                     handleCloseSigning()
                     let variant = "Error";
-                    enqueueSnackbar('Unable to Add Liquidity', { variant });
+                    enqueueSnackbar('Input values are too large', { variant });
                     setIsLoading(false)
                 }
             }
             else if (tokenB.name === 'Casper') {
-                const runtimeArgs = RuntimeArgs.fromMap({
-                    token: new CLKey(_token_a),
-                    amount_token_desired: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9)),
-                    amount_cspr_desired: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9)),
-                    amount_token_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
-                    amount_cspr_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
-                    to: createRecipientAddress(publicKey),
-                    deadline: CLValueBuilder.u256(deadline),
-                    pair: new CLOption(Some(new CLKey(pair)))
-                });
-
-                let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                let entryPoint = 'add_liquidity_cspr_js_client';
-
-                // Set contract installation deploy (unsigned).
-                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                console.log("make deploy: ", deploy);
                 try {
-                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                    console.log('result', result);
-                    setTokenAAllowance(0)
-                    setTokenBAllowance(0)
-                    setTokenAAmount(0)
-                    setTokenBAmount(0)
-                    getCurrencyBalance()
-                    handleCloseSigning()
-                    let variant = "success";
-                    enqueueSnackbar('Liquidity Added Successfully', { variant });
-                    setIsLoading(false)
+                    const runtimeArgs = RuntimeArgs.fromMap({
+                        token: new CLKey(_token_a),
+                        amount_token_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
+                        amount_cspr_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
+                        amount_token_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
+                        amount_cspr_min: CLValueBuilder.u256(convertToStr(token_BAmount - (token_BAmount) * slippage / 100)),
+                        to: createRecipientAddress(publicKey),
+                        deadline: CLValueBuilder.u256(deadline),
+                        pair: new CLOption(Some(new CLKey(pair)))
+                    });
+
+                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                    let entryPoint = 'add_liquidity_cspr_js_client';
+
+                    // Set contract installation deploy (unsigned).
+                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    console.log("make deploy: ", deploy);
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                        console.log('result', result);
+                        setTokenAAllowance(0)
+                        setTokenBAllowance(0)
+                        setTokenAAmount(0)
+                        setTokenBAmount(0)
+                        getCurrencyBalance()
+                        handleCloseSigning()
+                        let variant = "success";
+                        enqueueSnackbar('Liquidity Added Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        handleCloseSigning()
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Add Liquidity', { variant });
+                        setIsLoading(false)
+                    }
                 }
                 catch {
                     handleCloseSigning()
                     let variant = "Error";
-                    enqueueSnackbar('Unable to Add Liquidity', { variant });
+                    enqueueSnackbar('Input values are too large', { variant });
                     setIsLoading(false)
                 }
             } else {
-                const runtimeArgs = RuntimeArgs.fromMap({
-                    token_a: new CLKey(_token_a),
-                    token_b: new CLKey(_token_b),
-                    amount_a_desired: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9)),
-                    amount_b_desired: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9)),
-                    amount_a_min: CLValueBuilder.u256(parseInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100)),
-                    amount_b_min: CLValueBuilder.u256(parseInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100)),
-                    to: createRecipientAddress(publicKey),
-                    deadline: CLValueBuilder.u256(deadline),
-                    pair: new CLOption(Some(new CLKey(pair)))
-                });
-
-                let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                let entryPoint = 'add_liquidity_js_client';
-
-                // Set contract installation deploy (unsigned).
-                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                console.log("make deploy: ", deploy);
+                // eslint-disable-next-line
+                // console.log("token_AAmount - (token_AAmount) * slippage / 100", BigInt(token_AAmount - (token_AAmount) * slippage / 100));
                 try {
-                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                    console.log('result', result);
-                    let variant = "success";
-                    setTokenAAllowance(0)
-                    setTokenBAllowance(0)
-                    setTokenAAmount(0)
-                    setTokenBAmount(0)
-                    getTokenBalance()
-                    handleCloseSigning()
-                    enqueueSnackbar('Liquidity Added Successfully', { variant });
-                    setIsLoading(false)
+                    const runtimeArgs = RuntimeArgs.fromMap({
+                        token_a: new CLKey(_token_a),
+                        token_b: new CLKey(_token_b),
+                        amount_a_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
+                        amount_b_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
+                        amount_a_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
+                        amount_b_min: CLValueBuilder.u256(convertToStr(token_BAmount - (token_BAmount) * slippage / 100)),
+                        to: createRecipientAddress(publicKey),
+                        deadline: CLValueBuilder.u256(deadline),
+                        pair: new CLOption(Some(new CLKey(pair)))
+                    });
+
+                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+                    let entryPoint = 'add_liquidity_js_client';
+
+                    // Set contract installation deploy (unsigned).
+                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    console.log("make deploy: ", deploy);
+                    try {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                        console.log('result', result);
+                        let variant = "success";
+                        setTokenAAllowance(0)
+                        setTokenBAllowance(0)
+                        setTokenAAmount(0)
+                        setTokenBAmount(0)
+                        getTokenBalance()
+                        handleCloseSigning()
+                        enqueueSnackbar('Liquidity Added Successfully', { variant });
+                        setIsLoading(false)
+                    }
+                    catch {
+                        handleCloseSigning()
+                        let variant = "Error";
+                        enqueueSnackbar('Unable to Add Liquidity', { variant });
+                        setIsLoading(false)
+                    }
                 }
                 catch {
                     handleCloseSigning()
                     let variant = "Error";
-                    enqueueSnackbar('Unable to Add Liquidity', { variant });
+                    enqueueSnackbar('Input values are too large', { variant });
                     setIsLoading(false)
                 }
             }
@@ -715,8 +749,9 @@ function AddLiquidity(props) {
                                                                                                 setTokenBAmount(0)
                                                                                             }
                                                                                         } else {
-                                                                                            setTokenAAmount()
-                                                                                            setTokenBAmount()
+
+                                                                                            setTokenAAmount(tokenAAmount)
+                                                                                            setTokenBAmount(tokenBAmount)
                                                                                         }
                                                                                     }}
                                                                                     aria-describedby="standard-weight-helper-text"
@@ -792,8 +827,9 @@ function AddLiquidity(props) {
                                                                                                 setTokenBAmount(0)
                                                                                             }
                                                                                         } else {
-                                                                                            setTokenAAmount()
-                                                                                            setTokenBAmount()
+
+                                                                                            setTokenAAmount(tokenAAmount)
+                                                                                            setTokenBAmount(tokenBAmount)
                                                                                         }
                                                                                     }}
                                                                                     aria-describedby="standard-weight-helper-text"
@@ -983,13 +1019,13 @@ function AddLiquidity(props) {
                                                                 <br></br>
                                                                 {tokenA && tokenB && !isInvalidPair ? (
                                                                     <>
-                                                                        <Card>
+                                                                        {/* <Card>
                                                                             <CardContent>
                                                                                 <Row>
                                                                                     <Col>
                                                                                         <CardHeader
                                                                                             style={{ margin: '10px' }}
-                                                                                            title={numeral(tokenAAmount).format('0,0.000000000')}
+                                                                                            title={numeral(tokenAAmount).format('0,0.000000000').toString()}
                                                                                         />
                                                                                     </Col>
                                                                                     <Col>
@@ -1014,7 +1050,7 @@ function AddLiquidity(props) {
                                                                                     </Col>
                                                                                 </Row>
                                                                             </CardContent>
-                                                                        </Card>
+                                                                        </Card> */}
                                                                         <hr />
                                                                         <Row style={{ marginBottom: '20px' }}>
                                                                             <Col xs={2} md={2}>
