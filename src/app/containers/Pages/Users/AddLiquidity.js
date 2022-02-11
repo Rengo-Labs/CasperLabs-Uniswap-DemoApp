@@ -170,8 +170,14 @@ function AddLiquidity(props) {
                 .post('/getpathreserves', pathResParam)
                 .then((res) => {
                     console.log('getpathreserves', res)
-                    setReserve0(res.data.reserve0)
-                    setReserve1(res.data.reserve1)
+                    if (res.data.reserve0 && res.data.reserve1) {
+                        setReserve0(res.data.reserve0)
+                        setReserve1(res.data.reserve1)
+                    } else {
+                        setReserve0(1)
+                        setReserve1(1)
+                    }
+
                 })
                 .catch((error) => {
                     setReserve0(1)
@@ -192,31 +198,38 @@ function AddLiquidity(props) {
                     console.log('resresres', res)
                     console.log(res.data.pairList)
                     if (tokenA.name !== "Casper" && tokenB.name !== "Casper") {
-                        for (let i = 0; i < res.data.pairList.length; i++) {
-                            let address0 = res.data.pairList[i].token0.id.toLowerCase();
-                            let address1 = res.data.pairList[i].token1.id.toLowerCase();
-                            console.log("address0", address0);
-                            console.log("address1", address1);
-                            if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
-                                liquiditySetter(res.data.pairList[i])
-                                break;
-                            } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
-                                liquiditySetter(res.data.pairList[i])
-                                break;
-                            } else {
-                                setIsInvalidPair(true)
+                        if (tokenA.name === tokenB.name) {
+                            setTokenAAmountPercent(1)
+                            setTokenBAmountPercent(1)
+                            setIsInvalidPair(true)
+                        }
+                        else {
+                            for (let i = 0; i < res.data.pairList.length; i++) {
+                                let address0 = res.data.pairList[i].token0.id.toLowerCase();
+                                let address1 = res.data.pairList[i].token1.id.toLowerCase();
+                                console.log("address0", address0);
+                                console.log("address1", address1);
+                                if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
+                                    setIsInvalidPair(false)
+                                    setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
+                                    setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
+                                    liquiditySetter(res.data.pairList[i])
+                                    break;
+                                } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
+                                    setIsInvalidPair(false)
+                                    setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
+                                    setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
+                                    liquiditySetter(res.data.pairList[i])
+                                    break;
+                                } else {
+                                    setIsInvalidPair(true)
+                                }
                             }
                         }
                     } else if ((tokenA.name === "Casper" && tokenB.name === "Wrapped Casper") || (tokenA.name === "Wrapped Casper" && tokenB.name === "Casper")) {
                         setTokenAAmountPercent(1)
                         setTokenBAmountPercent(1)
-                    } else if (tokenA.name === "Casper" && tokenB.name === "Casper") {
+                    } else if (tokenA.name === tokenB.name) {
                         setTokenAAmountPercent(1)
                         setTokenBAmountPercent(1)
                         setIsInvalidPair(true)
@@ -226,28 +239,28 @@ function AddLiquidity(props) {
                             let name1 = res.data.pairList[i].token1.name;
                             console.log("name0", name0);
                             console.log("name1", name1);
-                            if (name0 === "Wrapped Casper" && tokenA.name === "Casper") {
+                            if (name0 === "Wrapped Casper" && tokenA.name === "Casper" && tokenB.name === name1) {
                                 console.log('1', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
-                            } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper") {
+                            } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper" && tokenA.name === name1) {
                                 console.log('2', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
-                            } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper") {
+                            } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper" && tokenB.name === name0) {
                                 console.log('3', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
                                 break;
-                            } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper") {
+                            } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper" && tokenB.name === name0) {
                                 console.log('4', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))

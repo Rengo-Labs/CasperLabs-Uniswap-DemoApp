@@ -193,8 +193,13 @@ function Swap(props) {
                         .post('/getpathreserves', pathResParam)
                         .then((res) => {
                             console.log('getpathreserves', res)
-                            setReserve0(res.data.reserve0)
-                            setReserve1(res.data.reserve1)
+                            if (res.data.reserve0 && res.data.reserve1) {
+                                setReserve0(res.data.reserve0)
+                                setReserve1(res.data.reserve1)
+                            } else {
+                                setReserve0(1)
+                                setReserve1(1)
+                            }
                         })
                         .catch((error) => {
                             console.log(error)
