@@ -84,6 +84,8 @@ function AddLiquidity(props) {
     const [istokenList, setIsTokenList] = useState(false)
     let [isLoading, setIsLoading] = useState(false);
     const [slippage, setSlippage] = useState(0.5);
+    const [ratio0, setRatio0] = useState(1)
+    const [ratio1, setRatio1] = useState(1)
     const [reserve0, setReserve0] = useState(1)
     const [reserve1, setReserve1] = useState(1)
     const [openSlippage, setOpenSlippage] = useState(false);
@@ -171,17 +173,17 @@ function AddLiquidity(props) {
                 .then((res) => {
                     console.log('getpathreserves', res)
                     if (res.data.reserve0 && res.data.reserve1) {
-                        setReserve0(res.data.reserve0)
-                        setReserve1(res.data.reserve1)
+                        setRatio0(res.data.reserve0)
+                        setRatio1(res.data.reserve1)
                     } else {
-                        setReserve0(1)
-                        setReserve1(1)
+                        setRatio0(1)
+                        setRatio1(1)
                     }
 
                 })
                 .catch((error) => {
-                    setReserve0(1)
-                    setReserve1(1)
+                    setRatio0(1)
+                    setRatio1(1)
                     console.log(error)
                     console.log(error.response)
                 })
@@ -214,12 +216,14 @@ function AddLiquidity(props) {
                                     setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                     setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                     liquiditySetter(res.data.pairList[i])
+                                    getUserReservers(res.data.pairList[i])
                                     break;
                                 } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
                                     setIsInvalidPair(false)
                                     setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                     setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                     liquiditySetter(res.data.pairList[i])
+                                    getUserReservers(res.data.pairList[i])
                                     break;
                                 } else {
                                     setIsInvalidPair(true)
@@ -239,12 +243,15 @@ function AddLiquidity(props) {
                             let name1 = res.data.pairList[i].token1.name;
                             console.log("name0", name0);
                             console.log("name1", name1);
+                            console.log("tokenA.name", tokenA.name);
+                            console.log("tokenB.name", tokenB.name);
                             if (name0 === "Wrapped Casper" && tokenA.name === "Casper" && tokenB.name === name1) {
                                 console.log('1', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
+                                getUserReservers(res.data.pairList[i])
                                 break;
                             } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper" && tokenA.name === name1) {
                                 console.log('2', res.data.pairList[i]);
@@ -252,6 +259,7 @@ function AddLiquidity(props) {
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
+                                getUserReservers(res.data.pairList[i])
                                 break;
                             } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper" && tokenB.name === name0) {
                                 console.log('3', res.data.pairList[i]);
@@ -259,13 +267,15 @@ function AddLiquidity(props) {
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
+                                getUserReservers(res.data.pairList[i])
                                 break;
-                            } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper" && tokenB.name === name0) {
+                            } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper" && tokenA.name === name0) {
                                 console.log('4', res.data.pairList[i]);
                                 setIsInvalidPair(false)
                                 setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
                                 setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
                                 liquiditySetter(res.data.pairList[i])
+                                getUserReservers(res.data.pairList[i])
                                 break;
                             } else {
                                 setIsInvalidPair(true)
@@ -277,6 +287,73 @@ function AddLiquidity(props) {
                 .catch((error) => {
                     console.log(error)
                     console.log(error.response)
+                })
+        }
+        function getUserReservers(pair) {
+            let param = {
+                user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+            }
+            axios
+                .post('/getpairagainstuser', param)
+                .then((res) => {
+                    console.log('resresres', res)
+                    console.log('res.data', res.data)
+                    console.log("res.data.userpairs", res.data.userpairs)
+                    console.log("res.data.pairsdata", res.data.pairsdata)
+                    console.log("res.data.userpairs.length", res.data.userpairs.length);
+                    for (let i = 0; i < res.data.userpairs.length; i++) {
+                        // console.log("res.data.userpairs[i].pair", res.data.userpairs[i].pair);
+                        // console.log("pair", pair);
+                        if (pair.id == res.data.userpairs[i].pair) {
+                            console.log("khagdfjhacjwvcjvjwvjvjsvcjsvc");
+                            if (tokenA.symbol !== "CSPR" && tokenB.symbol !== "CSPR") {
+                                if (pair.token0.name === tokenA.name && pair.token1.name === tokenB.name) {
+                                    console.log('1');
+                                    setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                    setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                } else if (pair.token0.name === tokenB.name && pair.token1.name === tokenA.name) {
+                                    console.log('2');
+                                    setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                    setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                } else if (pair.token1.name === tokenA.name && pair.token0.name === tokenB.name) {
+                                    console.log('3');
+                                    setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                    setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                } else {
+                                    console.log('4');
+                                    setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                    setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                }
+                            } else {
+                                if (pair.token0.name === "Wrapped Casper" && pair.token1.name === tokenB.name) {
+                                    console.log('5');
+                                    setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                    setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                } else if (pair.token0.name === "Wrapped Casper" && pair.token1.name === tokenA.name) {
+                                    console.log('6');
+                                    setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                    setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                } else if (pair.token1.name === "Wrapped Casper" && pair.token0.name === tokenB.name) {
+                                    console.log('7');
+                                    setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                    setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                } else {
+                                    console.log('8');
+                                    setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                    setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                }
+                            }
+                            // const [reserve0, setReserve0] = useState(1)
+
+                        }
+
+                    }
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                    // setIsError(true)
+                    // setError("There is no pair against this user.")
                 })
         }
         function liquiditySetter(pair) {
@@ -299,6 +376,32 @@ function AddLiquidity(props) {
                 })
         }
     }, [activePublicKey, tokenA, tokenB]);
+
+    // useEffect(() => {
+    //     if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+    //         let param = {
+    //             user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+    //         }
+    //         axios
+    //             .post('/getpairagainstuser', param)
+    //             .then((res) => {
+    //                 console.log('resresres', res)
+    //                 console.log('res.data', res.data)
+    //                 console.log("res.data.userpairs", res.data.userpairs)
+    //                 console.log("res.data.pairsdata", res.data.pairsdata)
+    //                 console.log("res.data.userpairs.length", res.data.userpairs.length);
+    //                 setUserPairs(res.data.userpairs)
+    //                 setUserPairsData(res.data.pairsdata)
+    //                 setUserData(res.data.pairsdata)
+    //             })
+    //             .catch((error) => {
+    //                 console.log(error)
+    //                 console.log(error.response)
+    //                 setIsError(true)
+    //                 setError("There is no pair against this user.")
+    //             })
+    //     }// eslint-disable-next-line
+    // }, [activePublicKey]);
 
     async function approveMakeDeploy(contractHash, amount, tokenApproved) {
         handleShowSigning()
@@ -546,7 +649,7 @@ function AddLiquidity(props) {
                         to: createRecipientAddress(publicKey),
                         purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
-                        pair: new CLOption(Some(new CLKey(_token_b)))
+                        pair: new CLOption(Some(new CLKey(pair)))
                     });
                     let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
                     let entryPoint = 'add_liquidity_cspr_js_client';
@@ -566,6 +669,7 @@ function AddLiquidity(props) {
                         let variant = "success";
                         enqueueSnackbar('Liquidity Added Successfully', { variant });
                         setIsLoading(false)
+                        window.location.reload(false);
                     }
                     catch {
                         handleCloseSigning()
@@ -585,13 +689,14 @@ function AddLiquidity(props) {
                 try {
                     const runtimeArgs = RuntimeArgs.fromMap({
                         token: new CLKey(_token_a),
-                        amount_token_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
                         amount_cspr_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
-                        amount_token_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
+                        amount_token_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
                         amount_cspr_min: CLValueBuilder.u256(convertToStr(token_BAmount - (token_BAmount) * slippage / 100)),
+                        amount_token_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
                         to: createRecipientAddress(publicKey),
+                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
-                        pair: new CLOption(Some(new CLKey(pair)))
+                        pair: new CLOption(Some(new CLKey(_token_a)))
                     });
 
                     let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
@@ -613,6 +718,7 @@ function AddLiquidity(props) {
                         let variant = "success";
                         enqueueSnackbar('Liquidity Added Successfully', { variant });
                         setIsLoading(false)
+                        window.location.reload(false);
                     }
                     catch {
                         handleCloseSigning()
@@ -629,7 +735,8 @@ function AddLiquidity(props) {
                 }
             } else {
                 // eslint-disable-next-line
-                // console.log("token_AAmount - (token_AAmount) * slippage / 100", BigInt(token_AAmount - (token_AAmount) * slippage / 100));
+                console.log("token_AAmount - (token_BAmount) * slippage / 100", token_AAmount - (token_AAmount) * slippage / 100);
+                console.log("token_BAmount - (token_BAmount) * slippage / 100", token_BAmount - (token_BAmount) * slippage / 100);
                 try {
                     const runtimeArgs = RuntimeArgs.fromMap({
                         token_a: new CLKey(_token_a),
@@ -662,6 +769,7 @@ function AddLiquidity(props) {
                         handleCloseSigning()
                         enqueueSnackbar('Liquidity Added Successfully', { variant });
                         setIsLoading(false)
+                        window.location.reload(false);
                     }
                     catch {
                         handleCloseSigning()
@@ -756,7 +864,7 @@ function AddLiquidity(props) {
 
                                                                                             if (e.target.value >= 0) {
                                                                                                 setTokenAAmount(e.target.value)
-                                                                                                setTokenBAmount(parseFloat(e.target.value * reserve0).toFixed(9))
+                                                                                                setTokenBAmount(parseFloat(e.target.value * ratio0).toFixed(9))
                                                                                             } else {
                                                                                                 setTokenAAmount(0)
                                                                                                 setTokenBAmount(0)
@@ -833,7 +941,7 @@ function AddLiquidity(props) {
                                                                                         if (regex.test(e.target.value)) {
                                                                                             if (e.target.value >= 0) {
                                                                                                 setTokenBAmount(e.target.value)
-                                                                                                setTokenAAmount(parseFloat(e.target.value * reserve1).toFixed(9))
+                                                                                                setTokenAAmount(parseFloat(e.target.value * ratio1).toFixed(9))
                                                                                             }
                                                                                             else {
                                                                                                 setTokenAAmount(0)
@@ -1074,10 +1182,10 @@ function AddLiquidity(props) {
                                                                             <Col xs={10} md={10}>
                                                                                 <CardContent className="text-right" >
                                                                                     <Typography variant="body2" component="p">
-                                                                                        {`1 ${tokenA.name} = ${numeral(reserve0).format('0,0.000000000')} ${tokenB.name}`}
+                                                                                        {`1 ${tokenA.name} = ${numeral(ratio0).format('0,0.000000000')} ${tokenB.name}`}
                                                                                     </Typography>
                                                                                     <Typography variant="body2" component="p">
-                                                                                        {`1 ${tokenB.name} = ${numeral(reserve1).format('0,0.000000000')} ${tokenA.name}`}
+                                                                                        {`1 ${tokenB.name} = ${numeral(ratio1).format('0,0.000000000')} ${tokenA.name}`}
                                                                                     </Typography>
                                                                                 </CardContent>
                                                                             </Col>
@@ -1152,7 +1260,8 @@ function AddLiquidity(props) {
                                                                 )}
                                                             </form>
                                                             <br></br>
-                                                            {tokenA && tokenB && liquidity && !isInvalidPair ? (
+                                                            {console.log('liquidity', liquidity)}
+                                                            {tokenA && tokenB && liquidity && liquidity !== '0.000000000' && !isInvalidPair ? (
                                                                 <Card>
                                                                     <CardContent>
                                                                         <h3>Your Position</h3>
@@ -1176,7 +1285,7 @@ function AddLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={numeral(tokenAAmountPercent).format('0,0.000000000')}
+                                                                                    subheader={numeral(reserve0).format('0,0.000000000')}
                                                                                 />
                                                                             </Col>
 
@@ -1189,7 +1298,7 @@ function AddLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={numeral(tokenBAmountPercent).format('0,0.000000000')}
+                                                                                    subheader={numeral(reserve1).format('0,0.000000000')}
                                                                                 />
                                                                             </Col>
 

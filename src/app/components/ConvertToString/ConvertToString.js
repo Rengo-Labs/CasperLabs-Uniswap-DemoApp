@@ -8,7 +8,7 @@ export function convertToStr(amount) {
         console.log("concatedamunt", concatedAmount);
         return concatedAmount
     } else {
-        let concatedAmount = amountArr[0].concat(amountArr[1])
+        let concatedAmount = amountArr[0].concat(amountArr[1].slice(0, 9))
         for (let i = 0; i < 9 - amountArr[1].length; i++) {
             concatedAmount = concatedAmount.concat('0')
         }

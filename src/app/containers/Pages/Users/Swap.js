@@ -457,6 +457,7 @@ function Swap(props) {
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
+                            window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -511,6 +512,7 @@ function Swap(props) {
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
+                            window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -564,6 +566,7 @@ function Swap(props) {
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
+                            window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -617,6 +620,7 @@ function Swap(props) {
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
+                            window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -666,6 +670,7 @@ function Swap(props) {
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
+                            window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -715,6 +720,7 @@ function Swap(props) {
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
+                            window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()

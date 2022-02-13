@@ -53,7 +53,9 @@ function Pool(props) {
     const classes = useStyles();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
 
-    const [userPairs, setuserPairs] = useState([])
+    const [userPairs, setUserPairs] = useState([])
+    const [userPairsData, setUserPairsData] = useState([])
+    const [userData, setUserData] = useState([])
     const [error, setError] = useState()
     const [ispairList, setIsPairList] = useState(false)
     const [isError, setIsError] = useState(false)
@@ -66,21 +68,25 @@ function Pool(props) {
     useEffect(() => {
         if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
             let param = {
-                user: activePublicKey
+                user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
             }
             axios
-                .post('/getpairsagainstuser', param)
+                .post('/getpairagainstuser', param)
                 .then((res) => {
-                    console.log('resresres', res)
-                    console.log(res.data.userpairs)
-                    setIsPairList(true)
-                    setIsError(false)
-                    setError()
-                    setuserPairs(res.data.userpairs)
+                    console.log('res', res)
+                    // console.log('res.data', res.data)
+                    // console.log("res.data.userpairs", res.data.userpairs)
+                    // console.log("res.data.pairsdata", res.data.pairsdata)
+                    // console.log("res.data.userpairs.length", res.data.userpairs.length);
+                    setUserPairs(res.data.userpairs)
+                    setUserPairsData(res.data.pairsdata)
+                    setUserData(res.data.pairsdata)
+                    // console.log(userPairsData);
+                    // console.log("res.data.userpairs.length", res.data.userpairs.length);
                     for (let i = 0; i < res.data.userpairs.length; i++) {
                         let param = {
                             to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
-                            pairid: res.data.userpairs[i].id
+                            pairid: res.data.pairsdata[i].id
                         }
                         console.log('await Signer.getSelectedPublicKeyBase64()',
                             Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
@@ -89,17 +95,23 @@ function Pool(props) {
                             .post('/liquidityagainstuserandpair', param)
                             .then((res1) => {
                                 console.log('liquidityagainstuserandpair', res1)
+                                // console.log("res.data.", res.data);
                                 // setLiquidity(res1.data.liquidity)
+                                // res.data.userpairs[i] = res.data.pairsdata[i]
                                 res.data.userpairs[i].liquidity = res1.data.liquidity
-                                console.log("res.data.userpairs[i]", res.data.userpairs[i])
-                                setuserPairs(res.data.userpairs)
+                                // console.log("res.data.userpairs[i]", res.data.userpairs[i])
+                                setUserPairs(res.data.userpairs)
+                                setUserPairsData(res.data.pairsdata)
+                                setIsPairList(true)
+                                setIsError(false)
+                                setError()
                             })
                             .catch((error) => {
                                 console.log(error)
                                 console.log(error.response)
                             })
                     }
-                    
+
                 })
                 .catch((error) => {
                     console.log(error)
@@ -109,6 +121,9 @@ function Pool(props) {
                 })
         }// eslint-disable-next-line
     }, [activePublicKey]);
+    // console.log("userPairs", userPairs);
+    // console.log("userPairsData", userPairsData);
+
     return (
 
         <div className="account-page">
@@ -152,7 +167,7 @@ function Pool(props) {
                                                                 id="panel1bh-header"
                                                             >
                                                                 <Typography sx={{ width: '33%', flexShrink: 0 }}>
-                                                                    {i.token0.name} / {i.token1.name}
+                                                                    {userPairsData[index].token0.name} / {userPairsData[index].token1.name}
                                                                 </Typography>
                                                             </AccordionSummary>
                                                             <AccordionDetails >
@@ -171,11 +186,11 @@ function Pool(props) {
                                                                         ) : (null)}
 
                                                                         <Row>
-                                                                            <Col>Pooled {i.token0.name}:</Col>
+                                                                            <Col>Pooled {userPairsData[index].token0.name}:</Col>
                                                                             <Col><Typography>{i.reserve0 / 10 ** 9}</Typography></Col>
                                                                         </Row>
                                                                         <Row>
-                                                                            <Col>Pooled {i.token1.name}:</Col>
+                                                                            <Col>Pooled {userPairsData[index].token1.name}:</Col>
                                                                             <Col><Typography>{i.reserve1 / 10 ** 9}</Typography></Col>
                                                                         </Row>
                                                                     </CardContent>
@@ -191,7 +206,7 @@ function Pool(props) {
                                                                                 </Link>
                                                                             </Col>
                                                                             <Col>
-                                                                                <Link to={`/pool/removeLiquidity/${i.token0.id}/${i.token1.id}`}>
+                                                                                <Link to={`/pool/removeLiquidity/${userPairsData[index].token0.id}/${userPairsData[index].token1.id}`}>
                                                                                     <button
                                                                                         className="btn-block btn-primary btn-lg"
                                                                                         style={{ marginTop: '10px', marginBottom: '10px' }}>

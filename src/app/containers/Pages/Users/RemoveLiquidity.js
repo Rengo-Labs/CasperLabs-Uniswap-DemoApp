@@ -18,6 +18,7 @@ import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAdd
 import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
+import { convertToStr } from '../../../components/ConvertToString/ConvertToString';
 import HeaderHome from "../../../components/Headers/Header";
 import SigningModal from '../../../components/Modals/SigningModal';
 import SlippageModal from '../../../components/Modals/SlippageModal';
@@ -121,27 +122,28 @@ function RemoveLiquidity(props) {
     useEffect(() => {
         if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
             let param = {
-                user: activePublicKey
+                user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
             }
             axios
-                .post('/getpairsagainstuser', param)
+                .post('/getpairagainstuser', param)
                 .then((res) => {
                     console.log('9', res)
                     console.log(res.data.userpairs)
                     for (let i = 0; i < res.data.userpairs.length; i++) {
-                        let address0 = res.data.userpairs[i].token0.id.toLowerCase();
-                        let address1 = res.data.userpairs[i].token1.id.toLowerCase();
+                        let address0 = res.data.pairsdata[i].token0.id.toLowerCase();
+                        let address1 = res.data.pairsdata[i].token1.id.toLowerCase();
                         if ((address0.includes(tokenAAddress.toLowerCase()) && address1.includes(tokenBAddress.toLowerCase())) || (address0.includes(tokenBAddress.toLowerCase()) && address1.includes(tokenAAddress.toLowerCase()))) {
-                            console.log('res.data.', res.data.userpairs[i]);
+                            console.log('res.data.pairsdata', res.data.pairsdata[i]);
+                            console.log('res.data.userpairs', res.data.userpairs[i]);
                             setTokenAAmount((res.data.userpairs[i].reserve0 / 10 ** 9))
                             setTokenBAmount((res.data.userpairs[i].reserve1 / 10 ** 9))
-                            setPairHash(res.data.userpairs[i].id)
+                            setPairHash(res.data.userpairs[i].pair)
                             setTokenAAmountPercent(((res.data.userpairs[i].reserve0 * value / 100) / 10 ** 9))
                             setTokenBAmountPercent(((res.data.userpairs[i].reserve1 * value / 100) / 10 ** 9))
 
                             let param = {
                                 to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
-                                pairid: res.data.userpairs[i].id
+                                pairid: res.data.userpairs[i].pair
                             }
                             console.log('await Signer.getSelectedPublicKeyBase64()',
                                 Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
@@ -150,7 +152,7 @@ function RemoveLiquidity(props) {
                                 .post('/liquidityagainstuserandpair', param)
                                 .then((res1) => {
                                     console.log('liquidityagainstuserandpair', res1)
-                                    setLiquidity(res1.data.liquidity)
+                                    setLiquidity(res1.data.liquidity / 10 ** 9)
                                     console.log("res1.data.liquidity", res1.data.liquidity)
                                 })
                                 .catch((error) => {
@@ -158,7 +160,7 @@ function RemoveLiquidity(props) {
                                     console.log(error.response)
                                 })
                             let allowanceParam = {
-                                contractHash: res.data.userpairs[i].id,
+                                contractHash: res.data.userpairs[i].pair,
                                 owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
                                 spender: ROUTER_PACKAGE_HASH
                             }
@@ -215,8 +217,7 @@ function RemoveLiquidity(props) {
             const paymentAmount = 5000000000;
             const runtimeArgs = RuntimeArgs.fromMap({
                 spender: createRecipientAddress(spenderByteArray),
-                // eslint-disable-next-line
-                amount: CLValueBuilder.u256(BigInt(Math.round(liquidity * value / 100)).toString())
+                amount: CLValueBuilder.u256(convertToStr(liquidity * value / 100))
             });
 
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
@@ -290,12 +291,9 @@ function RemoveLiquidity(props) {
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
-                // eslint-disable-next-line
-                liquidity: CLValueBuilder.u256(BigInt(Math.round(liquidity * value / 100)).toString()),
-                // eslint-disable-next-line
-                amount_a_min: CLValueBuilder.u256(BigInt(token_AAmount * 10 ** 9 - (token_AAmount * 10 ** 9) * slippage / 100).toString()),
-                // eslint-disable-next-line
-                amount_b_min: CLValueBuilder.u256(BigInt(token_BAmount * 10 ** 9 - (token_BAmount * 10 ** 9) * slippage / 100).toString()),
+                liquidity: CLValueBuilder.u256(convertToStr(liquidity * value / 100)),        
+                amount_a_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
+                amount_b_min: CLValueBuilder.u256(convertToStr(token_BAmount - (token_BAmount) * slippage / 100)),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
             });
@@ -313,6 +311,7 @@ function RemoveLiquidity(props) {
                 handleCloseSigning()
                 enqueueSnackbar('Liquidity Removed Successfully', { variant });
                 setIsLoading(false)
+                window.location.reload(false);
             }
             catch {
                 handleCloseSigning()
@@ -338,12 +337,12 @@ function RemoveLiquidity(props) {
             let token_Amount
             if (tokenA.symbol === "WCSPR") {
                 token = tokenB.address;
-                cspr_Amount = (tokenAAmountPercent).toFixed(5);
-                token_Amount = (tokenBAmountPercent).toFixed(5);
+                cspr_Amount = (tokenAAmountPercent).toFixed(9);
+                token_Amount = (tokenBAmountPercent).toFixed(9);
             } else {
                 token = tokenA.address;
-                cspr_Amount = (tokenBAmountPercent).toFixed(5);
-                token_Amount = (tokenAAmountPercent).toFixed(5);
+                cspr_Amount = (tokenBAmountPercent).toFixed(9);
+                token_Amount = (tokenAAmountPercent).toFixed(9);
             }
             const deadline = 1739598100811;
             const paymentAmount = 5000000000;
@@ -354,9 +353,9 @@ function RemoveLiquidity(props) {
             );
             const runtimeArgs = RuntimeArgs.fromMap({
                 token: new CLKey(_token),
-                liquidity: CLValueBuilder.u256(Math.round(liquidity * value / 100)),
-                amount_cspr_min: CLValueBuilder.u256(parseInt(cspr_Amount * 10 ** 9 - (cspr_Amount * 10 ** 9) * slippage / 100)),
-                amount_token_min: CLValueBuilder.u256(parseInt(token_Amount * 10 ** 9 - (token_Amount * 10 ** 9) * slippage / 100)),
+                liquidity: CLValueBuilder.u256(convertToStr(liquidity * value / 100)),
+                amount_cspr_min: CLValueBuilder.u256(convertToStr(cspr_Amount - (cspr_Amount ) * slippage / 100)),
+                amount_token_min: CLValueBuilder.u256(convertToStr(token_Amount - (token_Amount ) * slippage / 100)),
                 to: createRecipientAddress(publicKey),
                 to_purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                 deadline: CLValueBuilder.u256(deadline),
@@ -375,6 +374,7 @@ function RemoveLiquidity(props) {
                 handleCloseSigning()
                 enqueueSnackbar('Liquidity Removed Successfully', { variant });
                 setIsLoading(false)
+                window.location.reload(false);
             }
             catch {
                 let variant = "Error";
@@ -602,7 +602,7 @@ function RemoveLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={liquidity / 10 ** 9}
+                                                                                    subheader={liquidity.toFixed(9)}
                                                                                 />
                                                                             </Col>
                                                                         </Row>
@@ -614,7 +614,7 @@ function RemoveLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={(tokenAAmount).toFixed(5)}
+                                                                                    subheader={(tokenAAmount).toFixed(9)}
                                                                                 />
                                                                             </Col>
                                                                         </Row>
@@ -626,7 +626,7 @@ function RemoveLiquidity(props) {
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
                                                                                 <CardHeader
-                                                                                    subheader={(tokenBAmount).toFixed(5)}
+                                                                                    subheader={(tokenBAmount).toFixed(9)}
                                                                                 />
                                                                             </Col>
                                                                         </Row>
