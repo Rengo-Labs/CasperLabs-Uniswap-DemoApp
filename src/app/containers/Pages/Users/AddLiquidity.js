@@ -1140,38 +1140,6 @@ function AddLiquidity(props) {
                                                                 <br></br>
                                                                 {tokenA && tokenB && !isInvalidPair ? (
                                                                     <>
-                                                                        {/* <Card>
-                                                                            <CardContent>
-                                                                                <Row>
-                                                                                    <Col>
-                                                                                        <CardHeader
-                                                                                            style={{ margin: '10px' }}
-                                                                                            title={numeral(tokenAAmount).format('0,0.000000000').toString()}
-                                                                                        />
-                                                                                    </Col>
-                                                                                    <Col>
-                                                                                        <CardHeader
-                                                                                            avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" />}
-                                                                                            title={tokenA.name}
-                                                                                        />
-                                                                                    </Col>
-                                                                                </Row>
-                                                                                <Row>
-                                                                                    <Col>
-                                                                                        <CardHeader
-                                                                                            style={{ margin: '10px' }}
-                                                                                            title={numeral(tokenBAmount).format('0,0.000000000')}
-                                                                                        />
-                                                                                    </Col>
-                                                                                    <Col>
-                                                                                        <CardHeader
-                                                                                            avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" />}
-                                                                                            title={tokenB.name}
-                                                                                        />
-                                                                                    </Col>
-                                                                                </Row>
-                                                                            </CardContent>
-                                                                        </Card> */}
                                                                         <hr />
                                                                         <Row style={{ marginBottom: '20px' }}>
                                                                             <Col xs={2} md={2}>
@@ -1260,7 +1228,6 @@ function AddLiquidity(props) {
                                                                 )}
                                                             </form>
                                                             <br></br>
-                                                            {console.log('liquidity', liquidity)}
                                                             {tokenA && tokenB && liquidity && liquidity !== '0.000000000' && !isInvalidPair ? (
                                                                 <Card>
                                                                     <CardContent>
@@ -1268,7 +1235,7 @@ function AddLiquidity(props) {
                                                                         <Row>
                                                                             <Col>
                                                                                 <CardHeader
-                                                                                    subheader={`${tokenA.symbol}/${tokenB.symbol}`}
+                                                                                    subheader={`Your total pool tokens (${tokenA.symbol}-${tokenB.symbol}):`}
                                                                                 />
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
@@ -1280,7 +1247,7 @@ function AddLiquidity(props) {
                                                                         <Row>
                                                                             <Col>
                                                                                 <CardHeader
-                                                                                    subheader={`${tokenA.name}:`}
+                                                                                    subheader={`Pooled ${tokenA.name}:`}
                                                                                 />
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
@@ -1293,7 +1260,7 @@ function AddLiquidity(props) {
                                                                         <Row>
                                                                             <Col>
                                                                                 <CardHeader
-                                                                                    subheader={`${tokenB.name}:`}
+                                                                                    subheader={`Pooled ${tokenB.name}:`}
                                                                                 />
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>

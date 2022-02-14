@@ -291,7 +291,7 @@ function RemoveLiquidity(props) {
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
-                liquidity: CLValueBuilder.u256(convertToStr(liquidity * value / 100)),        
+                liquidity: CLValueBuilder.u256(convertToStr(liquidity * value / 100)),
                 amount_a_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
                 amount_b_min: CLValueBuilder.u256(convertToStr(token_BAmount - (token_BAmount) * slippage / 100)),
                 to: createRecipientAddress(publicKey),
@@ -354,8 +354,8 @@ function RemoveLiquidity(props) {
             const runtimeArgs = RuntimeArgs.fromMap({
                 token: new CLKey(_token),
                 liquidity: CLValueBuilder.u256(convertToStr(liquidity * value / 100)),
-                amount_cspr_min: CLValueBuilder.u256(convertToStr(cspr_Amount - (cspr_Amount ) * slippage / 100)),
-                amount_token_min: CLValueBuilder.u256(convertToStr(token_Amount - (token_Amount ) * slippage / 100)),
+                amount_cspr_min: CLValueBuilder.u256(convertToStr(cspr_Amount - (cspr_Amount) * slippage / 100)),
+                amount_token_min: CLValueBuilder.u256(convertToStr(token_Amount - (token_Amount) * slippage / 100)),
                 to: createRecipientAddress(publicKey),
                 to_purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                 deadline: CLValueBuilder.u256(deadline),
@@ -500,7 +500,7 @@ function RemoveLiquidity(props) {
                                                                 ) : (
                                                                     null
                                                                 )}
-                                                                {tokenA && tokenAAmount > 0 && tokenB && tokenBAmount > 0 && (liquidity) * value / 100 > pairAllowance ? (
+                                                                {tokenA && tokenAAmount > 0 && tokenB && tokenBAmount > 0 && parseInt((liquidity * 10 ** 9) * value / 100) > pairAllowance ? (
                                                                     approveAIsLoading ? (
                                                                         <div className="text-center">
                                                                             <Spinner
@@ -516,7 +516,7 @@ function RemoveLiquidity(props) {
                                                                             className="btn btn-block btn-lg "
                                                                             disabled
                                                                         >
-                                                                            Approve
+                                                                            Approve {tokenA.symbol}-{tokenB.symbol}
                                                                         </button>
                                                                     ) : (
                                                                         <button
@@ -526,7 +526,7 @@ function RemoveLiquidity(props) {
                                                                                 await approveMakeDeploy()
                                                                                 setApproveAIsLoading(false)
                                                                             }}>
-                                                                            Approve
+                                                                            Approve {tokenA.symbol}-{tokenB.symbol}
                                                                         </button>
                                                                     )
                                                                 ) : (null)}
@@ -541,7 +541,7 @@ function RemoveLiquidity(props) {
                                                                         </Spinner>
                                                                     </div>
                                                                 ) : (
-                                                                    activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && (liquidity) * value / 100 <= pairAllowance && tokenAAmountPercent !== 0 && tokenBAmountPercent !== 0 && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
+                                                                    activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined && parseInt((liquidity * 10 ** 9) * value / 100) <= pairAllowance && tokenAAmountPercent !== 0 && tokenBAmountPercent !== 0 && tokenAAmount !== 0 && tokenBAmount !== 0 && tokenAAmount !== undefined && tokenBAmount !== undefined ? (
                                                                         isRemoveLiquidityCSPR ? (
                                                                             <button
                                                                                 className="btn btn-block btn-lg"
@@ -597,7 +597,7 @@ function RemoveLiquidity(props) {
                                                                         <Row>
                                                                             <Col>
                                                                                 <CardHeader
-                                                                                    subheader={`${tokenA.symbol}/${tokenB.symbol}`}
+                                                                                    subheader={`Your total pool tokens (${tokenA.symbol}-${tokenB.symbol}):`}
                                                                                 />
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
@@ -609,7 +609,7 @@ function RemoveLiquidity(props) {
                                                                         <Row>
                                                                             <Col>
                                                                                 <CardHeader
-                                                                                    subheader={`${tokenA.name}:`}
+                                                                                    subheader={`Pooled ${tokenA.name}:`}
                                                                                 />
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
@@ -621,7 +621,7 @@ function RemoveLiquidity(props) {
                                                                         <Row>
                                                                             <Col>
                                                                                 <CardHeader
-                                                                                    subheader={`${tokenB.name}:`}
+                                                                                    subheader={`Pooled ${tokenB.name}:`}
                                                                                 />
                                                                             </Col>
                                                                             <Col style={{ textAlign: 'right' }}>
