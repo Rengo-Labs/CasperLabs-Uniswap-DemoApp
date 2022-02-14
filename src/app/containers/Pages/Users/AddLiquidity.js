@@ -120,8 +120,6 @@ function AddLiquidity(props) {
     const handleChange = (panel) => (event, isExpanded) => {
         setExpanded(isExpanded ? panel : false);
     };
-    let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
-    let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [liquidity, setLiquidity] = useState();
 
     useEffect(() => {
@@ -153,143 +151,119 @@ function AddLiquidity(props) {
     }, []);
     useEffect(() => {
         if (tokenA && tokenB) {
-            let pathParamsArr = [
-                tokenA.symbol,
-                tokenB.symbol,
-            ]
-            if (tokenA.symbol === "CSPR") {
-                pathParamsArr[0] = "WCSPR"
+            if (tokenA.name === tokenB.name) {
+                setIsInvalidPair(true)
+                setReserve0(1)
+                setReserve1(1)
+            } else if ((tokenA.symbol === "CSPR" && tokenB.symbol === "WCSPR") || (tokenB.symbol === "CSPR" && tokenA.symbol === "WCSPR")) {
+                setIsInvalidPair(true)
+                setReserve0(1)
+                setReserve1(1)
+            } else {
+                let pathParamsArr = [
+                    tokenA.symbol,
+                    tokenB.symbol,
+                ]
+                if (tokenA.symbol === "CSPR") {
+                    pathParamsArr[0] = "WCSPR"
 
-            } else if (tokenB.symbol === "CSPR") {
-                pathParamsArr[1] = "WCSPR"
-            }
+                } else if (tokenB.symbol === "CSPR") {
+                    pathParamsArr[1] = "WCSPR"
+                }
 
-            let pathResParam = {
-                path: pathParamsArr
-            }
-            console.log("pathResParam", pathResParam);
-            axios
-                .post('/getpathreserves', pathResParam)
-                .then((res) => {
-                    console.log('getpathreserves', res)
-                    if (res.data.reserve0 && res.data.reserve1) {
-                        setRatio0(res.data.reserve0)
-                        setRatio1(res.data.reserve1)
-                    } else {
+                let pathResParam = {
+                    path: pathParamsArr
+                }
+                console.log("pathResParam", pathResParam);
+                axios
+                    .post('/getpathreserves', pathResParam)
+                    .then((res) => {
+                        console.log('getpathreserves', res)
+                        if (res.data.reserve0 && res.data.reserve1) {
+                            setRatio0(res.data.reserve0)
+                            setRatio1(res.data.reserve1)
+                            axios
+                                .get('/getpairlist')
+                                .then((res1) => {
+                                    console.log('resresres', res1)
+                                    console.log(res1.data.pairList)
+                                    if (tokenA.name !== "Casper" && tokenB.name !== "Casper") {
+                                        for (let i = 0; i < res1.data.pairList.length; i++) {
+                                            let address0 = res1.data.pairList[i].token0.id.toLowerCase();
+                                            let address1 = res1.data.pairList[i].token1.id.toLowerCase();
+                                            console.log("address0", address0);
+                                            console.log("address1", address1);
+                                            if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
+                                                setIsInvalidPair(false)
+                                                liquiditySetter(res1.data.pairList[i])
+                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                break;
+                                            } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
+                                                setIsInvalidPair(false)
+                                                liquiditySetter(res1.data.pairList[i])
+                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                break;
+                                            } else {
+                                                setIsInvalidPair(true)
+                                                setReserve0(1)
+                                                setReserve1(1)
+                                            }
+                                        }
+                                    } else {
+                                        for (let i = 0; i < res1.data.pairList.length; i++) {
+                                            let name0 = res1.data.pairList[i].token0.name;
+                                            let name1 = res1.data.pairList[i].token1.name;
+                                            if (name0 === "Wrapped Casper" && tokenA.name === "Casper" && tokenB.name === name1) {
+                                                console.log('1', res1.data.pairList[i]);
+                                                setIsInvalidPair(false)
+                                                liquiditySetter(res1.data.pairList[i])
+                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                break;
+                                            } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper" && tokenA.name === name1) {
+                                                console.log('2', res1.data.pairList[i]);
+                                                setIsInvalidPair(false)
+                                                liquiditySetter(res1.data.pairList[i])
+                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                break;
+                                            } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper" && tokenB.name === name0) {
+                                                console.log('3', res1.data.pairList[i]);
+                                                setIsInvalidPair(false)
+                                                liquiditySetter(res1.data.pairList[i])
+                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                break;
+                                            } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper" && tokenA.name === name0) {
+                                                console.log('4', res1.data.pairList[i]);
+                                                setIsInvalidPair(false)
+                                                liquiditySetter(res1.data.pairList[i])
+                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                break;
+                                            } else {
+                                                setIsInvalidPair(true)
+                                                setReserve0(1)
+                                                setReserve1(1)
+                                            }
+                                        }
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.log(error)
+                                    console.log(error.response)
+                                })
+                        } else {
+                            setRatio0(1)
+                            setRatio1(1)
+                        }
+
+                    })
+                    .catch((error) => {
                         setRatio0(1)
                         setRatio1(1)
-                    }
-
-                })
-                .catch((error) => {
-                    setRatio0(1)
-                    setRatio1(1)
-                    console.log(error)
-                    console.log(error.response)
-                })
+                        console.log(error)
+                        console.log(error.response)
+                    })
+            }
         }
-
-    }, [tokenA, tokenB]);
-    useEffect(() => {
-        if (tokenA && tokenB) {
-            console.log("tokenA", tokenA);
-            console.log("tokenB", tokenB);
-            axios
-                .get('/getpairlist')
-                .then((res) => {
-                    console.log('resresres', res)
-                    console.log(res.data.pairList)
-                    if (tokenA.name !== "Casper" && tokenB.name !== "Casper") {
-                        if (tokenA.name === tokenB.name) {
-                            setTokenAAmountPercent(1)
-                            setTokenBAmountPercent(1)
-                            setIsInvalidPair(true)
-                        }
-                        else {
-                            for (let i = 0; i < res.data.pairList.length; i++) {
-                                let address0 = res.data.pairList[i].token0.id.toLowerCase();
-                                let address1 = res.data.pairList[i].token1.id.toLowerCase();
-                                console.log("address0", address0);
-                                console.log("address1", address1);
-                                if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
-                                    setIsInvalidPair(false)
-                                    setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
-                                    setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
-                                    liquiditySetter(res.data.pairList[i])
-                                    getUserReservers(res.data.pairList[i])
-                                    break;
-                                } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
-                                    setIsInvalidPair(false)
-                                    setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
-                                    setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
-                                    liquiditySetter(res.data.pairList[i])
-                                    getUserReservers(res.data.pairList[i])
-                                    break;
-                                } else {
-                                    setIsInvalidPair(true)
-                                }
-                            }
-                        }
-                    } else if ((tokenA.name === "Casper" && tokenB.name === "Wrapped Casper") || (tokenA.name === "Wrapped Casper" && tokenB.name === "Casper")) {
-                        setTokenAAmountPercent(1)
-                        setTokenBAmountPercent(1)
-                    } else if (tokenA.name === tokenB.name) {
-                        setTokenAAmountPercent(1)
-                        setTokenBAmountPercent(1)
-                        setIsInvalidPair(true)
-                    } else {
-                        for (let i = 0; i < res.data.pairList.length; i++) {
-                            let name0 = res.data.pairList[i].token0.name;
-                            let name1 = res.data.pairList[i].token1.name;
-                            console.log("name0", name0);
-                            console.log("name1", name1);
-                            console.log("tokenA.name", tokenA.name);
-                            console.log("tokenB.name", tokenB.name);
-                            if (name0 === "Wrapped Casper" && tokenA.name === "Casper" && tokenB.name === name1) {
-                                console.log('1', res.data.pairList[i]);
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
-                                liquiditySetter(res.data.pairList[i])
-                                getUserReservers(res.data.pairList[i])
-                                break;
-                            } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper" && tokenA.name === name1) {
-                                console.log('2', res.data.pairList[i]);
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
-                                liquiditySetter(res.data.pairList[i])
-                                getUserReservers(res.data.pairList[i])
-                                break;
-                            } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper" && tokenB.name === name0) {
-                                console.log('3', res.data.pairList[i]);
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
-                                liquiditySetter(res.data.pairList[i])
-                                getUserReservers(res.data.pairList[i])
-                                break;
-                            } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper" && tokenA.name === name0) {
-                                console.log('4', res.data.pairList[i]);
-                                setIsInvalidPair(false)
-                                setTokenAAmountPercent(parseFloat(res.data.pairList[i].reserve1 / 10 ** 9).toFixed(9))
-                                setTokenBAmountPercent(parseFloat(res.data.pairList[i].reserve0 / 10 ** 9).toFixed(9))
-                                liquiditySetter(res.data.pairList[i])
-                                getUserReservers(res.data.pairList[i])
-                                break;
-                            } else {
-                                setIsInvalidPair(true)
-                            }
-
-                        }
-                    }
-                })
-                .catch((error) => {
-                    console.log(error)
-                    console.log(error.response)
-                })
-        }
-        function getUserReservers(pair) {
+        function getUserReservers(pair, rat0, rat1) {
             let param = {
                 user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
             }
@@ -303,47 +277,27 @@ function AddLiquidity(props) {
                     console.log("res.data.userpairs.length", res.data.userpairs.length);
                     for (let i = 0; i < res.data.userpairs.length; i++) {
                         // console.log("res.data.userpairs[i].pair", res.data.userpairs[i].pair);
-                        // console.log("pair", pair);
+                        console.log("pair", pair);
+
                         if (pair.id == res.data.userpairs[i].pair) {
-                            console.log("khagdfjhacjwvcjvjwvjvjsvcjsvc");
-                            if (tokenA.symbol !== "CSPR" && tokenB.symbol !== "CSPR") {
-                                if (pair.token0.name === tokenA.name && pair.token1.name === tokenB.name) {
-                                    console.log('1');
-                                    setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
-                                    setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
-                                } else if (pair.token0.name === tokenB.name && pair.token1.name === tokenA.name) {
-                                    console.log('2');
-                                    setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
-                                    setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
-                                } else if (pair.token1.name === tokenA.name && pair.token0.name === tokenB.name) {
-                                    console.log('3');
-                                    setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
-                                    setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
-                                } else {
-                                    console.log('4');
-                                    setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
-                                    setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
-                                }
-                            } else {
-                                if (pair.token0.name === "Wrapped Casper" && pair.token1.name === tokenB.name) {
-                                    console.log('5');
-                                    setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
-                                    setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
-                                } else if (pair.token0.name === "Wrapped Casper" && pair.token1.name === tokenA.name) {
-                                    console.log('6');
-                                    setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
-                                    setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
-                                } else if (pair.token1.name === "Wrapped Casper" && pair.token0.name === tokenB.name) {
-                                    console.log('7');
-                                    setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
-                                    setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
-                                } else {
-                                    console.log('8');
-                                    setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
-                                    setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
-                                }
+
+                            if (rat0 < rat1 && parseInt(res.data.userpairs[i].reserve0) < parseInt(res.data.userpairs[i].reserve1)) {
+                                console.log('1');
+                                setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
+                            } else if (rat0 < rat1 && parseInt(res.data.userpairs[i].reserve0) > parseInt(res.data.userpairs[i].reserve1)) {
+                                console.log('2');
+                                setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
+                            } else if (rat0 > rat1 && parseInt(res.data.userpairs[i].reserve0) < parseInt(res.data.userpairs[i].reserve1)) {
+                                console.log('3');
+                                setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
+                            } else if (rat0 > rat1 && parseInt(res.data.userpairs[i].reserve0) > parseInt(res.data.userpairs[i].reserve1)) {
+                                console.log('4');
+                                setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
                             }
-                            // const [reserve0, setReserve0] = useState(1)
 
                         }
 
@@ -376,32 +330,6 @@ function AddLiquidity(props) {
                 })
         }
     }, [activePublicKey, tokenA, tokenB]);
-
-    // useEffect(() => {
-    //     if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
-    //         let param = {
-    //             user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
-    //         }
-    //         axios
-    //             .post('/getpairagainstuser', param)
-    //             .then((res) => {
-    //                 console.log('resresres', res)
-    //                 console.log('res.data', res.data)
-    //                 console.log("res.data.userpairs", res.data.userpairs)
-    //                 console.log("res.data.pairsdata", res.data.pairsdata)
-    //                 console.log("res.data.userpairs.length", res.data.userpairs.length);
-    //                 setUserPairs(res.data.userpairs)
-    //                 setUserPairsData(res.data.pairsdata)
-    //                 setUserData(res.data.pairsdata)
-    //             })
-    //             .catch((error) => {
-    //                 console.log(error)
-    //                 console.log(error.response)
-    //                 setIsError(true)
-    //                 setError("There is no pair against this user.")
-    //             })
-    //     }// eslint-disable-next-line
-    // }, [activePublicKey]);
 
     async function approveMakeDeploy(contractHash, amount, tokenApproved) {
         handleShowSigning()
@@ -460,7 +388,7 @@ function AddLiquidity(props) {
         if (tokenA && tokenA.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
             getCurrencyBalance()
         }
-    }, [activePublicKey, tokenA]);
+    }, [getTokenBalance, getCurrencyBalance, activePublicKey, tokenA]);
     function getCurrencyBalance() {
         const client = new CasperServiceByJsonRPC(
             NODE_ADDRESS
@@ -1139,26 +1067,23 @@ function AddLiquidity(props) {
                                                                 </Row>
                                                                 <br></br>
                                                                 {tokenA && tokenB && !isInvalidPair ? (
-                                                                    <>
-                                                                        <hr />
-                                                                        <Row style={{ marginBottom: '20px' }}>
-                                                                            <Col xs={2} md={2}>
-                                                                                <CardHeader
-                                                                                    subheader={'Price'}
-                                                                                />
-                                                                            </Col>
-                                                                            <Col xs={10} md={10}>
-                                                                                <CardContent className="text-right" >
-                                                                                    <Typography variant="body2" component="p">
-                                                                                        {`1 ${tokenA.name} = ${numeral(ratio0).format('0,0.000000000')} ${tokenB.name}`}
-                                                                                    </Typography>
-                                                                                    <Typography variant="body2" component="p">
-                                                                                        {`1 ${tokenB.name} = ${numeral(ratio1).format('0,0.000000000')} ${tokenA.name}`}
-                                                                                    </Typography>
-                                                                                </CardContent>
-                                                                            </Col>
-                                                                        </Row>
-                                                                    </>
+                                                                    <Row style={{ marginBottom: '20px' }}>
+                                                                        <Col xs={2} md={2}>
+                                                                            <CardHeader
+                                                                                subheader={'Price'}
+                                                                            />
+                                                                        </Col>
+                                                                        <Col xs={10} md={10}>
+                                                                            <CardContent className="text-right" >
+                                                                                <Typography variant="body2" component="p">
+                                                                                    {`1 ${tokenA.name} = ${numeral(ratio0).format('0,0.000000000')} ${tokenB.name}`}
+                                                                                </Typography>
+                                                                                <Typography variant="body2" component="p">
+                                                                                    {`1 ${tokenB.name} = ${numeral(ratio1).format('0,0.000000000')} ${tokenA.name}`}
+                                                                                </Typography>
+                                                                            </CardContent>
+                                                                        </Col>
+                                                                    </Row>
                                                                 ) : (
                                                                     null
                                                                 )}

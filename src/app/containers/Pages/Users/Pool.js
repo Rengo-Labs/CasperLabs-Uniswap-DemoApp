@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Alert } from 'reactstrap';
+import Spinner from "react-bootstrap/Spinner";
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
@@ -58,6 +59,7 @@ function Pool(props) {
     const [userData, setUserData] = useState([])
     const [error, setError] = useState()
     const [ispairList, setIsPairList] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const [isError, setIsError] = useState(false)
     const [expanded, setExpanded] = React.useState(false);
 
@@ -67,23 +69,63 @@ function Pool(props) {
 
     useEffect(() => {
         if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            setIsLoading(true)
             let param = {
                 user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
             }
             axios
                 .post('/getpairagainstuser', param)
-                .then((res) => {
+                .then(async (res) => {
                     console.log('res', res)
-                    // console.log('res.data', res.data)
-                    // console.log("res.data.userpairs", res.data.userpairs)
-                    // console.log("res.data.pairsdata", res.data.pairsdata)
-                    // console.log("res.data.userpairs.length", res.data.userpairs.length);
                     setUserPairs(res.data.userpairs)
                     setUserPairsData(res.data.pairsdata)
                     setUserData(res.data.pairsdata)
-                    // console.log(userPairsData);
-                    // console.log("res.data.userpairs.length", res.data.userpairs.length);
                     for (let i = 0; i < res.data.userpairs.length; i++) {
+                        let pathParamsArr = [
+                            res.data.pairsdata[i].token0.symbol,
+                            res.data.pairsdata[i].token1.symbol,
+                        ]
+                        let pathResParam = {
+                            path: pathParamsArr
+                        }
+                        console.log("pathResParam", pathResParam);
+                        await axios
+                            .post('/getpathreserves', pathResParam)
+                            .then((res1) => {
+                                console.log('getpathreserves', res1)
+                                if (res1.data.reserve0 && res1.data.reserve1) {
+                                    let rat0 = res1.data.reserve0;
+                                    let rat1 = res1.data.reserve1;
+                                    console.log("rat0", rat0);
+                                    console.log("rat1", rat1);
+                                    console.log("res.data.userpairs[i].reserve0", res.data.userpairs[i].reserve0);
+                                    console.log("res.data.userpairs[i].reserve1", res.data.userpairs[i].reserve1);
+                                    if (rat0 < rat1 && parseInt(res.data.userpairs[i].reserve0) < parseInt(res.data.userpairs[i].reserve1)) {
+                                        console.log('1');
+                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve1
+                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve0
+                                    } else if (rat0 < rat1 && parseInt(res.data.userpairs[i].reserve0) > parseInt(res.data.userpairs[i].reserve1)) {
+                                        console.log('2');
+                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve0
+                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve1
+                                    } else if (rat0 > rat1 && parseInt(res.data.userpairs[i].reserve0) < parseInt(res.data.userpairs[i].reserve1)) {
+                                        console.log('3');
+                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve0
+                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve1
+                                    } else if (rat0 > rat1 && parseInt(res.data.userpairs[i].reserve0) > parseInt(res.data.userpairs[i].reserve1)) {
+                                        console.log('4');
+                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve1
+                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve0
+                                    }
+                                }
+
+                            })
+                            .catch((error) => {
+                                console.log(error)
+                                console.log(error.response)
+                            })
+
+
                         let param = {
                             to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
                             pairid: res.data.pairsdata[i].id
@@ -91,16 +133,13 @@ function Pool(props) {
                         console.log('await Signer.getSelectedPublicKeyBase64()',
                             Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
 
-                        axios
+                        await axios
                             .post('/liquidityagainstuserandpair', param)
                             .then((res1) => {
                                 console.log('liquidityagainstuserandpair', res1)
-                                // console.log("res.data.", res.data);
-                                // setLiquidity(res1.data.liquidity)
-                                // res.data.userpairs[i] = res.data.pairsdata[i]
                                 res.data.userpairs[i].liquidity = res1.data.liquidity
-                                // console.log("res.data.userpairs[i]", res.data.userpairs[i])
                                 setUserPairs(res.data.userpairs)
+                                console.log("res.data.userpairs", res.data.userpairs);
                                 setUserPairsData(res.data.pairsdata)
                                 setIsPairList(true)
                                 setIsError(false)
@@ -112,6 +151,9 @@ function Pool(props) {
                             })
                     }
 
+                    setIsLoading(false)
+                    
+
                 })
                 .catch((error) => {
                     console.log(error)
@@ -121,8 +163,6 @@ function Pool(props) {
                 })
         }// eslint-disable-next-line
     }, [activePublicKey]);
-    // console.log("userPairs", userPairs);
-    // console.log("userPairsData", userPairsData);
 
     return (
 
@@ -158,6 +198,22 @@ function Pool(props) {
                                                             </Alert>
                                                         </CardContent>
                                                     </Card>
+                                                ) : isLoading ? (
+                                                    <Card style={{ marginBottom: '10px' }} className={classes.root}>
+                                                        <CardContent >
+                                                            <Alert style={{ marginBottom: '0px' }} color="light">
+                                                                <div className="text-center">
+                                                                    <Spinner
+                                                                        animation="border"
+                                                                        role="status"
+                                                                        style={{ color: "#e84646" }}
+                                                                    >
+                                                                        <span className="sr-only">Loading...</span>
+                                                                    </Spinner>
+                                                                </div>
+                                                            </Alert>
+                                                        </CardContent>
+                                                    </Card>
                                                 ) : (
                                                     userPairs.map((i, index) => (
                                                         <Accordion style={{ marginBottom: '10px' }} key={index} expanded={expanded === index} onChange={handleChange(index)}>
@@ -187,11 +243,11 @@ function Pool(props) {
 
                                                                         <Row>
                                                                             <Col>Pooled {userPairsData[index].token0.name}:</Col>
-                                                                            <Col><Typography>{i.reserve0 / 10 ** 9}</Typography></Col>
+                                                                            <Col><Typography>{i.rat0 / 10 ** 9}</Typography></Col>
                                                                         </Row>
                                                                         <Row>
                                                                             <Col>Pooled {userPairsData[index].token1.name}:</Col>
-                                                                            <Col><Typography>{i.reserve1 / 10 ** 9}</Typography></Col>
+                                                                            <Col><Typography>{i.rat1 / 10 ** 9}</Typography></Col>
                                                                         </Row>
                                                                     </CardContent>
                                                                     <Container>

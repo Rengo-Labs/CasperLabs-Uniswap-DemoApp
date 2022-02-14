@@ -126,20 +126,84 @@ function RemoveLiquidity(props) {
             }
             axios
                 .post('/getpairagainstuser', param)
-                .then((res) => {
+                .then(async (res) => {
                     console.log('9', res)
                     console.log(res.data.userpairs)
                     for (let i = 0; i < res.data.userpairs.length; i++) {
                         let address0 = res.data.pairsdata[i].token0.id.toLowerCase();
                         let address1 = res.data.pairsdata[i].token1.id.toLowerCase();
                         if ((address0.includes(tokenAAddress.toLowerCase()) && address1.includes(tokenBAddress.toLowerCase())) || (address0.includes(tokenBAddress.toLowerCase()) && address1.includes(tokenAAddress.toLowerCase()))) {
+                            let pathParamsArr = [
+                            ]
+                            if (address0.includes(tokenAAddress.toLowerCase()) && address1.includes(tokenBAddress.toLowerCase())) {
+                                pathParamsArr = [
+                                    res.data.pairsdata[i].token0.symbol,
+                                    res.data.pairsdata[i].token1.symbol,
+                                ]
+                            }
+                            else if (address0.includes(tokenBAddress.toLowerCase()) && address1.includes(tokenAAddress.toLowerCase())) {
+                                pathParamsArr = [
+                                    res.data.pairsdata[i].token1.symbol,
+                                    res.data.pairsdata[i].token0.symbol,
+                                ]
+                            }
+                            
+                            let pathResParam = {
+                                path: pathParamsArr
+                            }
+                            console.log("pathResParam", pathResParam);
+                            await axios
+                                .post('/getpathreserves', pathResParam)
+                                .then((res1) => {
+                                    console.log('getpathreserves', res1)
+                                    if (res1.data.reserve0 && res1.data.reserve1) {
+                                        let rat0 = res1.data.reserve0;
+                                        let rat1 = res1.data.reserve1;
+                                        console.log("rat0", rat0);
+                                        console.log("rat1", rat1);
+                                        console.log("res.data.userpairs[i].reserve0", res.data.userpairs[i].reserve0);
+                                        console.log("res.data.userpairs[i].reserve1", res.data.userpairs[i].reserve1);
+                                        if (rat0 < rat1 && parseInt(res.data.userpairs[i].reserve0) < parseInt(res.data.userpairs[i].reserve1)) {
+                                            console.log('1');
+                                            res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve1
+                                            res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve0
+                                            // setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                            // setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                        } else if (rat0 < rat1 && parseInt(res.data.userpairs[i].reserve0) > parseInt(res.data.userpairs[i].reserve1)) {
+                                            console.log('2');
+                                            res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve0
+                                            res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve1
+
+                                            // setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                            // setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                        } else if (rat0 > rat1 && parseInt(res.data.userpairs[i].reserve0) < parseInt(res.data.userpairs[i].reserve1)) {
+                                            console.log('3');
+                                            res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve0
+                                            res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve1
+
+                                            // setReserve0(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                            // setReserve1(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                        } else if (rat0 > rat1 && parseInt(res.data.userpairs[i].reserve0) > parseInt(res.data.userpairs[i].reserve1)) {
+                                            console.log('4');
+                                            res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve1
+                                            res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve0
+
+                                            // setReserve0(res.data.userpairs[i].reserve1 / 10 ** 9)
+                                            // setReserve1(res.data.userpairs[i].reserve0 / 10 ** 9)
+                                        }
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.log(error)
+                                    console.log(error.response)
+                                })
                             console.log('res.data.pairsdata', res.data.pairsdata[i]);
                             console.log('res.data.userpairs', res.data.userpairs[i]);
-                            setTokenAAmount((res.data.userpairs[i].reserve0 / 10 ** 9))
-                            setTokenBAmount((res.data.userpairs[i].reserve1 / 10 ** 9))
+                            setTokenAAmount((res.data.userpairs[i].rat0 / 10 ** 9))
+                            setTokenBAmount((res.data.userpairs[i].rat1 / 10 ** 9))
                             setPairHash(res.data.userpairs[i].pair)
-                            setTokenAAmountPercent(((res.data.userpairs[i].reserve0 * value / 100) / 10 ** 9))
-                            setTokenBAmountPercent(((res.data.userpairs[i].reserve1 * value / 100) / 10 ** 9))
+                            setTokenAAmountPercent(((res.data.userpairs[i].rat0 * value / 100) / 10 ** 9))
+                            setTokenBAmountPercent(((res.data.userpairs[i].rat1 * value / 100) / 10 ** 9))
 
                             let param = {
                                 to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
