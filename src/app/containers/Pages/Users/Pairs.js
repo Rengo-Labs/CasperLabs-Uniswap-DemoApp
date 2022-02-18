@@ -97,7 +97,6 @@ function Pairs(props) {
                                                                     <td>{i.reserve1 / 10 ** 9}</td>
                                                                     <td>{i.reserveETH / 10 ** 9}</td>
                                                                     <td>{i.reserveUSD / 10 ** 9}</td>
-                                                                    {/* <td>{shortenAddress(i.token0.packageHash)/shortenAddress(i.token1.packageHash)}</td> */}
 
                                                                 </tr>
                                                             ))}

@@ -306,8 +306,6 @@ function AddLiquidity(props) {
                 .catch((error) => {
                     console.log(error)
                     console.log(error.response)
-                    // setIsError(true)
-                    // setError("There is no pair against this user.")
                 })
         }
         function liquiditySetter(pair) {

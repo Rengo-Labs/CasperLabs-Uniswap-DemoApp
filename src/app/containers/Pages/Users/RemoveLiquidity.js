@@ -104,19 +104,6 @@ function RemoveLiquidity(props) {
                 console.log(error)
                 console.log(error.response)
             })
-        // axios
-        //     .post("priceconversion", {
-        //         symbolforconversion: "CSPR",
-        //         symboltoconvertto: "USD",
-        //         amount: 1
-        //     })
-        //     .then((response) => {
-        //         console.log("response", response.data.worth.USD);
-        //         setPriceInUSD(response.data.worth.USD.price);
-        //     })
-        //     .catch((error) => {
-        //         console.log("response", error.response);
-        //     });
         // eslint-disable-next-line
     }, []);
     useEffect(() => {
