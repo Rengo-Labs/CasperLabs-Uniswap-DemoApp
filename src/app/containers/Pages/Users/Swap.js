@@ -81,7 +81,7 @@ function Swap(props) {
     let [tokenAAllowance, setTokenAAllowance] = useState(0);
     let [isInvalidPair, setIsInvalidPair] = useState(false);
     const [tokenList, setTokenList] = useState([])
-    const [istokenList, setIsTokenList] = useState(false)
+    const [isTokenList, setIsTokenList] = useState(false)
     const [swapPath, setSwapPath] = useState([])
     const [reserve0, setReserve0] = useState(1)
     const [reserve1, setReserve1] = useState(1)
@@ -123,48 +123,96 @@ function Swap(props) {
         setOpenSigning(true);
     };
     useEffect(() => {
-        axios
-            .get('/tokensList')
-            .then((res) => {
-                console.log('tokensList', res)
-                console.log(res.data.tokens)
-                let CSPR =
-                {
-                    address: "",
-                    chainId: 1,
-                    decimals: 9,
-                    logoURI: Logo,
-                    name: "Casper",
-                    symbol: "CSPR",
-                }
-                let holdArr = res.data.tokens;
-                console.log('holdArr', holdArr);
-                holdArr.splice(0, 0, CSPR)
-                console.log('holdArr', holdArr);
-                setTokenList(res.data.tokens);
-                setIsTokenList(true)
-                // setTokenList(oldArray => [...oldArray, CSPR])
-            })
-            .catch((error) => {
-                console.log(error)
-                console.log(error.response)
-            })
+        if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            axios
+                .get('/tokensList')
+                .then(async (res) => {
+                    console.log('tokensList', res)
+                    console.log(res.data.tokens)
+                    let CSPR =
+                    {
+                        address: "",
+                        chainId: 1,
+                        decimals: 9,
+                        logoURI: Logo,
+                        name: "Casper",
+                        symbol: "CSPR",
+                    }
+                    const client = new CasperServiceByJsonRPC(
+                        NODE_ADDRESS
+                    );
+                    getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                        console.log('stateRootHash', stateRootHash);
+                        client.getBlockState(
+                            stateRootHash,
+                            CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                            []
+                        ).then(result => {
+                            console.log('result', result.Account.mainPurse);
+                            try {
+                                const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+                                client.getAccountBalance(
+                                    stateRootHash,
+                                    result.Account.mainPurse
+                                ).then(result => {
+                                    console.log('CSPR balance', result.toString());
+                                    CSPR.balance = result.toString()
+                                });
+                            } catch (error) {
+                                CSPR.balance = 0;
+                                console.log('error', error);
+                            }
+                        });
+                    })
+                    console.log('CSPR', CSPR);
+                    let holdArr = res.data.tokens;
+                    console.log('holdArr', holdArr);
+                    for (let i = 0; i < holdArr.length; i++) {
+                        let param = {
+                            contractHash: holdArr[i].address.slice(5),
+                            user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+                        }
+                        await axios
+                            .post('/balanceagainstuser', param)
+                            .then((res) => {
+                                console.log('balanceagainstuser', res)
+                                console.log(res.data)
+                                holdArr[i].balance = res.data.balance;
+                                // setTokenBBalance(res.data.balance)
 
-        // eslint-disable-next-line
-        // axios
-        //     .post("priceconversion", {
-        //         symbolforconversion: "CSPR",
-        //         symboltoconvertto: "USD",
-        //         amount: 1
-        //     })
-        //     .then((response) => {
-        //         console.log("response", response.data.worth.USD);
-        //         setPriceInUSD(response.data.worth.USD.price);
-        //     })
-        //     .catch((error) => {
-        //         console.log("response", error.response);
-        //     });
-    }, []);
+                            })
+                            .catch((error) => {
+                                console.log(error)
+                                console.log(error.response)
+                            })
+                    }
+                    holdArr.splice(0, 0, CSPR)
+                    console.log('holdArr', holdArr);
+                    setTokenList(res.data.tokens);
+                    setIsTokenList(true)
+                    // setTokenList(oldArray => [...oldArray, CSPR])
+                })
+                .catch((error) => {
+                    console.log(error)
+                    console.log(error.response)
+                })
+
+            // eslint-disable-next-line
+            // axios
+            //     .post("priceconversion", {
+            //         symbolforconversion: "CSPR",
+            //         symboltoconvertto: "USD",
+            //         amount: 1
+            //     })
+            //     .then((response) => {
+            //         console.log("response", response.data.worth.USD);
+            //         setPriceInUSD(response.data.worth.USD.price);
+            //     })
+            //     .catch((error) => {
+            //         console.log("response", error.response);
+            //     });
+        }
+    }, [activePublicKey]);
     useEffect(() => {
         if (tokenA && tokenB) {
             let pathParams = {
@@ -1163,8 +1211,8 @@ function Swap(props) {
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
             <SigningModal show={openSigning} />
-            <TokenAModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenA} setTokenList={setTokenList} tokenList={tokenList} show={openTokenAModal} handleClose={handleCloseTokenAModal} />
-            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenB} setToken={setTokenB} setTokenList={setTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} />
+            <TokenAModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenA} setTokenList={setTokenList} isTokenList={isTokenList} tokenList={tokenList} show={openTokenAModal} handleClose={handleCloseTokenAModal} activePublicKey={activePublicKey}/>
+            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenB} setToken={setTokenB} setTokenList={setTokenList} isTokenList={isTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} activePublicKey={activePublicKey}/>
 
         </div >
     );
