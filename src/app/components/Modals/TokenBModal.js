@@ -1,13 +1,12 @@
-import { Avatar, Card, CardHeader, Typography, CardContent } from "@material-ui/core";
-import numeral from "numeral";
+import { Card, CardContent } from "@material-ui/core";
 import React from "react";
-import { Col, Modal, Row, Spinner } from "react-bootstrap";
+import { Modal, Spinner } from "react-bootstrap";
+import { Alert } from 'reactstrap';
 import "../../assets/css/bootstrap.min.css";
 import "../../assets/css/style.css";
 import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import TokenContent from "./TokenContent";
-import { Alert } from 'reactstrap';
 
 
 function TokenBModal(props) {

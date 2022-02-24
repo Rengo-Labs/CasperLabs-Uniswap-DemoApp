@@ -20,43 +20,15 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
         backgroundColor: theme.palette.background.paper,
     },
-    badge: {
-        '& > *': {
-            margin: theme.spacing(1),
-        },
-    },
-    backdrop: {
-        zIndex: theme.zIndex.drawer + 1,
-        color: '#fff',
-    },
-
-    card: {
-        minWidth: 250,
-    },
-    media: {
-        height: 0,
-        paddingTop: '100%', // 16:9
-    },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
-    },
-    title: {
-        fontSize: 14,
-    },
-    pos: {
-        marginBottom: 12,
-    },
 }));
 // let RecipientType = CLPublicKey | CLAccountHash | CLByteArray;
 function Pool(props) {
     const classes = useStyles();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
-
+    let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
+    let [,setTorus] = useState();
     const [userPairs, setUserPairs] = useState([])
     const [userPairsData, setUserPairsData] = useState([])
-    const [userData, setUserData] = useState([])
     const [error, setError] = useState()
     const [ispairList, setIsPairList] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -79,7 +51,6 @@ function Pool(props) {
                     console.log('res', res)
                     setUserPairs(res.data.userpairs)
                     setUserPairsData(res.data.pairsdata)
-                    setUserData(res.data.pairsdata)
                     for (let i = 0; i < res.data.userpairs.length; i++) {
                         let pathParamsArr = [
                             res.data.pairsdata[i].token0.symbol,
@@ -152,7 +123,7 @@ function Pool(props) {
                     }
 
                     setIsLoading(false)
-                    
+
 
                 })
                 .catch((error) => {
@@ -169,7 +140,7 @@ function Pool(props) {
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
-                    <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Pool"} />
+                    <HeaderHome setActivePublicKey={setActivePublicKey} setSelectedWallet={setSelectedWallet} selectedWallet={selectedWallet} setTorus={setTorus} selectedNav={"Pool"} />
                     <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div className="content" style={{ paddingTop: "150px", minHeight: "100vh" }} position="absolute">

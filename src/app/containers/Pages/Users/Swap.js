@@ -2,11 +2,12 @@ import { FormControl, FormHelperText, Input } from "@material-ui/core";
 import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardContent, CardHeader } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import Torus from "@toruslabs/casper-embed";
 import axios from "axios";
 import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLList, CLPublicKey, CLString, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import numeral from "numeral";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import Spinner from "react-bootstrap/Spinner";
 import "../../../assets/css/bootstrap.min.css";
@@ -15,6 +16,7 @@ import Logo from "../../../assets/img/cspr.png";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { getDeploy } from "../../../components/blockchain/GetDeploy/GetDeploy";
 import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
 import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
@@ -22,45 +24,16 @@ import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import { convertToStr } from "../../../components/ConvertToString/ConvertToString";
-import HeaderHome from "../../../components/Headers/Header";
+import HeaderHome, { CHAINS, SUPPORTED_NETWORKS } from "../../../components/Headers/Header";
 import SigningModal from "../../../components/Modals/SigningModal";
 import SlippageModal from '../../../components/Modals/SlippageModal';
 import TokenAModal from '../../../components/Modals/TokenAModal';
 import TokenBModal from '../../../components/Modals/TokenBModal';
-
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
         width: '100%',
         backgroundColor: theme.palette.background.paper,
-    },
-    badge: {
-        '& > *': {
-            margin: theme.spacing(1),
-        },
-    },
-    backdrop: {
-        zIndex: theme.zIndex.drawer + 1,
-        color: '#fff',
-    },
-
-    card: {
-        minWidth: 250,
-    },
-    media: {
-        height: 0,
-        paddingTop: '100%', // 16:9
-    },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
-    },
-    title: {
-        fontSize: 14,
-    },
-    pos: {
-        marginBottom: 12,
     },
 }));
 const regex = /^\s*-?(\d+(\.\d{1,9})?|\.\d{1,9})\s*$/;
@@ -69,6 +42,8 @@ function Swap(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
+    let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
+    let [torus, setTorus] = useState(JSON.parse(localStorage.getItem("torus")));
     let [inputSelection, setInputSelection] = useState();
     let [mainPurse, setMainPurse] = useState();
     let [tokenA, setTokenA] = useState();
@@ -85,7 +60,9 @@ function Swap(props) {
     const [swapPath, setSwapPath] = useState([])
     const [reserve0, setReserve0] = useState(1)
     const [reserve1, setReserve1] = useState(1)
-
+    console.log('window.torus', window.torus);
+    console.log("localStorage.getItem(torus)", JSON.parse(localStorage.getItem("torus")));
+    console.log("torus", torus);
 
     let [isLoading, setIsLoading] = useState(false);
     const [slippage, setSlippage] = useState(0.5);
@@ -122,97 +99,99 @@ function Swap(props) {
     const handleShowSigning = () => {
         setOpenSigning(true);
     };
+    const resetData = () => {
+        getTokenData()
+        setInputSelection()
+        setTokenA()
+        setTokenB()
+        setTokenAAmount(0)
+        setTokenBAmount(0)
+        setTokenABalance(0)
+        setTokenBBalance(0)
+        setTokenAAllowance()
+        setReserve0(1)
+        setReserve1(1)
+    }
+    const getTokenData = useCallback(() => {
+        axios
+            .get('/tokensList')
+            .then(async (res) => {
+                console.log('tokensList', res)
+                console.log(res.data.tokens)
+                let CSPR =
+                {
+                    address: "",
+                    chainId: 1,
+                    decimals: 9,
+                    logoURI: Logo,
+                    name: "Casper",
+                    symbol: "CSPR",
+                }
+                const client = new CasperServiceByJsonRPC(
+                    NODE_ADDRESS
+                );
+                getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                    console.log('stateRootHash', stateRootHash);
+                    client.getBlockState(
+                        stateRootHash,
+                        CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                        []
+                    ).then(result => {
+                        console.log('result', result.Account.mainPurse);
+                        try {
+                            const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+                            client.getAccountBalance(
+                                stateRootHash,
+                                result.Account.mainPurse
+                            ).then(result => {
+                                console.log('CSPR balance', result.toString());
+                                CSPR.balance = result.toString()
+                            });
+                        } catch (error) {
+                            CSPR.balance = 0;
+                            console.log('error', error);
+                        }
+                    });
+                })
+                // console.log('CSPR', CSPR);
+                let holdArr = res.data.tokens;
+                // console.log('holdArr', holdArr);
+                for (let i = 0; i < holdArr.length; i++) {
+                    let param = {
+                        contractHash: holdArr[i].address.slice(5),
+                        user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+                    }
+                    await axios
+                        .post('/balanceagainstuser', param)
+                        .then((res) => {
+                            console.log('balanceagainstuser', res)
+                            console.log(res.data)
+                            holdArr[i].balance = res.data.balance;
+                            // setTokenBBalance(res.data.balance)
+
+                        })
+                        .catch((error) => {
+                            console.log(error)
+                            console.log(error.response)
+                        })
+                }
+                holdArr.splice(0, 0, CSPR)
+                console.log('holdArr', holdArr);
+                setTokenList(res.data.tokens);
+                setIsTokenList(true)
+                // setTokenList(oldArray => [...oldArray, CSPR])
+            })
+            .catch((error) => {
+                console.log(error)
+                console.log(error.response)
+            })
+    }, [activePublicKey])
     useEffect(() => {
         if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
-            axios
-                .get('/tokensList')
-                .then(async (res) => {
-                    console.log('tokensList', res)
-                    console.log(res.data.tokens)
-                    let CSPR =
-                    {
-                        address: "",
-                        chainId: 1,
-                        decimals: 9,
-                        logoURI: Logo,
-                        name: "Casper",
-                        symbol: "CSPR",
-                    }
-                    const client = new CasperServiceByJsonRPC(
-                        NODE_ADDRESS
-                    );
-                    getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
-                        console.log('stateRootHash', stateRootHash);
-                        client.getBlockState(
-                            stateRootHash,
-                            CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
-                            []
-                        ).then(result => {
-                            console.log('result', result.Account.mainPurse);
-                            try {
-                                const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
-                                client.getAccountBalance(
-                                    stateRootHash,
-                                    result.Account.mainPurse
-                                ).then(result => {
-                                    console.log('CSPR balance', result.toString());
-                                    CSPR.balance = result.toString()
-                                });
-                            } catch (error) {
-                                CSPR.balance = 0;
-                                console.log('error', error);
-                            }
-                        });
-                    })
-                    console.log('CSPR', CSPR);
-                    let holdArr = res.data.tokens;
-                    console.log('holdArr', holdArr);
-                    for (let i = 0; i < holdArr.length; i++) {
-                        let param = {
-                            contractHash: holdArr[i].address.slice(5),
-                            user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
-                        }
-                        await axios
-                            .post('/balanceagainstuser', param)
-                            .then((res) => {
-                                console.log('balanceagainstuser', res)
-                                console.log(res.data)
-                                holdArr[i].balance = res.data.balance;
-                                // setTokenBBalance(res.data.balance)
-
-                            })
-                            .catch((error) => {
-                                console.log(error)
-                                console.log(error.response)
-                            })
-                    }
-                    holdArr.splice(0, 0, CSPR)
-                    console.log('holdArr', holdArr);
-                    setTokenList(res.data.tokens);
-                    setIsTokenList(true)
-                    // setTokenList(oldArray => [...oldArray, CSPR])
-                })
-                .catch((error) => {
-                    console.log(error)
-                    console.log(error.response)
-                })
-
-            // eslint-disable-next-line
-            // axios
-            //     .post("priceconversion", {
-            //         symbolforconversion: "CSPR",
-            //         symboltoconvertto: "USD",
-            //         amount: 1
-            //     })
-            //     .then((response) => {
-            //         console.log("response", response.data.worth.USD);
-            //         setPriceInUSD(response.data.worth.USD.price);
-            //     })
-            //     .catch((error) => {
-            //         console.log("response", error.response);
-            //     });
+            getTokenData()
         }
-    }, [activePublicKey]);
+    }, [activePublicKey, getTokenData]);
+
     useEffect(() => {
         if (tokenA && tokenB) {
             let pathParams = {
@@ -427,9 +406,29 @@ function Swap(props) {
                 let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                 console.log("make deploy: ", deploy);
                 try {
-                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                    console.log('result', result);
+                    if (selectedWallet === "Casper") {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                        console.log('result', result);
+                    } else {
+                        // let Torus = new Torus();
+                        torus = new Torus();
+                        console.log('torus', torus);
+                        await torus.init({
+                            buildEnv: "testing",
+                            showTorusButton: true,
+                            network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                        });
+                        console.log("Torus123", torus);
+                        console.log("torus", torus.provider);
+                        const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                        const deployRes = await casperService.deploy(deploy);
+                        console.log("deployRes", deployRes.deploy_hash);
+                        console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                        let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                        console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                        console.log('result', result);
+                    }
                     setTokenAAllowance(parseInt(amount * 10 ** 9))
                     handleCloseSigning()
                     let variant = "success";
@@ -498,14 +497,36 @@ function Swap(props) {
                         let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                         console.log("make deploy: ", deploy);
                         try {
-                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                            console.log('result', result);
+                            if (selectedWallet === "Casper") {
+                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                                console.log('result', result);
+                            } else {
+                                // let Torus = new Torus();
+                                torus = new Torus();
+                                console.log('torus', torus);
+                                await torus.init({
+                                    buildEnv: "testing",
+                                    showTorusButton: true,
+                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                                });
+                                console.log("Torus123", torus);
+                                console.log("torus", torus.provider);
+                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                                const deployRes = await casperService.deploy(deploy);
+                                console.log("deployRes", deployRes.deploy_hash);
+                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                                console.log('result', result);
+                            }
+
                             handleCloseSigning()
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
-                            window.location.reload(false);
+                            resetData()
+                            // window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -553,14 +574,35 @@ function Swap(props) {
                         let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                         console.log("make deploy: ", deploy);
                         try {
-                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                            console.log('result', result);
+                            if (selectedWallet === "Casper") {
+                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                                console.log('result', result);
+                            } else {
+                                // let Torus = new Torus();
+                                torus = new Torus();
+                                console.log('torus', torus);
+                                await torus.init({
+                                    buildEnv: "testing",
+                                    showTorusButton: true,
+                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                                });
+                                console.log("Torus123", torus);
+                                console.log("torus", torus.provider);
+                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                                const deployRes = await casperService.deploy(deploy);
+                                console.log("deployRes", deployRes.deploy_hash);
+                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                                console.log('result', result);
+                            }
                             handleCloseSigning()
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
-                            window.location.reload(false);
+                            resetData()
+                            // window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -607,14 +649,35 @@ function Swap(props) {
                         let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                         console.log("make deploy: ", deploy);
                         try {
-                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                            console.log('result', result);
+                            if (selectedWallet === "Casper") {
+                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                                console.log('result', result);
+                            } else {
+                                // let Torus = new Torus();
+                                torus = new Torus();
+                                console.log('torus', torus);
+                                await torus.init({
+                                    buildEnv: "testing",
+                                    showTorusButton: true,
+                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                                });
+                                console.log("Torus123", torus);
+                                console.log("torus", torus.provider);
+                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                                const deployRes = await casperService.deploy(deploy);
+                                console.log("deployRes", deployRes.deploy_hash);
+                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                                console.log('result', result);
+                            }
                             handleCloseSigning()
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
-                            window.location.reload(false);
+                            resetData()
+                            // window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -647,7 +710,7 @@ function Swap(props) {
                     try {
                         const runtimeArgs = RuntimeArgs.fromMap({
                             amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
-                            amount_in_max: CLValueBuilder.u256(convertToStr(tokenAAmount + (tokenAAmount) * slippage / 100)),
+                            amount_in_max: CLValueBuilder.u256(convertToStr(Number(tokenAAmount) + Number((tokenAAmount) * slippage / 100))),
                             path: new CLList(_paths),
                             to: createRecipientAddress(publicKey),
                             purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
@@ -661,14 +724,35 @@ function Swap(props) {
                         let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                         console.log("make deploy: ", deploy);
                         try {
-                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                            console.log('result', result);
+                            if (selectedWallet === "Casper") {
+                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                                console.log('result', result);
+                            } else {
+                                // let Torus = new Torus();
+                                torus = new Torus();
+                                console.log('torus', torus);
+                                await torus.init({
+                                    buildEnv: "testing",
+                                    showTorusButton: true,
+                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                                });
+                                console.log("Torus123", torus);
+                                console.log("torus", torus.provider);
+                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                                const deployRes = await casperService.deploy(deploy);
+                                console.log("deployRes", deployRes.deploy_hash);
+                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                                console.log('result', result);
+                            }
                             handleCloseSigning()
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
-                            window.location.reload(false);
+                            resetData()
+                            // window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -698,7 +782,7 @@ function Swap(props) {
                     try {
                         const runtimeArgs = RuntimeArgs.fromMap({
                             amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
-                            amount_in_max: CLValueBuilder.u256(convertToStr(tokenAAmount + (tokenAAmount) * slippage / 100)),
+                            amount_in_max: CLValueBuilder.u256(convertToStr(Number(tokenAAmount) + Number((tokenAAmount) * slippage / 100))),
                             path: new CLList(_paths),
                             to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                             deadline: CLValueBuilder.u256(deadline),
@@ -711,14 +795,35 @@ function Swap(props) {
                         let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                         console.log("make deploy: ", deploy);
                         try {
-                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                            console.log('result', result);
+                            if (selectedWallet === "Casper") {
+                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                                console.log('result', result);
+                            } else {
+                                // let Torus = new Torus();
+                                torus = new Torus();
+                                console.log('torus', torus);
+                                await torus.init({
+                                    buildEnv: "testing",
+                                    showTorusButton: true,
+                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                                });
+                                console.log("Torus123", torus);
+                                console.log("torus", torus.provider);
+                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                                const deployRes = await casperService.deploy(deploy);
+                                console.log("deployRes", deployRes.deploy_hash);
+                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                                console.log('result', result);
+                            }
                             handleCloseSigning()
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
-                            window.location.reload(false);
+                            resetData()
+                            // window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -748,7 +853,7 @@ function Swap(props) {
                     try {
                         const runtimeArgs = RuntimeArgs.fromMap({
                             amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
-                            amount_in_max: CLValueBuilder.u256(convertToStr(tokenAAmount + (tokenAAmount) * slippage / 100)),
+                            amount_in_max: CLValueBuilder.u256(convertToStr(Number(tokenAAmount) + Number((tokenAAmount) * slippage / 100))),
                             path: new CLList(_paths),
                             to: createRecipientAddress(publicKey),
                             deadline: CLValueBuilder.u256(deadline),
@@ -761,14 +866,35 @@ function Swap(props) {
                         let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                         console.log("make deploy: ", deploy);
                         try {
-                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                            console.log('result', result);
+                            if (selectedWallet === "Casper") {
+                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                                console.log('result', result);
+                            } else {
+                                // let Torus = new Torus();
+                                torus = new Torus();
+                                console.log('torus', torus);
+                                await torus.init({
+                                    buildEnv: "testing",
+                                    showTorusButton: true,
+                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                                });
+                                console.log("Torus123", torus);
+                                console.log("torus", torus.provider);
+                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                                const deployRes = await casperService.deploy(deploy);
+                                console.log("deployRes", deployRes.deploy_hash);
+                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                                console.log('result', result);
+                            }
                             handleCloseSigning()
                             let variant = "success";
                             enqueueSnackbar('Tokens Swapped Successfully', { variant });
                             setIsLoading(false)
-                            window.location.reload(false);
+                            resetData()
+                            // window.location.reload(false);
                         }
                         catch {
                             handleCloseSigning()
@@ -799,7 +925,7 @@ function Swap(props) {
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
-                    <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Swap"} />
+                    <HeaderHome setActivePublicKey={setActivePublicKey} setSelectedWallet={setSelectedWallet} selectedWallet={selectedWallet} setTorus={setTorus} selectedNav={"Swap"} />
                     <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div
@@ -948,7 +1074,9 @@ function Swap(props) {
                                                                                 onChange={(e) => {
                                                                                     if (regex.test(e.target.value)) {
                                                                                         if (e.target.value >= 0) {
-                                                                                            setTokenBAmount(e.target.value)
+                                                                                            console.log("e.target.valu",e.target.value);
+                                                                                            setTokenBAmount(Number(e.target.value))
+                                                                                            console.log("e.target.value * reserve1",e.target.value * reserve1);
                                                                                             setTokenAAmount(parseFloat(e.target.value * reserve1).toFixed(9))
                                                                                             setInputSelection('tokenB')
                                                                                         }
@@ -1106,7 +1234,7 @@ function Swap(props) {
                                                                                 <Col>
                                                                                     <CardHeader
                                                                                         style={{ margin: '10px' }}
-                                                                                        title={numeral(tokenBAmount).format('0,0.000000000')}
+                                                                                        title={numeral(tokenBAmount).format('0,0.0000000000')}
                                                                                     />
                                                                                 </Col>
                                                                                 <Col>
@@ -1211,8 +1339,8 @@ function Swap(props) {
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
             <SigningModal show={openSigning} />
-            <TokenAModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenA} setTokenList={setTokenList} isTokenList={isTokenList} tokenList={tokenList} show={openTokenAModal} handleClose={handleCloseTokenAModal} activePublicKey={activePublicKey}/>
-            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenB} setToken={setTokenB} setTokenList={setTokenList} isTokenList={isTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} activePublicKey={activePublicKey}/>
+            <TokenAModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenA} setTokenList={setTokenList} isTokenList={isTokenList} tokenList={tokenList} show={openTokenAModal} handleClose={handleCloseTokenAModal} activePublicKey={activePublicKey} />
+            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenB} setToken={setTokenB} setTokenList={setTokenList} isTokenList={isTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} activePublicKey={activePublicKey} />
 
         </div >
     );

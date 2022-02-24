@@ -1,11 +1,12 @@
 import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardContent, CardHeader, FormControl, FormHelperText, Input } from '@material-ui/core/';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import Torus from "@toruslabs/casper-embed";
 import axios from "axios";
 import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLOption, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import numeral from 'numeral';
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Col, Row } from 'react-bootstrap';
 import Spinner from "react-bootstrap/Spinner";
 import { Some } from "ts-results";
@@ -15,6 +16,7 @@ import Logo from "../../../assets/img/cspr.png";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
 import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
+import { getDeploy } from '../../../components/blockchain/GetDeploy/GetDeploy';
 import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
 import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
@@ -22,7 +24,7 @@ import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import { convertToStr } from '../../../components/ConvertToString/ConvertToString';
-import HeaderHome from "../../../components/Headers/Header";
+import HeaderHome, { CHAINS, SUPPORTED_NETWORKS } from "../../../components/Headers/Header";
 import SigningModal from '../../../components/Modals/SigningModal';
 import SlippageModal from '../../../components/Modals/SlippageModal';
 import TokenAModal from '../../../components/Modals/TokenAModal';
@@ -33,34 +35,6 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
         backgroundColor: theme.palette.background.paper,
     },
-    badge: {
-        '& > *': {
-            margin: theme.spacing(1),
-        },
-    },
-    backdrop: {
-        zIndex: theme.zIndex.drawer + 1,
-        color: '#fff',
-    },
-
-    card: {
-        minWidth: 250,
-    },
-    media: {
-        height: 0,
-        paddingTop: '100%', // 16:9
-    },
-    bullet: {
-        display: 'inline-block',
-        margin: '0 2px',
-        transform: 'scale(0.8)',
-    },
-    title: {
-        fontSize: 14,
-    },
-    pos: {
-        marginBottom: 12,
-    },
 }));
 const regex = /^\s*-?(\d+(\.\d{1,9})?|\.\d{1,9})\s*$/;
 // let RecipientType = CLPublicKey | CLAccountHash | CLByteArray;
@@ -68,6 +42,8 @@ function AddLiquidity(props) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
+    let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
+    let [torus, setTorus] = useState();
     let [mainPurse, setMainPurse] = useState();
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
@@ -122,84 +98,100 @@ function AddLiquidity(props) {
     };
     let [liquidity, setLiquidity] = useState();
 
+    console.log("selectedWallet", selectedWallet);
+    const resetData = () => {
+        getTokenData()
+        setTokenA()
+        setTokenB()
+        setTokenAAmount(0)
+        setTokenBAmount(0)
+        setTokenABalance(0)
+        setTokenBBalance(0)
+        setTokenAAllowance(0)
+        setTokenBAllowance(0)
+        setReserve0(1)
+        setReserve1(1)
+    }
+
+    const getTokenData = useCallback(() => {
+        axios
+            .get('/tokensList')
+            .then(async (res) => {
+                console.log('tokensList', res)
+                console.log(res.data.tokens)
+                let CSPR =
+                {
+                    address: "",
+                    chainId: 1,
+                    decimals: 9,
+                    logoURI: Logo,
+                    name: "Casper",
+                    symbol: "CSPR",
+                }
+                const client = new CasperServiceByJsonRPC(
+                    NODE_ADDRESS
+                );
+                getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+                    console.log('stateRootHash', stateRootHash);
+                    client.getBlockState(
+                        stateRootHash,
+                        CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                        []
+                    ).then(result => {
+                        console.log('result', result.Account.mainPurse);
+                        try {
+                            const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+                            client.getAccountBalance(
+                                stateRootHash,
+                                result.Account.mainPurse
+                            ).then(result => {
+                                console.log('CSPR balance', result.toString());
+                                CSPR.balance = result.toString()
+                            });
+                        } catch (error) {
+                            CSPR.balance = 0;
+                            console.log('error', error);
+                        }
+                    });
+                })
+                console.log('CSPR', CSPR);
+                let holdArr = res.data.tokens;
+                console.log('holdArr', holdArr);
+                for (let i = 0; i < holdArr.length; i++) {
+                    let param = {
+                        contractHash: holdArr[i].address.slice(5),
+                        user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
+                    }
+                    await axios
+                        .post('/balanceagainstuser', param)
+                        .then((res) => {
+                            console.log('balanceagainstuser', res)
+                            console.log(res.data)
+                            holdArr[i].balance = res.data.balance;
+                            // setTokenBBalance(res.data.balance)
+
+                        })
+                        .catch((error) => {
+                            console.log(error)
+                            console.log(error.response)
+                        })
+                }
+                holdArr.splice(0, 0, CSPR)
+                console.log('holdArr', holdArr);
+                setTokenList(res.data.tokens);
+                setIsTokenList(true)
+                // setTokenList(oldArray => [...oldArray, CSPR])
+            })
+            .catch((error) => {
+                console.log(error)
+                console.log(error.response)
+            })
+    }, [activePublicKey])
     useEffect(() => {
         if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
-            axios
-                .get('/tokensList')
-                .then(async (res) => {
-                    console.log('tokensList', res)
-                    console.log(res.data.tokens)
-                    let CSPR =
-                    {
-                        address: "",
-                        chainId: 1,
-                        decimals: 9,
-                        logoURI: Logo,
-                        name: "Casper",
-                        symbol: "CSPR",
-                    }
-                    const client = new CasperServiceByJsonRPC(
-                        NODE_ADDRESS
-                    );
-                    getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
-                        console.log('stateRootHash', stateRootHash);
-                        client.getBlockState(
-                            stateRootHash,
-                            CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
-                            []
-                        ).then(result => {
-                            console.log('result', result.Account.mainPurse);
-                            try {
-                                const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
-                                client.getAccountBalance(
-                                    stateRootHash,
-                                    result.Account.mainPurse
-                                ).then(result => {
-                                    console.log('CSPR balance', result.toString());
-                                    CSPR.balance = result.toString()
-                                });
-                            } catch (error) {
-                                CSPR.balance = 0;
-                                console.log('error', error);
-                            }
-                        });
-                    })
-                    console.log('CSPR', CSPR);
-                    let holdArr = res.data.tokens;
-                    console.log('holdArr', holdArr);
-                    for (let i = 0; i < holdArr.length; i++) {
-                        let param = {
-                            contractHash: holdArr[i].address.slice(5),
-                            user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
-                        }
-                        await axios
-                            .post('/balanceagainstuser', param)
-                            .then((res) => {
-                                console.log('balanceagainstuser', res)
-                                console.log(res.data)
-                                holdArr[i].balance = res.data.balance;
-                                // setTokenBBalance(res.data.balance)
-
-                            })
-                            .catch((error) => {
-                                console.log(error)
-                                console.log(error.response)
-                            })
-                    }
-                    holdArr.splice(0, 0, CSPR)
-                    console.log('holdArr', holdArr);
-                    setTokenList(res.data.tokens);
-                    setIsTokenList(true)
-                    // setTokenList(oldArray => [...oldArray, CSPR])
-                })
-                .catch((error) => {
-                    console.log(error)
-                    console.log(error.response)
-                })
-
-            // eslint-disable-next-line
+            getTokenData()
         }
-    }, [activePublicKey]);
+    }, [getTokenData, activePublicKey]);
     useEffect(() => {
         if (tokenA && tokenB) {
             if (tokenA.name === tokenB.name) {
@@ -330,7 +322,7 @@ function AddLiquidity(props) {
                         // console.log("res.data.userpairs[i].pair", res.data.userpairs[i].pair);
                         console.log("pair", pair);
 
-                        if (pair.id == res.data.userpairs[i].pair) {
+                        if (pair.id === res.data.userpairs[i].pair) {
 
                             if (rat0 < rat1 && parseInt(res.data.userpairs[i].reserve0) < parseInt(res.data.userpairs[i].reserve1)) {
                                 console.log('1');
@@ -400,14 +392,35 @@ function AddLiquidity(props) {
                 let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                 console.log("make deploy: ", deploy);
                 try {
-                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                    if (selectedWallet === "Casper") {
+                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                        console.log('result', result);
+                    } else {
+                        // let Torus = new Torus();
+                        torus = new Torus();
+                        console.log('torus', torus);
+                        await torus.init({
+                            buildEnv: "testing",
+                            showTorusButton: true,
+                            network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                        });
+                        console.log("Torus123", torus);
+                        console.log("torus", torus.provider);
+                        const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                        const deployRes = await casperService.deploy(deploy);
+                        console.log("deployRes", deployRes.deploy_hash);
+                        console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                        let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                        console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                        console.log('result', result);
+                    }
                     if (tokenApproved === 'tokenA') {
                         setTokenAAllowance(amount * 10 ** 9)
                     } else {
                         setTokenBAllowance(amount * 10 ** 9)
                     }
-                    console.log('result', result);
+                    // console.log('result', result);
                     handleCloseSigning()
                     let variant = "success";
                     enqueueSnackbar('Approved Successfully', { variant });
@@ -430,43 +443,7 @@ function AddLiquidity(props) {
             enqueueSnackbar('Connect to Casper Signer Please', { variant });
         }
     }
-    useEffect(() => {
-        if (tokenA && tokenA.name !== "Casper" && activePublicKey) {
-            getTokenBalance();
-        }
-        if (tokenA && tokenA.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
-            getCurrencyBalance()
-        }
-    }, [getTokenBalance, getCurrencyBalance, activePublicKey, tokenA]);
-    function getCurrencyBalance() {
-        const client = new CasperServiceByJsonRPC(
-            NODE_ADDRESS
-        );
-        getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
-            console.log('stateRootHash', stateRootHash);
-            client.getBlockState(
-                stateRootHash,
-                CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
-                []
-            ).then(result => {
-                console.log('result', result.Account.mainPurse);
-                setMainPurse(result.Account.mainPurse)
-                try {
-                    const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
-                    client.getAccountBalance(
-                        stateRootHash,
-                        result.Account.mainPurse
-                    ).then(result => {
-                        console.log('CSPR balance', result.toString());
-                        setTokenABalance(result.toString())
-                    });
-                } catch (error) {
-                    console.log('error', error);
-                }
-            });
-        })
-    }
-    function getTokenBalance() {
+    const getTokenBalance = useCallback(() => {
         let balanceParam = {
             contractHash: tokenA.address.slice(5),
             user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
@@ -502,7 +479,45 @@ function AddLiquidity(props) {
                 console.log(error)
                 console.log(error.response)
             })
-    }
+    }, [activePublicKey, tokenA])
+    const getCurrencyBalance = useCallback(() => {
+        const client = new CasperServiceByJsonRPC(
+            NODE_ADDRESS
+        );
+        getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
+            console.log('stateRootHash', stateRootHash);
+            client.getBlockState(
+                stateRootHash,
+                CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                []
+            ).then(result => {
+                console.log('result', result.Account.mainPurse);
+                setMainPurse(result.Account.mainPurse)
+                try {
+                    const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+                    client.getAccountBalance(
+                        stateRootHash,
+                        result.Account.mainPurse
+                    ).then(result => {
+                        console.log('CSPR balance', result.toString());
+                        setTokenABalance(result.toString())
+                    });
+                } catch (error) {
+                    console.log('error', error);
+                }
+            });
+        })
+    }, [activePublicKey])
+    useEffect(() => {
+        if (tokenA && tokenA.name !== "Casper" && activePublicKey) {
+            getTokenBalance();
+        }
+        if (tokenA && tokenA.name === "Casper" && activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
+            getCurrencyBalance()
+        }
+    }, [getTokenBalance, getCurrencyBalance, activePublicKey, tokenA]);
+
+
     useEffect(() => {
         if (tokenB && tokenB.name !== "Casper" && activePublicKey) {
             let balanceParam = {
@@ -621,8 +636,8 @@ function AddLiquidity(props) {
                         token: new CLKey(_token_b),
                         amount_cspr_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
                         amount_token_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
-                        amount_cspr_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
-                        amount_token_min: CLValueBuilder.u256(convertToStr(token_BAmount - (token_BAmount) * slippage / 100)),
+                        amount_cspr_min: CLValueBuilder.u256(convertToStr((token_AAmount - (token_AAmount) * slippage / 100)).toFixed(9)),
+                        amount_token_min: CLValueBuilder.u256(convertToStr((token_BAmount - (token_BAmount) * slippage / 100)).toFixed(9)),
                         to: createRecipientAddress(publicKey),
                         purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
@@ -634,9 +649,29 @@ function AddLiquidity(props) {
                     let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                     console.log("make deploy: ", deploy);
                     try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
+                        if (selectedWallet === "Casper") {
+                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                            console.log('result', result);
+                        } else {
+                            // let Torus = new Torus();
+                            torus = new Torus();
+                            console.log('torus', torus);
+                            await torus.init({
+                                buildEnv: "testing",
+                                showTorusButton: true,
+                                network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                            });
+                            console.log("Torus123", torus);
+                            console.log("torus", torus.provider);
+                            const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                            const deployRes = await casperService.deploy(deploy);
+                            console.log("deployRes", deployRes.deploy_hash);
+                            console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                            let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                            console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                            console.log('result', result);
+                        }
                         setTokenAAllowance(0)
                         setTokenBAllowance(0)
                         setTokenAAmount(0)
@@ -646,7 +681,7 @@ function AddLiquidity(props) {
                         let variant = "success";
                         enqueueSnackbar('Liquidity Added Successfully', { variant });
                         setIsLoading(false)
-                        window.location.reload(false);
+                        resetData()
                     }
                     catch {
                         handleCloseSigning()
@@ -668,8 +703,8 @@ function AddLiquidity(props) {
                         token: new CLKey(_token_a),
                         amount_cspr_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
                         amount_token_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
-                        amount_cspr_min: CLValueBuilder.u256(convertToStr(token_BAmount - (token_BAmount) * slippage / 100)),
-                        amount_token_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
+                        amount_cspr_min: CLValueBuilder.u256(convertToStr((token_BAmount - (token_BAmount) * slippage / 100)).toFixed(9)),
+                        amount_token_min: CLValueBuilder.u256(convertToStr((token_AAmount - (token_AAmount) * slippage / 100)).toFixed(9)),
                         to: createRecipientAddress(publicKey),
                         purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
                         deadline: CLValueBuilder.u256(deadline),
@@ -683,9 +718,29 @@ function AddLiquidity(props) {
                     let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                     console.log("make deploy: ", deploy);
                     try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
+                        if (selectedWallet === "Casper") {
+                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                            console.log('result', result);
+                        } else {
+                            // let Torus = new Torus();
+                            torus = new Torus();
+                            console.log('torus', torus);
+                            await torus.init({
+                                buildEnv: "testing",
+                                showTorusButton: true,
+                                network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                            });
+                            console.log("Torus123", torus);
+                            console.log("torus", torus.provider);
+                            const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                            const deployRes = await casperService.deploy(deploy);
+                            console.log("deployRes", deployRes.deploy_hash);
+                            console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                            let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                            console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                            console.log('result', result);
+                        }
                         setTokenAAllowance(0)
                         setTokenBAllowance(0)
                         setTokenAAmount(0)
@@ -695,7 +750,7 @@ function AddLiquidity(props) {
                         let variant = "success";
                         enqueueSnackbar('Liquidity Added Successfully', { variant });
                         setIsLoading(false)
-                        window.location.reload(false);
+                        resetData()
                     }
                     catch {
                         handleCloseSigning()
@@ -720,8 +775,8 @@ function AddLiquidity(props) {
                         token_b: new CLKey(_token_b),
                         amount_a_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
                         amount_b_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
-                        amount_a_min: CLValueBuilder.u256(convertToStr(token_AAmount - (token_AAmount) * slippage / 100)),
-                        amount_b_min: CLValueBuilder.u256(convertToStr(token_BAmount - (token_BAmount) * slippage / 100)),
+                        amount_a_min: CLValueBuilder.u256(convertToStr((token_AAmount - (token_AAmount) * slippage / 100)).toFixed(9)),
+                        amount_b_min: CLValueBuilder.u256(convertToStr((token_BAmount - (token_BAmount) * slippage / 100)).toFixed(9)),
                         to: createRecipientAddress(publicKey),
                         deadline: CLValueBuilder.u256(deadline),
                         pair: new CLOption(Some(new CLKey(pair)))
@@ -734,19 +789,36 @@ function AddLiquidity(props) {
                     let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
                     console.log("make deploy: ", deploy);
                     try {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
+                        if (selectedWallet === "Casper") {
+                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
+                            console.log('result', result);
+                        } else {
+                            // let Torus = new Torus();
+                            torus = new Torus();
+                            console.log('torus', torus);
+                            await torus.init({
+                                buildEnv: "testing",
+                                showTorusButton: true,
+                                network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                            });
+                            console.log("Torus123", torus);
+                            console.log("torus", torus.provider);
+                            const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                            const deployRes = await casperService.deploy(deploy);
+                            console.log("deployRes", deployRes.deploy_hash);
+                            console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
+                            let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
+                            console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
+                            console.log('result', result);
+                        }
                         let variant = "success";
-                        setTokenAAllowance(0)
-                        setTokenBAllowance(0)
-                        setTokenAAmount(0)
-                        setTokenBAmount(0)
-                        getTokenBalance()
+
                         handleCloseSigning()
                         enqueueSnackbar('Liquidity Added Successfully', { variant });
                         setIsLoading(false)
-                        window.location.reload(false);
+                        resetData()
+
                     }
                     catch {
                         handleCloseSigning()
@@ -774,7 +846,7 @@ function AddLiquidity(props) {
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
-                    <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Pool"} />
+                    <HeaderHome setActivePublicKey={setActivePublicKey} setSelectedWallet={setSelectedWallet} selectedWallet={selectedWallet} setTorus={setTorus} selectedNav={"Pool"} />
                     <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div

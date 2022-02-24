@@ -28,9 +28,9 @@ import Tooltip from '@mui/material/Tooltip';
 import { visuallyHidden } from '@mui/utils';
 
 function descendingComparator(a, b, orderBy) {
-    console.log("orderBy",orderBy);
-    console.log("a",a);
-    console.log("b",b);
+    console.log("orderBy", orderBy);
+    console.log("a", a);
+    console.log("b", b);
     if (b[orderBy] < a[orderBy]) {
         return -1;
     }
@@ -195,8 +195,9 @@ function Pairs(props) {
 
     const [pairList, setPairList] = useState([])
     const [isPairList, setIsPairList] = useState(false)
-    // eslint-disable-next-line
-    let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
+    let [, setActivePublicKey] = useState(localStorage.getItem("Address"));
+    let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
+    let [, setTorus] = useState();
     useEffect(() => {
         setIsPairList(true)
         axios
@@ -218,7 +219,7 @@ function Pairs(props) {
     }
 
     const handleRequestSort = (event, property) => {
-        console.log('property',property);
+        console.log('property', property);
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
@@ -237,13 +238,13 @@ function Pairs(props) {
         setDense(event.target.checked);
     };
     const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - pairList.length) : 0;
+        page > 0 ? Math.max(0, (1 + page) * rowsPerPage - pairList.length) : 0;
 
     return (
         <div className="account-page">
             <div className="main-wrapper">
                 <div className="home-section home-full-height">
-                    <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"pairs"} />
+                    <HeaderHome setActivePublicKey={setActivePublicKey} setSelectedWallet={setSelectedWallet} selectedWallet={selectedWallet} setTorus={setTorus} selectedNav={"pairs"} />
                     <div style={{ backgroundColor: '#e846461F' }} className="card">
                         <div className="container-fluid">
                             <div
@@ -264,56 +265,67 @@ function Pairs(props) {
                                                 <Paper sx={{ width: '100%', mb: 2 }}>
                                                     <EnhancedTableToolbar />
                                                     <TableContainer>
-                                                        <Table
-                                                            sx={{ minWidth: 750 }}
-                                                            aria-labelledby="tableTitle"
-                                                            size={dense ? 'small' : 'medium'}
-                                                        >
-                                                            <EnhancedTableHead
-                                                                order={order}
-                                                                orderBy={orderBy}
-                                                                onRequestSort={handleRequestSort}
-                                                            />
-                                                            <TableBody>
-                                                                {stableSort(pairList, getComparator(order, orderBy))
-                                                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                                                    .map((row, index) => {
-                                                                        const labelId = `enhanced-table-checkbox-${index}`;
-                                                                        return (
-                                                                            <TableRow
-                                                                                hover
-                                                                                tabIndex={-1}
-                                                                                key={index}
-                                                                            >
-                                                                                <TableCell
-                                                                                    component="th"
-                                                                                    id={labelId}
-                                                                                    scope="row"
-                                                                                    align="right"
+                                                        {isPairList ? (
+                                                            <div style={{ padding: '20px' }} className="row align-items-center justify-content-center">
+                                                                <Spinner style={{ textAlign: 'center', color: "#e84646" }}
+                                                                    animation="border"
+                                                                    role="status"
+                                                                >
+                                                                    <span className="sr-only">Loading...</span>
+                                                                </Spinner>
+                                                            </div>
+                                                        ) : (
+                                                            <Table
+                                                                sx={{ minWidth: 750 }}
+                                                                aria-labelledby="tableTitle"
+                                                                size={dense ? 'small' : 'medium'}
+                                                            >
+                                                                <EnhancedTableHead
+                                                                    order={order}
+                                                                    orderBy={orderBy}
+                                                                    onRequestSort={handleRequestSort}
+                                                                />
+                                                                <TableBody>
+                                                                    {stableSort(pairList, getComparator(order, orderBy))
+                                                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                                                        .map((row, index) => {
+                                                                            const labelId = `enhanced-table-checkbox-${index}`;
+                                                                            return (
+                                                                                <TableRow
+                                                                                    hover
+                                                                                    tabIndex={-1}
+                                                                                    key={index}
                                                                                 >
-                                                                                    {index + 1}
-                                                                                </TableCell>
-                                                                                <TableCell align="left">{row.token0.name}/{row.token1.name}</TableCell>
-                                                                                <TableCell align="left">{row.token0.symbol}/{row.token1.symbol}</TableCell>
-                                                                                <TableCell align="left">{shortenAddress(row.token0.id)}/{shortenAddress(row.token1.id)}</TableCell>
-                                                                                <TableCell align="right">{row.reserve0 / 10 ** 9}</TableCell>
-                                                                                <TableCell align="right">{row.reserve1 / 10 ** 9}</TableCell>
-                                                                                <TableCell align="right">{row.reserveETH / 10 ** 9}</TableCell>
-                                                                                <TableCell align="right">{row.reserveUSD / 10 ** 9}</TableCell>
-                                                                            </TableRow>
-                                                                        );
-                                                                    })}
-                                                                {emptyRows > 0 && (
-                                                                    <TableRow
-                                                                        style={{
-                                                                            height: (dense ? 33 : 53) * emptyRows,
-                                                                        }}
-                                                                    >
-                                                                        <TableCell colSpan={6} />
-                                                                    </TableRow>
-                                                                )}
-                                                            </TableBody>
-                                                        </Table>
+                                                                                    <TableCell
+                                                                                        component="th"
+                                                                                        id={labelId}
+                                                                                        scope="row"
+                                                                                        align="right"
+                                                                                    >
+                                                                                        {index + 1}
+                                                                                    </TableCell>
+                                                                                    <TableCell align="left">{row.token0.name}/{row.token1.name}</TableCell>
+                                                                                    <TableCell align="left">{row.token0.symbol}/{row.token1.symbol}</TableCell>
+                                                                                    <TableCell align="left">{shortenAddress(row.token0.id)}/{shortenAddress(row.token1.id)}</TableCell>
+                                                                                    <TableCell align="right">{row.reserve0 / 10 ** 9}</TableCell>
+                                                                                    <TableCell align="right">{row.reserve1 / 10 ** 9}</TableCell>
+                                                                                    <TableCell align="right">{row.reserveETH / 10 ** 9}</TableCell>
+                                                                                    <TableCell align="right">{row.reserveUSD / 10 ** 9}</TableCell>
+                                                                                </TableRow>
+                                                                            );
+                                                                        })}
+                                                                    {emptyRows > 0 && (
+                                                                        <TableRow
+                                                                            style={{
+                                                                                height: (dense ? 33 : 53) * emptyRows,
+                                                                            }}
+                                                                        >
+                                                                            <TableCell colSpan={6} />
+                                                                        </TableRow>
+                                                                    )}
+                                                                </TableBody>
+                                                            </Table>
+                                                        )}
                                                     </TableContainer>
                                                     <TablePagination
                                                         rowsPerPageOptions={[5, 10, 25]}
@@ -339,85 +351,6 @@ function Pairs(props) {
                 </div>
             </div>
         </div >
-
-        // <div className="account-page">
-        //     <div className="main-wrapper">
-        //         <div className="home-section home-full-height">
-        //             <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"pairs"} />
-        //             <div style={{ backgroundColor: '#e846461F' }} className="card">
-        //                 <div className="container-fluid">
-        //                     <div
-        //                         className="content"
-        //                         style={{ paddingTop: "180px", height: "150vh" }}
-        //                         position="absolute"
-        //                     >
-        //                         <div className="card">
-        //                             <Typography style={{ marginLeft: '15px', marginTop: '15px' }} variant="h5" color="textSecondary" component="p"><strong>List of Pairs </strong>
-        //                             </Typography>
-        //                             <div className="container-fluid">
-
-        //                                 <div
-        //                                     className="row"
-        //                                     style={{ height: `${props.windowHeight}`, marginRight: "px" }}
-        //                                 >
-
-        //                                     <div
-        //                                         className="table-responsive"
-        //                                         style={{ paddingTop: "20px" }}
-        //                                     >
-
-        //                                         {isPairList ? (
-        //                                             <div className=" align-items-center justify-content-center text-center">
-        //                                                 <Spinner
-        //                                                     animation="border"
-        //                                                     role="status"
-        //                                                     style={{ color: "#e84646" }}
-        //                                                 >
-        //                                                     <span className="sr-only">Loading...</span>
-        //                                                 </Spinner>
-        //                                             </div>
-        //                                         ) : (
-        //                                             <table className="table table-hover table-center mb-0">
-        //                                                 <thead>
-        //                                                     <tr>
-        //                                                         <th>#</th>
-        //                                                         <th>Name A/B</th>
-        //                                                         <th>Symbol A/B</th>
-        //                                                         <th>Contract Hash A/B</th>
-        //                                                         <th>Reserve A</th>
-        //                                                         <th>Reserve B</th>
-        //                                                         <th>ReserveCSPR</th>
-        //                                                         <th>ReserveUSD</th>
-
-        //                                                     </tr>
-        //                                                 </thead>
-        //                                                 <tbody style={{ color: 'black' }}>
-        //                                                     {pairList.map((i, index) => (
-        //                                                         <tr key={index}>
-        //                                                             <td>{index + 1}</td>
-        //                                                             <td>{i.token0.name}/{i.token1.name}</td>
-        //                                                             <td>{i.token0.symbol}/{i.token1.symbol}</td>
-        //                                                             <td>{shortenAddress(i.token0.id)}/{shortenAddress(i.token1.id)}</td>
-        //                                                             <td>{i.reserve0 / 10 ** 9}</td>
-        //                                                             <td>{i.reserve1 / 10 ** 9}</td>
-        //                                                             <td>{i.reserveETH / 10 ** 9}</td>
-        //                                                             <td>{i.reserveUSD / 10 ** 9}</td>
-
-        //                                                         </tr>
-        //                                                     ))}
-        //                                                 </tbody>
-        //                                             </table>
-        //                                         )}
-        //                                     </div>
-        //                                 </div>
-        //                             </div>
-        //                         </div>
-        //                     </div>
-        //                 </div>
-        //             </div>
-        //         </div>
-        //     </div>
-        // </div >
     );
 }
 

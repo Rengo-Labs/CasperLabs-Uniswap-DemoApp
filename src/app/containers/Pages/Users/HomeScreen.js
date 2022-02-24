@@ -10,13 +10,16 @@ import HomeBanner from "./Home/HomeBanner";
 function HomeScreen() {
   // eslint-disable-next-line
   let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
+  let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
+  // eslint-disable-next-line
+  let [torus, setTorus] = useState();
   return (
     <div className="main-wrapper">
       <div className="home-section home-full-height">
-        <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Home"} />
+        <HeaderHome setActivePublicKey={setActivePublicKey} setSelectedWallet={setSelectedWallet} selectedWallet={selectedWallet} setTorus={setTorus} selectedNav={"Home"} />
         <div
           className="content"
-          style={{ paddingTop: "100px"}}
+          style={{ paddingTop: "100px" }}
           position="absolute"
         >
           <HomeBanner />

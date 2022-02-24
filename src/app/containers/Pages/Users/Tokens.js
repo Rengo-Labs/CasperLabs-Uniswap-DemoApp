@@ -23,6 +23,7 @@ import axios from "axios";
 import { CLPublicKey } from 'casper-js-sdk';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from "react";
+import { Spinner } from 'react-bootstrap';
 import "../../../assets/css/bootstrap.min.css";
 import "../../../assets/css/style.css";
 import "../../../assets/plugins/fontawesome/css/all.min.css";
@@ -32,39 +33,6 @@ import HeaderHome from "../../../components/Headers/Header";
 
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-    width: '100%',
-    backgroundColor: theme.palette.background.paper,
-  },
-  badge: {
-    '& > *': {
-      margin: theme.spacing(1),
-    },
-  },
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 1,
-    color: '#fff',
-  },
-
-  card: {
-    minWidth: 250,
-  },
-  media: {
-    height: 0,
-    paddingTop: '100%', // 16:9
-  },
-  bullet: {
-    display: 'inline-block',
-    margin: '0 2px',
-    transform: 'scale(0.8)',
-  },
-  title: {
-    fontSize: 14,
-  },
-  pos: {
-    marginBottom: 12,
-  },
   avatar: {
     marginLeft: 0,
   },
@@ -221,7 +189,7 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 function Tokens(props) {
-  
+
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
   const [page, setPage] = React.useState(0);
@@ -232,64 +200,15 @@ function Tokens(props) {
   const [istokenList, setIsTokenList] = useState(false)
   // eslint-disable-next-line
   let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
-  // useEffect(() => {
-  //     axios
-  //         .get('/tokensList')
-  //         .then((res) => {
-  //             console.log('resresres', res)
-  //             console.log(res.data.tokens)
-  //             setIsTokenList(true)
-  //             setTokenList(res.data.tokens)
-  //         })
-  //         .catch((error) => {
-  //             console.log(error)
-  //             console.log(error.response)
-  //         })// eslint-disable-next-line
-  // }, []);
+  // eslint-disable-next-line
+  let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
+  let [,setTorus] = useState();
   useEffect(() => {
     axios
       .get('/tokensList')
       .then(async (res) => {
         console.log('tokensList', res)
         console.log(res.data.tokens)
-        // let CSPR =
-        // {
-        //     address: "",
-        //     chainId: 1,
-        //     decimals: 9,
-        //     logoURI: Logo,
-        //     name: "Casper",
-        //     symbol: "CSPR",
-        // }
-        // if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
-        //     const client = new CasperServiceByJsonRPC(
-        //         NODE_ADDRESS
-        //     );
-        //     getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
-        //         console.log('stateRootHash', stateRootHash);
-        //         client.getBlockState(
-        //             stateRootHash,
-        //             CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
-        //             []
-        //         ).then(result => {
-        //             console.log('result', result.Account.mainPurse);
-        //             try {
-        //                 const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
-        //                 client.getAccountBalance(
-        //                     stateRootHash,
-        //                     result.Account.mainPurse
-        //                 ).then(result => {
-        //                     console.log('CSPR balance', result.toString());
-        //                     CSPR.balance = result.toString()
-        //                 });
-        //             } catch (error) {
-        //                 CSPR.balance = 0;
-        //                 console.log('error', error);
-        //             }
-        //         });
-        //     })
-        // }
-        // console.log('CSPR', CSPR);
         let holdArr = res.data.tokens;
         console.log('holdArr', holdArr);
         if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
@@ -356,7 +275,7 @@ function Tokens(props) {
     <div className="account-page">
       <div className="main-wrapper">
         <div className="home-section home-full-height">
-          <HeaderHome setActivePublicKey={setActivePublicKey} selectedNav={"Tokens"} />
+          <HeaderHome setActivePublicKey={setActivePublicKey} setSelectedWallet={setSelectedWallet} selectedWallet={selectedWallet} setTorus={setTorus} selectedNav={"Tokens"} />
           <div style={{ backgroundColor: '#e846461F' }} className="card">
             <div className="container-fluid">
               <div
@@ -365,8 +284,6 @@ function Tokens(props) {
                 position="absolute"
               >
                 <div className="card">
-                  <Typography style={{ marginLeft: '15px', marginTop: '15px' }} variant="h5" color="textSecondary" component="p"><strong></strong>
-                  </Typography>
                   <div className="container-fluid">
 
                     <div
@@ -378,58 +295,69 @@ function Tokens(props) {
                         <Paper sx={{ width: '100%', mb: 2 }}>
                           <EnhancedTableToolbar />
                           <TableContainer>
-                            <Table
-                              sx={{ minWidth: 750 }}
-                              aria-labelledby="tableTitle"
-                              size={dense ? 'small' : 'medium'}
-                            >
-                              <EnhancedTableHead
-                                order={order}
-                                orderBy={orderBy}
-                                onRequestSort={handleRequestSort}
-                              />
-                              <TableBody>
-                                {/* if you don't need to support IE11, you can replace the `stableSort` call with:
-                   rows.slice().sort(getComparator(order, orderBy)) */}
-                                {stableSort(tokenList, getComparator(order, orderBy))
-                                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                  .map((row, index) => {
-                                    const labelId = `enhanced-table-checkbox-${index}`;
 
-                                    return (
-                                      <TableRow
-                                        hover
-                                        tabIndex={-1}
-                                        key={index}
-                                      >
-                                        <TableCell
-                                          component="th"
-                                          id={labelId}
-                                          scope="row"
-                                          align="right"
+                            {!istokenList ? (
+                              <div style={{ padding: '20px' }} className="row align-items-center justify-content-center">
+                                <Spinner style={{ textAlign: 'center', color: "#e84646" }}
+                                  animation="border"
+                                  role="status"
+                                >
+                                  <span className="sr-only">Loading...</span>
+                                </Spinner>
+                              </div>
+                            ) : (
+                              <Table
+                                sx={{ minWidth: 750 }}
+                                aria-labelledby="tableTitle"
+                                size={dense ? 'small' : 'medium'}
+                              >
+                                <EnhancedTableHead
+                                  order={order}
+                                  orderBy={orderBy}
+                                  onRequestSort={handleRequestSort}
+                                />
+                                <TableBody>
+                                  {stableSort(tokenList, getComparator(order, orderBy))
+                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                    .map((row, index) => {
+                                      const labelId = `enhanced-table-checkbox-${index}`;
+
+                                      return (
+                                        <TableRow
+                                          hover
+                                          tabIndex={-1}
+                                          key={index}
                                         >
-                                          {index + 1}
-                                        </TableCell>
-                                        <TableCell align="right"><Avatar src={row.logoURI} aria-label="Artist" className={classes.avatar} /></TableCell>
-                                        <TableCell align="left">{row.name}</TableCell>
-                                        <TableCell align="left">{row.symbol}</TableCell>
-                                        <TableCell align="left">{shortenAddress(row.address)}</TableCell>
-                                        <TableCell align="left">{shortenAddress(row.packageHash)}</TableCell>
-                                        <TableCell align="right">{row.balance ? (row.balance / 10 ** 9) : (0)}</TableCell>
-                                      </TableRow>
-                                    );
-                                  })}
-                                {emptyRows > 0 && (
-                                  <TableRow
-                                    style={{
-                                      height: (dense ? 33 : 53) * emptyRows,
-                                    }}
-                                  >
-                                    <TableCell colSpan={6} />
-                                  </TableRow>
-                                )}
-                              </TableBody>
-                            </Table>
+                                          <TableCell
+                                            component="th"
+                                            id={labelId}
+                                            scope="row"
+                                            align="right"
+                                          >
+                                            {index + 1}
+                                          </TableCell>
+                                          <TableCell align="right"><Avatar src={row.logoURI} aria-label="Artist" className={classes.avatar} /></TableCell>
+                                          <TableCell align="left">{row.name}</TableCell>
+                                          <TableCell align="left">{row.symbol}</TableCell>
+                                          <TableCell align="left">{shortenAddress(row.address)}</TableCell>
+                                          <TableCell align="left">{shortenAddress(row.packageHash)}</TableCell>
+                                          <TableCell align="right">{row.balance ? (row.balance / 10 ** 9) : (0)}</TableCell>
+                                        </TableRow>
+                                      );
+                                    })}
+                                  {emptyRows > 0 && (
+                                    <TableRow
+                                      style={{
+                                        height: (dense ? 33 : 53) * emptyRows,
+                                      }}
+                                    >
+                                      <TableCell colSpan={6} />
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+
+                              </Table>
+                            )}
                           </TableContainer>
                           <TablePagination
                             rowsPerPageOptions={[5, 10, 25]}
@@ -446,6 +374,7 @@ function Tokens(props) {
                           label="Dense padding"
                         />
                       </Box>
+
                     </div>
                   </div>
                 </div>

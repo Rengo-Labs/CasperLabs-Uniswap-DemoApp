@@ -1,5 +1,12 @@
 export function convertToStr(amount) {
     let strAmount = amount.toString();
+    console.log("amountttt", amount);
+    console.log("amount.toString().includes('e')",amount.toString().includes('e'));
+    if(amount.toString().includes('e'))
+    {
+        strAmount=amount.toFixed(9).toString()
+    }
+    console.log("strAmount",strAmount);
     let amountArr = strAmount.split('.')
     console.log("amountArr[0]", amountArr[0]);
     console.log("amountArr[1]", amountArr[1]);
