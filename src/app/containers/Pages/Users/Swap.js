@@ -385,542 +385,725 @@ function Swap(props) {
 
 
     async function approveMakeDeploy(contractHash, amount) {
-        handleShowSigning()
-        console.log('contractHash', contractHash);
-        const publicKeyHex = activePublicKey
-        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
-            const publicKey = CLPublicKey.fromHex(publicKeyHex);
-            const spender = ROUTER_PACKAGE_HASH;
-            const spenderByteArray = new CLByteArray(Uint8Array.from(Buffer.from(spender, 'hex')));
-            const paymentAmount = 5000000000;
+        handleShowSigning();
+        console.log("contractHash", contractHash);
+        const publicKeyHex = activePublicKey;
+        if (
+          publicKeyHex !== null &&
+          publicKeyHex !== "null" &&
+          publicKeyHex !== undefined
+        ) {
+          const publicKey = CLPublicKey.fromHex(publicKeyHex);
+          const spender = ROUTER_PACKAGE_HASH;
+          const spenderByteArray = new CLByteArray(
+            Uint8Array.from(Buffer.from(spender, "hex"))
+          );
+          const paymentAmount = 5000000000;
+          try {
+            const runtimeArgs = RuntimeArgs.fromMap({
+              spender: createRecipientAddress(spenderByteArray),
+              amount: CLValueBuilder.u256(parseInt(amount * 10 ** 9)),
+            });
+    
+            let contractHashAsByteArray = Uint8Array.from(
+              Buffer.from(contractHash.slice(5), "hex")
+            );
+            let entryPoint = "approve";
+    
+            // Set contract installation deploy (unsigned).
+            let deploy = await makeDeploy(
+              publicKey,
+              contractHashAsByteArray,
+              entryPoint,
+              runtimeArgs,
+              paymentAmount
+            );
+            console.log("make deploy: ", deploy);
             try {
-                const runtimeArgs = RuntimeArgs.fromMap({
-                    spender: createRecipientAddress(spenderByteArray),
-                    amount: CLValueBuilder.u256(convertToStr(amount))
+              if (selectedWallet === "Casper") {
+                let signedDeploy = await signdeploywithcaspersigner(
+                  deploy,
+                  publicKeyHex
+                );
+                let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                console.log("result", result);
+              } else {
+                // let Torus = new Torus();
+                torus = new Torus();
+                console.log("torus", torus);
+                await torus.init({
+                  buildEnv: "testing",
+                  showTorusButton: true,
+                  network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
                 });
-
-                let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
-                let entryPoint = 'approve';
-
+                console.log("Torus123", torus);
+                console.log("torus", torus.provider);
+                const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                const deployRes = await casperService.deploy(deploy);
+                console.log("deployRes", deployRes.deploy_hash);
+                console.log(
+                  `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                );
+                let result = await getDeploy(
+                  NODE_ADDRESS,
+                  deployRes.deploy_hash,
+                  enqueueSnackbar
+                );
+                console.log(
+                  `... Contract installed successfully.`,
+                  JSON.parse(JSON.stringify(result))
+                );
+                console.log("result", result);
+              }
+              setTokenAAllowance(parseInt(amount * 10 ** 9));
+              handleCloseSigning();
+              let variant = "success";
+              enqueueSnackbar("Approved Successfully", { variant });
+            } catch {
+              handleCloseSigning();
+              let variant = "Error";
+              enqueueSnackbar("Unable to Approve", { variant });
+            }
+          } catch {
+            handleCloseSigning();
+            let variant = "Error";
+            enqueueSnackbar("Input values are too large", { variant });
+          }
+        } else {
+          handleCloseSigning();
+          let variant = "error";
+          enqueueSnackbar("Connect to Wallet Please", { variant });
+        }
+      }
+    
+      async function swapMakeDeploy() {
+        handleShowSigning();
+        setIsLoading(true);
+        const publicKeyHex = activePublicKey;
+        if (
+          publicKeyHex !== null &&
+          publicKeyHex !== "null" &&
+          publicKeyHex !== undefined
+        ) {
+          const deadline = 1739598100811;
+          const paymentAmount = 5000000000;
+          if (inputSelection === "tokenA") {
+            if (tokenA.name === "Casper") {
+              console.log("swap_exact_cspr_for_token");
+              const publicKey = CLPublicKey.fromHex(publicKeyHex);
+              const caller = ROUTER_CONTRACT_HASH;
+              const amount_in = tokenAAmount;
+              const amount_out_min = tokenBAmount;
+    
+              console.log("publicKeyHex", publicKeyHex);
+              let path = swapPath;
+              console.log("path", path);
+              let _paths = [];
+              for (let i = 0; i < path.length; i++) {
+                const p = new CLString("hash-".concat(path[i]));
+                _paths.push(p);
+              }
+              console.log("_paths", _paths);
+              try {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                  amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
+                  amount_out_min: CLValueBuilder.u256(
+                    convertToStr(amount_out_min - (amount_out_min * slippage) / 100)
+                  ),
+                  path: new CLList(_paths),
+                  to: createRecipientAddress(publicKey),
+                  purse: CLValueBuilder.uref(
+                    Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")),
+                    AccessRights.READ_ADD_WRITE
+                  ),
+                  deadline: CLValueBuilder.u256(deadline),
+                });
+    
+                let contractHashAsByteArray = Uint8Array.from(
+                  Buffer.from(caller, "hex")
+                );
+                let entryPoint = "swap_exact_cspr_for_tokens_js_client";
+    
                 // Set contract installation deploy (unsigned).
-                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                let deploy = await makeDeploy(
+                  publicKey,
+                  contractHashAsByteArray,
+                  entryPoint,
+                  runtimeArgs,
+                  paymentAmount
+                );
                 console.log("make deploy: ", deploy);
                 try {
-                    if (selectedWallet === "Casper") {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
-                    } else {
-                        // let Torus = new Torus();
-                        torus = new Torus();
-                        console.log('torus', torus);
-                        await torus.init({
-                            buildEnv: "testing",
-                            showTorusButton: true,
-                            network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                        });
-                        console.log("Torus123", torus);
-                        console.log("torus", torus.provider);
-                        const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                        const deployRes = await casperService.deploy(deploy);
-                        console.log("deployRes", deployRes.deploy_hash);
-                        console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                        let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                        console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                        console.log('result', result);
-                    }
-                    setTokenAAllowance(parseInt(amount * 10 ** 9))
-                    handleCloseSigning()
-                    let variant = "success";
-                    enqueueSnackbar('Approved Successfully', { variant });
+                  if (selectedWallet === "Casper") {
+                    let signedDeploy = await signdeploywithcaspersigner(
+                      deploy,
+                      publicKeyHex
+                    );
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    console.log("result", result);
+                  } else {
+                    // let Torus = new Torus();
+                    torus = new Torus();
+                    console.log("torus", torus);
+                    await torus.init({
+                      buildEnv: "testing",
+                      showTorusButton: true,
+                      network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                    });
+                    console.log("Torus123", torus);
+                    console.log("torus", torus.provider);
+                    const casperService = new CasperServiceByJsonRPC(
+                      torus?.provider
+                    );
+                    const deployRes = await casperService.deploy(deploy);
+                    console.log("deployRes", deployRes.deploy_hash);
+                    console.log(
+                      `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                    );
+                    let result = await getDeploy(
+                      NODE_ADDRESS,
+                      deployRes.deploy_hash,
+                      enqueueSnackbar
+                    );
+                    console.log(
+                      `... Contract installed successfully.`,
+                      JSON.parse(JSON.stringify(result))
+                    );
+                    console.log("result", result);
+                  }
+    
+                  handleCloseSigning();
+                  let variant = "success";
+                  enqueueSnackbar("Tokens Swapped Successfully", { variant });
+                  setIsLoading(false);
+                  resetData();
+                  // window.location.reload(false);
+                } catch {
+                  handleCloseSigning();
+                  let variant = "Error";
+                  enqueueSnackbar("Unable to Swap Tokens", { variant });
+                  setIsLoading(false);
                 }
-                catch {
-                    handleCloseSigning()
-                    let variant = "Error";
-                    enqueueSnackbar('Unable to Approve', { variant });
-                }
-            }
-            catch {
-                handleCloseSigning()
+              } catch {
+                handleCloseSigning();
                 let variant = "Error";
-                enqueueSnackbar('Input values are too large', { variant });
-            }
-
-        }
-        else {
-            handleCloseSigning()
-            let variant = "error";
-            enqueueSnackbar('Connect to Casper Signer Please', { variant });
-        }
-    }
-
-
-
-    async function swapMakeDeploy() {
-        handleShowSigning()
-        setIsLoading(true)
-        const publicKeyHex = activePublicKey
-        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
-            const deadline = 1739598100811;
-            const paymentAmount = 5000000000;
-            if (inputSelection === "tokenA") {
-                if (tokenA.name === 'Casper') {
-                    console.log("swap_exact_cspr_for_token");
-                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
-                    const caller = ROUTER_CONTRACT_HASH;
-                    const amount_in = tokenAAmount;
-                    const amount_out_min = tokenBAmount;
-
-                    console.log('publicKeyHex', publicKeyHex);
-                    let path = swapPath
-                    console.log('path', path);
-                    let _paths = [];
-                    for (let i = 0; i < path.length; i++) {
-                        const p = new CLString('hash-'.concat(path[i]));
-                        _paths.push(p);
-                    }
-                    console.log('_paths', _paths);
-                    try {
-                        const runtimeArgs = RuntimeArgs.fromMap({
-                            amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
-                            amount_out_min: CLValueBuilder.u256(convertToStr(amount_out_min - (amount_out_min) * slippage / 100)),
-                            path: new CLList(_paths),
-                            to: createRecipientAddress(publicKey),
-                            purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
-                            deadline: CLValueBuilder.u256(deadline),
-                        });
-
-                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                        let entryPoint = 'swap_exact_cspr_for_tokens_js_client';
-
-                        // Set contract installation deploy (unsigned).
-                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                        console.log("make deploy: ", deploy);
-                        try {
-                            if (selectedWallet === "Casper") {
-                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                                console.log('result', result);
-                            } else {
-                                // let Torus = new Torus();
-                                torus = new Torus();
-                                console.log('torus', torus);
-                                await torus.init({
-                                    buildEnv: "testing",
-                                    showTorusButton: true,
-                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                                });
-                                console.log("Torus123", torus);
-                                console.log("torus", torus.provider);
-                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                                const deployRes = await casperService.deploy(deploy);
-                                console.log("deployRes", deployRes.deploy_hash);
-                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                                console.log('result', result);
-                            }
-
-                            handleCloseSigning()
-                            let variant = "success";
-                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                            setIsLoading(false)
-                            resetData()
-                            // window.location.reload(false);
-                        }
-                        catch {
-                            handleCloseSigning()
-                            let variant = "Error";
-                            enqueueSnackbar('Unable to Swap Tokens', { variant });
-                            setIsLoading(false)
-                        }
-                    }
-                    catch {
-                        handleCloseSigning()
-                        let variant = "Error";
-                        enqueueSnackbar('Input values are too large', { variant });
-                    }
-                } else if (tokenB.name === "Casper") {
-                    console.log("swap_exact_token_for_cspr");
-                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
-                    const caller = ROUTER_CONTRACT_HASH;
-                    const amount_in = tokenAAmount;
-                    const amount_out_min = tokenBAmount;
-
-                    console.log('publicKeyHex', publicKeyHex);
-                    let path = swapPath
-                    console.log('path', path);
-                    let _paths = [];
-                    for (let i = 0; i < path.length; i++) {
-                        const p = new CLString('hash-'.concat(path[i]));
-                        _paths.push(p);
-                    }
-                    console.log('_paths', _paths);
-                    console.log('mainPurse', mainPurse);
-                    console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
-                    try {
-                        const runtimeArgs = RuntimeArgs.fromMap({
-                            amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
-                            amount_out_min: CLValueBuilder.u256(convertToStr(amount_out_min - (amount_out_min) * slippage / 100)),
-                            path: new CLList(_paths),
-                            to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
-                            deadline: CLValueBuilder.u256(deadline),
-                        });
-
-                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                        let entryPoint = 'swap_exact_tokens_for_cspr_js_client';
-
-                        // Set contract installation deploy (unsigned).
-                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                        console.log("make deploy: ", deploy);
-                        try {
-                            if (selectedWallet === "Casper") {
-                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                                console.log('result', result);
-                            } else {
-                                // let Torus = new Torus();
-                                torus = new Torus();
-                                console.log('torus', torus);
-                                await torus.init({
-                                    buildEnv: "testing",
-                                    showTorusButton: true,
-                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                                });
-                                console.log("Torus123", torus);
-                                console.log("torus", torus.provider);
-                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                                const deployRes = await casperService.deploy(deploy);
-                                console.log("deployRes", deployRes.deploy_hash);
-                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                                console.log('result', result);
-                            }
-                            handleCloseSigning()
-                            let variant = "success";
-                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                            setIsLoading(false)
-                            resetData()
-                            // window.location.reload(false);
-                        }
-                        catch {
-                            handleCloseSigning()
-                            let variant = "Error";
-                            enqueueSnackbar('Unable to Swap Tokens', { variant });
-                            setIsLoading(false)
-                        }
-                    }
-                    catch {
-                        handleCloseSigning()
-                        let variant = "Error";
-                        enqueueSnackbar('Input values are too large', { variant });
-                    }
-                } else {
-                    console.log("swap_exact_token_for_token");
-                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
-                    const caller = ROUTER_CONTRACT_HASH;
-                    const amount_in = tokenAAmount;
-                    const amount_out_min = tokenBAmount;
-                    console.log('publicKeyHex', publicKeyHex);
-                    let path = swapPath
-                    console.log('path', path);
-                    let _paths = [];
-                    for (let i = 0; i < path.length; i++) {
-                        const p = new CLString('hash-'.concat(path[i]));
-                        _paths.push(p);
-                    }
-                    console.log('_paths', _paths);
-                    console.log("amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100", amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100);
-                    console.log("amount_out_min - (amount_out_min) * slippage / 100", amount_out_min - (amount_out_min) * slippage / 100);
-                    try {
-                        const runtimeArgs = RuntimeArgs.fromMap({
-                            amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
-                            amount_out_min: CLValueBuilder.u256(convertToStr(amount_out_min - (amount_out_min) * slippage / 100)),
-                            path: new CLList(_paths),
-                            to: createRecipientAddress(publicKey),
-                            deadline: CLValueBuilder.u256(deadline),
-                        });
-
-                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                        let entryPoint = 'swap_exact_tokens_for_tokens_js_client';
-
-                        // Set contract installation deploy (unsigned).
-                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                        console.log("make deploy: ", deploy);
-                        try {
-                            if (selectedWallet === "Casper") {
-                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                                console.log('result', result);
-                            } else {
-                                // let Torus = new Torus();
-                                torus = new Torus();
-                                console.log('torus', torus);
-                                await torus.init({
-                                    buildEnv: "testing",
-                                    showTorusButton: true,
-                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                                });
-                                console.log("Torus123", torus);
-                                console.log("torus", torus.provider);
-                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                                const deployRes = await casperService.deploy(deploy);
-                                console.log("deployRes", deployRes.deploy_hash);
-                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                                console.log('result', result);
-                            }
-                            handleCloseSigning()
-                            let variant = "success";
-                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                            setIsLoading(false)
-                            resetData()
-                            // window.location.reload(false);
-                        }
-                        catch {
-                            handleCloseSigning()
-                            let variant = "Error";
-                            enqueueSnackbar('Unable to Swap Tokens', { variant });
-                            setIsLoading(false)
-                        }
-                    }
-                    catch {
-                        handleCloseSigning()
-                        let variant = "Error";
-                        enqueueSnackbar('Input values are too large', { variant });
-                    }
+                enqueueSnackbar("Input values are too large", { variant });
+              }
+            } else if (tokenB.name === "Casper") {
+              console.log("swap_exact_token_for_cspr");
+              const publicKey = CLPublicKey.fromHex(publicKeyHex);
+              const caller = ROUTER_CONTRACT_HASH;
+              const amount_in = tokenAAmount;
+              const amount_out_min = tokenBAmount;
+    
+              console.log("publicKeyHex", publicKeyHex);
+              let path = swapPath;
+              console.log("path", path);
+              let _paths = [];
+              for (let i = 0; i < path.length; i++) {
+                const p = new CLString("hash-".concat(path[i]));
+                _paths.push(p);
+              }
+              console.log("_paths", _paths);
+              console.log("mainPurse", mainPurse);
+              console.log(
+                "mainPurse",
+                Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex"))
+              );
+              try {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                  amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
+                  amount_out_min: CLValueBuilder.u256(
+                    convertToStr(amount_out_min - (amount_out_min * slippage) / 100)
+                  ),
+                  path: new CLList(_paths),
+                  to: CLValueBuilder.uref(
+                    Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")),
+                    AccessRights.READ_ADD_WRITE
+                  ),
+                  deadline: CLValueBuilder.u256(deadline),
+                });
+    
+                let contractHashAsByteArray = Uint8Array.from(
+                  Buffer.from(caller, "hex")
+                );
+                let entryPoint = "swap_exact_tokens_for_cspr_js_client";
+    
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(
+                  publicKey,
+                  contractHashAsByteArray,
+                  entryPoint,
+                  runtimeArgs,
+                  paymentAmount
+                );
+                console.log("make deploy: ", deploy);
+                try {
+                  if (selectedWallet === "Casper") {
+                    let signedDeploy = await signdeploywithcaspersigner(
+                      deploy,
+                      publicKeyHex
+                    );
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    console.log("result", result);
+                  } else {
+                    // let Torus = new Torus();
+                    torus = new Torus();
+                    console.log("torus", torus);
+                    await torus.init({
+                      buildEnv: "testing",
+                      showTorusButton: true,
+                      network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                    });
+                    console.log("Torus123", torus);
+                    console.log("torus", torus.provider);
+                    const casperService = new CasperServiceByJsonRPC(
+                      torus?.provider
+                    );
+                    const deployRes = await casperService.deploy(deploy);
+                    console.log("deployRes", deployRes.deploy_hash);
+                    console.log(
+                      `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                    );
+                    let result = await getDeploy(
+                      NODE_ADDRESS,
+                      deployRes.deploy_hash,
+                      enqueueSnackbar
+                    );
+                    console.log(
+                      `... Contract installed successfully.`,
+                      JSON.parse(JSON.stringify(result))
+                    );
+                    console.log("result", result);
+                  }
+                  handleCloseSigning();
+                  let variant = "success";
+                  enqueueSnackbar("Tokens Swapped Successfully", { variant });
+                  setIsLoading(false);
+                  resetData();
+                  // window.location.reload(false);
+                } catch {
+                  handleCloseSigning();
+                  let variant = "Error";
+                  enqueueSnackbar("Unable to Swap Tokens", { variant });
+                  setIsLoading(false);
                 }
-            } else if (inputSelection === "tokenB") {
-                if (tokenA.name === 'Casper') {
-                    console.log("swap_cspr_for_exact_token");
-                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
-                    const caller = ROUTER_CONTRACT_HASH;
-                    console.log('publicKeyHex', publicKeyHex);
-                    let path = swapPath
-                    console.log('path', path);
-                    let _paths = [];
-                    for (let i = 0; i < path.length; i++) {
-                        const p = new CLString('hash-'.concat(path[i]));
-                        _paths.push(p);
-                    }
-                    console.log('_paths', _paths);
-                    console.log('mainPurse', Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")));
-                    try {
-                        const runtimeArgs = RuntimeArgs.fromMap({
-                            amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
-                            amount_in_max: CLValueBuilder.u256(convertToStr(Number(tokenAAmount) + Number((tokenAAmount) * slippage / 100))),
-                            path: new CLList(_paths),
-                            to: createRecipientAddress(publicKey),
-                            purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
-                            deadline: CLValueBuilder.u256(deadline),
-                        });
-
-                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                        let entryPoint = 'swap_cspr_for_exact_tokens_js_client';
-
-                        // Set contract installation deploy (unsigned).
-                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                        console.log("make deploy: ", deploy);
-                        try {
-                            if (selectedWallet === "Casper") {
-                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                                console.log('result', result);
-                            } else {
-                                // let Torus = new Torus();
-                                torus = new Torus();
-                                console.log('torus', torus);
-                                await torus.init({
-                                    buildEnv: "testing",
-                                    showTorusButton: true,
-                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                                });
-                                console.log("Torus123", torus);
-                                console.log("torus", torus.provider);
-                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                                const deployRes = await casperService.deploy(deploy);
-                                console.log("deployRes", deployRes.deploy_hash);
-                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                                console.log('result', result);
-                            }
-                            handleCloseSigning()
-                            let variant = "success";
-                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                            setIsLoading(false)
-                            resetData()
-                            // window.location.reload(false);
-                        }
-                        catch {
-                            handleCloseSigning()
-                            let variant = "Error";
-                            enqueueSnackbar('Unable to Swap Tokens', { variant });
-                            setIsLoading(false)
-                        }
-                    }
-                    catch {
-                        handleCloseSigning()
-                        let variant = "Error";
-                        enqueueSnackbar('Input values are too large', { variant });
-                    }
-                } else if (tokenB.name === "Casper") {
-                    console.log("swap_token_for_exact_cspr");
-                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
-                    const caller = ROUTER_CONTRACT_HASH;
-                    console.log('publicKeyHex', publicKeyHex);
-                    let path = swapPath
-                    console.log('path', path);
-                    let _paths = [];
-                    for (let i = 0; i < path.length; i++) {
-                        const p = new CLString('hash-'.concat(path[i]));
-                        _paths.push(p);
-                    }
-                    console.log('_paths', _paths);
-                    try {
-                        const runtimeArgs = RuntimeArgs.fromMap({
-                            amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
-                            amount_in_max: CLValueBuilder.u256(convertToStr(Number(tokenAAmount) + Number((tokenAAmount) * slippage / 100))),
-                            path: new CLList(_paths),
-                            to: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
-                            deadline: CLValueBuilder.u256(deadline),
-                        });
-
-                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                        let entryPoint = 'swap_tokens_for_exact_cspr_js_client';
-
-                        // Set contract installation deploy (unsigned).
-                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                        console.log("make deploy: ", deploy);
-                        try {
-                            if (selectedWallet === "Casper") {
-                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                                console.log('result', result);
-                            } else {
-                                // let Torus = new Torus();
-                                torus = new Torus();
-                                console.log('torus', torus);
-                                await torus.init({
-                                    buildEnv: "testing",
-                                    showTorusButton: true,
-                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                                });
-                                console.log("Torus123", torus);
-                                console.log("torus", torus.provider);
-                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                                const deployRes = await casperService.deploy(deploy);
-                                console.log("deployRes", deployRes.deploy_hash);
-                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                                console.log('result', result);
-                            }
-                            handleCloseSigning()
-                            let variant = "success";
-                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                            setIsLoading(false)
-                            resetData()
-                            // window.location.reload(false);
-                        }
-                        catch {
-                            handleCloseSigning()
-                            let variant = "Error";
-                            enqueueSnackbar('Unable to Swap Tokens', { variant });
-                            setIsLoading(false)
-                        }
-                    }
-                    catch {
-                        handleCloseSigning()
-                        let variant = "Error";
-                        enqueueSnackbar('Input values are too large', { variant });
-                    }
-                } else {
-                    console.log("swap_token_for_exact_token");
-                    const publicKey = CLPublicKey.fromHex(publicKeyHex);
-                    const caller = ROUTER_CONTRACT_HASH;
-                    console.log('publicKeyHex', publicKeyHex);
-                    let path = swapPath
-                    console.log('path', path);
-                    let _paths = [];
-                    for (let i = 0; i < path.length; i++) {
-                        const p = new CLString('hash-'.concat(path[i]));
-                        _paths.push(p);
-                    }
-                    console.log('_paths', _paths);
-                    try {
-                        const runtimeArgs = RuntimeArgs.fromMap({
-                            amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
-                            amount_in_max: CLValueBuilder.u256(convertToStr(Number(tokenAAmount) + Number((tokenAAmount) * slippage / 100))),
-                            path: new CLList(_paths),
-                            to: createRecipientAddress(publicKey),
-                            deadline: CLValueBuilder.u256(deadline),
-                        });
-
-                        let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                        let entryPoint = 'swap_tokens_for_exact_tokens_js_client';
-
-                        // Set contract installation deploy (unsigned).
-                        let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                        console.log("make deploy: ", deploy);
-                        try {
-                            if (selectedWallet === "Casper") {
-                                let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                                let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                                console.log('result', result);
-                            } else {
-                                // let Torus = new Torus();
-                                torus = new Torus();
-                                console.log('torus', torus);
-                                await torus.init({
-                                    buildEnv: "testing",
-                                    showTorusButton: true,
-                                    network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                                });
-                                console.log("Torus123", torus);
-                                console.log("torus", torus.provider);
-                                const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                                const deployRes = await casperService.deploy(deploy);
-                                console.log("deployRes", deployRes.deploy_hash);
-                                console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                                let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                                console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                                console.log('result', result);
-                            }
-                            handleCloseSigning()
-                            let variant = "success";
-                            enqueueSnackbar('Tokens Swapped Successfully', { variant });
-                            setIsLoading(false)
-                            resetData()
-                            // window.location.reload(false);
-                        }
-                        catch {
-                            handleCloseSigning()
-                            let variant = "Error";
-                            enqueueSnackbar('Unable to Swap Tokens', { variant });
-                            setIsLoading(false)
-                        }
-                    }
-                    catch {
-                        handleCloseSigning()
-                        let variant = "Error";
-                        enqueueSnackbar('Input values are too large', { variant });
-                    }
+              } catch {
+                handleCloseSigning();
+                let variant = "Error";
+                enqueueSnackbar("Input values are too large", { variant });
+              }
+            } else {
+              console.log("swap_exact_token_for_token");
+              const publicKey = CLPublicKey.fromHex(publicKeyHex);
+              const caller = ROUTER_CONTRACT_HASH;
+              const amount_in = tokenAAmount;
+              const amount_out_min = tokenBAmount;
+              console.log("publicKeyHex", publicKeyHex);
+              let path = swapPath;
+              console.log("path", path);
+              let _paths = [];
+              for (let i = 0; i < path.length; i++) {
+                const p = new CLString("hash-".concat(path[i]));
+                _paths.push(p);
+              }
+              console.log("_paths", _paths);
+              console.log(
+                "amount_out_min * 10 ** 9 - (amount_out_min * 10 ** 9) * slippage / 100",
+                amount_out_min * 10 ** 9 -
+                (amount_out_min * 10 ** 9 * slippage) / 100
+              );
+              console.log(
+                "amount_out_min - (amount_out_min) * slippage / 100",
+                amount_out_min - (amount_out_min * slippage) / 100
+              );
+              try {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                  amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
+                  amount_out_min: CLValueBuilder.u256(
+                    convertToStr(amount_out_min - (amount_out_min * slippage) / 100)
+                  ),
+                  path: new CLList(_paths),
+                  to: createRecipientAddress(publicKey),
+                  deadline: CLValueBuilder.u256(deadline),
+                });
+    
+                let contractHashAsByteArray = Uint8Array.from(
+                  Buffer.from(caller, "hex")
+                );
+                let entryPoint = "swap_exact_tokens_for_tokens_js_client";
+    
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(
+                  publicKey,
+                  contractHashAsByteArray,
+                  entryPoint,
+                  runtimeArgs,
+                  paymentAmount
+                );
+                console.log("make deploy: ", deploy);
+                try {
+                  if (selectedWallet === "Casper") {
+                    let signedDeploy = await signdeploywithcaspersigner(
+                      deploy,
+                      publicKeyHex
+                    );
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    console.log("result", result);
+                  } else {
+                    // let Torus = new Torus();
+                    torus = new Torus();
+                    console.log("torus", torus);
+                    await torus.init({
+                      buildEnv: "testing",
+                      showTorusButton: true,
+                      network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                    });
+                    console.log("Torus123", torus);
+                    console.log("torus", torus.provider);
+                    const casperService = new CasperServiceByJsonRPC(
+                      torus?.provider
+                    );
+                    const deployRes = await casperService.deploy(deploy);
+                    console.log("deployRes", deployRes.deploy_hash);
+                    console.log(
+                      `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                    );
+                    let result = await getDeploy(
+                      NODE_ADDRESS,
+                      deployRes.deploy_hash,
+                      enqueueSnackbar
+                    );
+                    console.log(
+                      `... Contract installed successfully.`,
+                      JSON.parse(JSON.stringify(result))
+                    );
+                    console.log("result", result);
+                  }
+                  handleCloseSigning();
+                  let variant = "success";
+                  enqueueSnackbar("Tokens Swapped Successfully", { variant });
+                  setIsLoading(false);
+                  resetData();
+                  // window.location.reload(false);
+                } catch {
+                  handleCloseSigning();
+                  let variant = "Error";
+                  enqueueSnackbar("Unable to Swap Tokens", { variant });
+                  setIsLoading(false);
                 }
+              } catch {
+                handleCloseSigning();
+                let variant = "Error";
+                enqueueSnackbar("Input values are too large", { variant });
+              }
             }
-
+          } else if (inputSelection === "tokenB") {
+            if (tokenA.name === "Casper") {
+              console.log("swap_cspr_for_exact_token");
+              const publicKey = CLPublicKey.fromHex(publicKeyHex);
+              const caller = ROUTER_CONTRACT_HASH;
+              console.log("publicKeyHex", publicKeyHex);
+              let path = swapPath;
+              console.log("path", path);
+              let _paths = [];
+              for (let i = 0; i < path.length; i++) {
+                const p = new CLString("hash-".concat(path[i]));
+                _paths.push(p);
+              }
+              console.log("_paths", _paths);
+              console.log(
+                "mainPurse",
+                Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex"))
+              );
+              try {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                  amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
+                  amount_in_max: CLValueBuilder.u256(
+                    convertToStr(
+                      Number(tokenAAmount) + Number((tokenAAmount * slippage) / 100)
+                    )
+                  ),
+                  path: new CLList(_paths),
+                  to: createRecipientAddress(publicKey),
+                  purse: CLValueBuilder.uref(
+                    Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")),
+                    AccessRights.READ_ADD_WRITE
+                  ),
+                  deadline: CLValueBuilder.u256(deadline),
+                });
+    
+                let contractHashAsByteArray = Uint8Array.from(
+                  Buffer.from(caller, "hex")
+                );
+                let entryPoint = "swap_cspr_for_exact_tokens_js_client";
+    
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(
+                  publicKey,
+                  contractHashAsByteArray,
+                  entryPoint,
+                  runtimeArgs,
+                  paymentAmount
+                );
+                console.log("make deploy: ", deploy);
+                try {
+                  if (selectedWallet === "Casper") {
+                    let signedDeploy = await signdeploywithcaspersigner(
+                      deploy,
+                      publicKeyHex
+                    );
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    console.log("result", result);
+                  } else {
+                    // let Torus = new Torus();
+                    torus = new Torus();
+                    console.log("torus", torus);
+                    await torus.init({
+                      buildEnv: "testing",
+                      showTorusButton: true,
+                      network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                    });
+                    console.log("Torus123", torus);
+                    console.log("torus", torus.provider);
+                    const casperService = new CasperServiceByJsonRPC(
+                      torus?.provider
+                    );
+                    const deployRes = await casperService.deploy(deploy);
+                    console.log("deployRes", deployRes.deploy_hash);
+                    console.log(
+                      `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                    );
+                    let result = await getDeploy(
+                      NODE_ADDRESS,
+                      deployRes.deploy_hash,
+                      enqueueSnackbar
+                    );
+                    console.log(
+                      `... Contract installed successfully.`,
+                      JSON.parse(JSON.stringify(result))
+                    );
+                    console.log("result", result);
+                  }
+                  handleCloseSigning();
+                  let variant = "success";
+                  enqueueSnackbar("Tokens Swapped Successfully", { variant });
+                  setIsLoading(false);
+                  resetData();
+                  // window.location.reload(false);
+                } catch {
+                  handleCloseSigning();
+                  let variant = "Error";
+                  enqueueSnackbar("Unable to Swap Tokens", { variant });
+                  setIsLoading(false);
+                }
+              } catch {
+                handleCloseSigning();
+                let variant = "Error";
+                enqueueSnackbar("Input values are too large", { variant });
+              }
+            } else if (tokenB.name === "Casper") {
+              console.log("swap_token_for_exact_cspr");
+              const publicKey = CLPublicKey.fromHex(publicKeyHex);
+              const caller = ROUTER_CONTRACT_HASH;
+              console.log("publicKeyHex", publicKeyHex);
+              let path = swapPath;
+              console.log("path", path);
+              let _paths = [];
+              for (let i = 0; i < path.length; i++) {
+                const p = new CLString("hash-".concat(path[i]));
+                _paths.push(p);
+              }
+              console.log("_paths", _paths);
+              try {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                  amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
+                  amount_in_max: CLValueBuilder.u256(
+                    convertToStr(
+                      Number(tokenAAmount) + Number((tokenAAmount * slippage) / 100)
+                    )
+                  ),
+                  path: new CLList(_paths),
+                  to: CLValueBuilder.uref(
+                    Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")),
+                    AccessRights.READ_ADD_WRITE
+                  ),
+                  deadline: CLValueBuilder.u256(deadline),
+                });
+    
+                let contractHashAsByteArray = Uint8Array.from(
+                  Buffer.from(caller, "hex")
+                );
+                let entryPoint = "swap_tokens_for_exact_cspr_js_client";
+    
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(
+                  publicKey,
+                  contractHashAsByteArray,
+                  entryPoint,
+                  runtimeArgs,
+                  paymentAmount
+                );
+                console.log("make deploy: ", deploy);
+                try {
+                  if (selectedWallet === "Casper") {
+                    let signedDeploy = await signdeploywithcaspersigner(
+                      deploy,
+                      publicKeyHex
+                    );
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    console.log("result", result);
+                  } else {
+                    // let Torus = new Torus();
+                    torus = new Torus();
+                    console.log("torus", torus);
+                    await torus.init({
+                      buildEnv: "testing",
+                      showTorusButton: true,
+                      network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                    });
+                    console.log("Torus123", torus);
+                    console.log("torus", torus.provider);
+                    const casperService = new CasperServiceByJsonRPC(
+                      torus?.provider
+                    );
+                    const deployRes = await casperService.deploy(deploy);
+                    console.log("deployRes", deployRes.deploy_hash);
+                    console.log(
+                      `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                    );
+                    let result = await getDeploy(
+                      NODE_ADDRESS,
+                      deployRes.deploy_hash,
+                      enqueueSnackbar
+                    );
+                    console.log(
+                      `... Contract installed successfully.`,
+                      JSON.parse(JSON.stringify(result))
+                    );
+                    console.log("result", result);
+                  }
+                  handleCloseSigning();
+                  let variant = "success";
+                  enqueueSnackbar("Tokens Swapped Successfully", { variant });
+                  setIsLoading(false);
+                  resetData();
+                  // window.location.reload(false);
+                } catch {
+                  handleCloseSigning();
+                  let variant = "Error";
+                  enqueueSnackbar("Unable to Swap Tokens", { variant });
+                  setIsLoading(false);
+                }
+              } catch {
+                handleCloseSigning();
+                let variant = "Error";
+                enqueueSnackbar("Input values are too large", { variant });
+              }
+            } else {
+              console.log("swap_token_for_exact_token");
+              const publicKey = CLPublicKey.fromHex(publicKeyHex);
+              const caller = ROUTER_CONTRACT_HASH;
+              console.log("publicKeyHex", publicKeyHex);
+              let path = swapPath;
+              console.log("path", path);
+              let _paths = [];
+              for (let i = 0; i < path.length; i++) {
+                const p = new CLString("hash-".concat(path[i]));
+                _paths.push(p);
+              }
+              console.log("_paths", _paths);
+              try {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                  amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
+                  amount_in_max: CLValueBuilder.u256(
+                    convertToStr(
+                      Number(tokenAAmount) + Number((tokenAAmount * slippage) / 100)
+                    )
+                  ),
+                  path: new CLList(_paths),
+                  to: createRecipientAddress(publicKey),
+                  deadline: CLValueBuilder.u256(deadline),
+                });
+    
+                let contractHashAsByteArray = Uint8Array.from(
+                  Buffer.from(caller, "hex")
+                );
+                let entryPoint = "swap_tokens_for_exact_tokens_js_client";
+    
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(
+                  publicKey,
+                  contractHashAsByteArray,
+                  entryPoint,
+                  runtimeArgs,
+                  paymentAmount
+                );
+                console.log("make deploy: ", deploy);
+                try {
+                  if (selectedWallet === "Casper") {
+                    let signedDeploy = await signdeploywithcaspersigner(
+                      deploy,
+                      publicKeyHex
+                    );
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    console.log("result", result);
+                  } else {
+                    // let Torus = new Torus();
+                    torus = new Torus();
+                    console.log("torus", torus);
+                    await torus.init({
+                      buildEnv: "testing",
+                      showTorusButton: true,
+                      network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                    });
+                    console.log("Torus123", torus);
+                    console.log("torus", torus.provider);
+                    const casperService = new CasperServiceByJsonRPC(
+                      torus?.provider
+                    );
+                    const deployRes = await casperService.deploy(deploy);
+                    console.log("deployRes", deployRes.deploy_hash);
+                    console.log(
+                      `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                    );
+                    let result = await getDeploy(
+                      NODE_ADDRESS,
+                      deployRes.deploy_hash,
+                      enqueueSnackbar
+                    );
+                    console.log(
+                      `... Contract installed successfully.`,
+                      JSON.parse(JSON.stringify(result))
+                    );
+                    console.log("result", result);
+                  }
+                  handleCloseSigning();
+                  let variant = "success";
+                  enqueueSnackbar("Tokens Swapped Successfully", { variant });
+                  setIsLoading(false);
+                  resetData();
+                  // window.location.reload(false);
+                } catch {
+                  handleCloseSigning();
+                  let variant = "Error";
+                  enqueueSnackbar("Unable to Swap Tokens", { variant });
+                  setIsLoading(false);
+                }
+              } catch {
+                handleCloseSigning();
+                let variant = "Error";
+                enqueueSnackbar("Input values are too large", { variant });
+              }
+            }
+          }
+        } else {
+          handleCloseSigning();
+          let variant = "error";
+          enqueueSnackbar("Connect to Wallet Please", { variant });
+          setIsLoading(false);
         }
-        else {
-            handleCloseSigning()
-            let variant = "error";
-            enqueueSnackbar('Connect to Casper Signer Please', { variant });
-            setIsLoading(false)
-        }
-    }
-    console.log("tokenAAmount", tokenAAmount);
-    console.log("tokenBAmount", tokenBAmount);
+      }
     return (
         <div className="account-page">
             <div className="main-wrapper">
@@ -1312,7 +1495,7 @@ function Swap(props) {
                                                                         className="btn btn-block btn-lg "
                                                                         disabled
                                                                     >
-                                                                        Connect to Casper Signer
+                                                                        Connect to Wallet
                                                                     </button>
                                                                 ) : (
                                                                     <button

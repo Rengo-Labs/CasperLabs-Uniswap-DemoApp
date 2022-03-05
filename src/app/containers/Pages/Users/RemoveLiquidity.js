@@ -330,25 +330,29 @@ function RemoveLiquidity(props) {
         else {
             handleCloseSigning()
             let variant = "error";
-            enqueueSnackbar('Connect to Casper Signer Please', { variant });
+            enqueueSnackbar('Connect to Wallet Please', { variant });
         }
     }
 
     async function RemoveLiquidityMakeDeploy() {
-        handleShowSigning()
-        setIsLoading(true)
-        const publicKeyHex = activePublicKey
-        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
+        handleShowSigning();
+        setIsLoading(true);
+        const publicKeyHex = activePublicKey;
+        if (
+            publicKeyHex !== null &&
+            publicKeyHex !== "null" &&
+            publicKeyHex !== undefined
+        ) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
             const tokenAAddress = tokenA.address;
             const tokenBAddress = tokenB.address;
-            const token_AAmount = (tokenAAmountPercent).toFixed(5);
-            const token_BAmount = (tokenBAmountPercent).toFixed(5);
+            const token_AAmount = tokenAAmountPercent.toFixed(5);
+            const token_BAmount = tokenBAmountPercent.toFixed(5);
             const deadline = 1739598100811;
             const paymentAmount = 5000000000;
 
-            console.log('tokenAAddress', tokenAAddress);
+            console.log("tokenAAddress", tokenAAddress);
             const _token_a = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
             );
@@ -359,27 +363,44 @@ function RemoveLiquidity(props) {
             const runtimeArgs = RuntimeArgs.fromMap({
                 token_a: new CLKey(_token_a),
                 token_b: new CLKey(_token_b),
-                liquidity: CLValueBuilder.u256(convertToStr(liquidity * value / 100)),
-                amount_a_min: CLValueBuilder.u256(convertToStr((token_AAmount - (token_AAmount) * slippage / 100)).toFixed(9)),
-                amount_b_min: CLValueBuilder.u256(convertToStr((token_BAmount - (token_BAmount) * slippage / 100)).toFixed(9)),
+                liquidity: CLValueBuilder.u256(convertToStr((liquidity * value) / 100)),
+                amount_a_min: CLValueBuilder.u256(
+                    convertToStr(
+                        Number(token_AAmount - (token_AAmount * slippage) / 100).toFixed(9)
+                    )
+                ),
+                amount_b_min: CLValueBuilder.u256(
+                    convertToStr(
+                        Number(token_BAmount - (token_BAmount * slippage) / 100).toFixed(9)
+                    )
+                ),
                 to: createRecipientAddress(publicKey),
                 deadline: CLValueBuilder.u256(deadline),
             });
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-            let entryPoint = 'remove_liquidity_js_client';
+            let entryPoint = "remove_liquidity_js_client";
 
             // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+            let deploy = await makeDeploy(
+                publicKey,
+                contractHashAsByteArray,
+                entryPoint,
+                runtimeArgs,
+                paymentAmount
+            );
             console.log("make deploy: ", deploy);
             try {
                 if (selectedWallet === "Casper") {
-                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                    console.log('result', result);
+                    let signedDeploy = await signdeploywithcaspersigner(
+                        deploy,
+                        publicKeyHex
+                    );
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    console.log("result", result);
                 } else {
                     // let Torus = new Torus();
                     torus = new Torus();
-                    console.log('torus', torus);
+                    console.log("torus", torus);
                     await torus.init({
                         buildEnv: "testing",
                         showTorusButton: true,
@@ -390,80 +411,111 @@ function RemoveLiquidity(props) {
                     const casperService = new CasperServiceByJsonRPC(torus?.provider);
                     const deployRes = await casperService.deploy(deploy);
                     console.log("deployRes", deployRes.deploy_hash);
-                    console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                    let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                    console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                    console.log('result', result);
+                    console.log(
+                        `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                    );
+                    let result = await getDeploy(
+                        NODE_ADDRESS,
+                        deployRes.deploy_hash,
+                        enqueueSnackbar
+                    );
+                    console.log(
+                        `... Contract installed successfully.`,
+                        JSON.parse(JSON.stringify(result))
+                    );
+                    console.log("result", result);
                 }
                 let variant = "success";
-                handleCloseSigning()
-                getPairs()
-                enqueueSnackbar('Liquidity Removed Successfully', { variant });
-                setIsLoading(false)
+                handleCloseSigning();
+                getPairs();
+                enqueueSnackbar("Liquidity Removed Successfully", { variant });
+                setIsLoading(false);
                 window.location.reload(false);
-            }
-            catch {
-                handleCloseSigning()
+            } catch {
+                handleCloseSigning();
                 let variant = "Error";
-                enqueueSnackbar('Unable to Remove Liquidity', { variant });
-                setIsLoading(false)
+                enqueueSnackbar("Unable to Remove Liquidity", { variant });
+                setIsLoading(false);
             }
-        }
-        else {
-            handleCloseSigning()
+        } else {
+            handleCloseSigning();
             let variant = "error";
-            enqueueSnackbar('Connect to Casper Signer Please', { variant });
+            enqueueSnackbar("Connect to Wallet Please", { variant });
         }
     }
     async function RemoveLiquidityCSPRMakeDeploy() {
-        setIsLoading(true)
-        const publicKeyHex = activePublicKey
-        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
+        setIsLoading(true);
+        const publicKeyHex = activePublicKey;
+        if (
+            publicKeyHex !== null &&
+            publicKeyHex !== "null" &&
+            publicKeyHex !== undefined
+        ) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
-            let token
-            let cspr_Amount
-            let token_Amount
+            let token;
+            let cspr_Amount;
+            let token_Amount;
             if (tokenA.symbol === "WCSPR") {
                 token = tokenB.address;
-                cspr_Amount = (tokenAAmountPercent).toFixed(9);
-                token_Amount = (tokenBAmountPercent).toFixed(9);
+                cspr_Amount = tokenAAmountPercent.toFixed(9);
+                token_Amount = tokenBAmountPercent.toFixed(9);
             } else {
                 token = tokenA.address;
-                cspr_Amount = (tokenBAmountPercent).toFixed(9);
-                token_Amount = (tokenAAmountPercent).toFixed(9);
+                cspr_Amount = tokenBAmountPercent.toFixed(9);
+                token_Amount = tokenAAmountPercent.toFixed(9);
             }
             const deadline = 1739598100811;
             const paymentAmount = 5000000000;
 
-            console.log('token', token);
+            console.log("token", token);
             const _token = new CLByteArray(
                 Uint8Array.from(Buffer.from(token.slice(5), "hex"))
             );
             const runtimeArgs = RuntimeArgs.fromMap({
                 token: new CLKey(_token),
-                liquidity: CLValueBuilder.u256(convertToStr(liquidity * value / 100)),
-                amount_cspr_min: CLValueBuilder.u256(convertToStr((cspr_Amount - (cspr_Amount) * slippage / 100)).toFixed(9)),
-                amount_token_min: CLValueBuilder.u256(convertToStr((token_Amount - (token_Amount) * slippage / 100)).toFixed(9)),
+                liquidity: CLValueBuilder.u256(convertToStr((liquidity * value) / 100)),
+                amount_cspr_min: CLValueBuilder.u256(
+                    convertToStr(
+                        Number(cspr_Amount - (cspr_Amount * slippage) / 100).toFixed(9)
+                    )
+                ),
+                amount_token_min: CLValueBuilder.u256(
+                    convertToStr(
+                        Number(token_Amount - (token_Amount * slippage) / 100).toFixed(9)
+                    )
+                ),
                 to: createRecipientAddress(publicKey),
-                to_purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
+                to_purse: CLValueBuilder.uref(
+                    Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")),
+                    AccessRights.READ_ADD_WRITE
+                ),
                 deadline: CLValueBuilder.u256(deadline),
             });
             let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-            let entryPoint = 'remove_liquidity_cspr_js_client';
+            let entryPoint = "remove_liquidity_cspr_js_client";
 
             // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+            let deploy = await makeDeploy(
+                publicKey,
+                contractHashAsByteArray,
+                entryPoint,
+                runtimeArgs,
+                paymentAmount
+            );
             console.log("make deploy: ", deploy);
             try {
                 if (selectedWallet === "Casper") {
-                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                    console.log('result', result);
+                    let signedDeploy = await signdeploywithcaspersigner(
+                        deploy,
+                        publicKeyHex
+                    );
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    console.log("result", result);
                 } else {
                     // let Torus = new Torus();
                     torus = new Torus();
-                    console.log('torus', torus);
+                    console.log("torus", torus);
                     await torus.init({
                         buildEnv: "testing",
                         showTorusButton: true,
@@ -474,29 +526,36 @@ function RemoveLiquidity(props) {
                     const casperService = new CasperServiceByJsonRPC(torus?.provider);
                     const deployRes = await casperService.deploy(deploy);
                     console.log("deployRes", deployRes.deploy_hash);
-                    console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                    let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                    console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                    console.log('result', result);
+                    console.log(
+                        `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                    );
+                    let result = await getDeploy(
+                        NODE_ADDRESS,
+                        deployRes.deploy_hash,
+                        enqueueSnackbar
+                    );
+                    console.log(
+                        `... Contract installed successfully.`,
+                        JSON.parse(JSON.stringify(result))
+                    );
+                    console.log("result", result);
                 }
                 let variant = "success";
-                handleCloseSigning()
-                getPairs()
-                enqueueSnackbar('Liquidity Removed Successfully', { variant });
-                setIsLoading(false)
+                handleCloseSigning();
+                getPairs();
+                enqueueSnackbar("Liquidity Removed Successfully", { variant });
+                setIsLoading(false);
                 window.location.reload(false);
-            }
-            catch {
-                handleCloseSigning()
+            } catch {
+                handleCloseSigning();
                 let variant = "Error";
-                enqueueSnackbar('Unable to Remove Liquidity', { variant });
-                setIsLoading(false)
+                enqueueSnackbar("Unable to Remove Liquidity", { variant });
+                setIsLoading(false);
             }
-        }
-        else {
+        } else {
             let variant = "error";
-            handleCloseSigning()
-            enqueueSnackbar('Connect to Casper Signer Please', { variant });
+            handleCloseSigning();
+            enqueueSnackbar("Connect to Wallet Please", { variant });
         }
     }
     function valuetext(value) {
@@ -672,7 +731,7 @@ function RemoveLiquidity(props) {
                                                                             className="btn btn-block btn-lg"
                                                                             disabled
                                                                         >
-                                                                            Connect to Signer
+                                                                            Connect to Wallet
                                                                         </button>
                                                                     ) : isRemoveLiquidityCSPR ? (
                                                                         <button

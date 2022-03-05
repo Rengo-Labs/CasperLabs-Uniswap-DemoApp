@@ -372,34 +372,52 @@ function AddLiquidity(props) {
         }
     }, [activePublicKey, tokenA, tokenB]);
 
+
     async function approveMakeDeploy(contractHash, amount, tokenApproved) {
-        handleShowSigning()
-        console.log('contractHash', contractHash);
-        const publicKeyHex = activePublicKey
-        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
+        handleShowSigning();
+        console.log("contractHash", contractHash);
+        const publicKeyHex = activePublicKey;
+        if (
+            publicKeyHex !== null &&
+            publicKeyHex !== "null" &&
+            publicKeyHex !== undefined
+        ) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const spender = ROUTER_PACKAGE_HASH;
-            const spenderByteArray = new CLByteArray(Uint8Array.from(Buffer.from(spender, 'hex')));
+            const spenderByteArray = new CLByteArray(
+                Uint8Array.from(Buffer.from(spender, "hex"))
+            );
             const paymentAmount = 5000000000;
             try {
                 const runtimeArgs = RuntimeArgs.fromMap({
                     spender: createRecipientAddress(spenderByteArray),
-                    amount: CLValueBuilder.u256(convertToStr(amount))
+                    amount: CLValueBuilder.u256(convertToStr(amount)),
                 });
-                let contractHashAsByteArray = Uint8Array.from(Buffer.from(contractHash.slice(5), "hex"));
-                let entryPoint = 'approve';
+                let contractHashAsByteArray = Uint8Array.from(
+                    Buffer.from(contractHash.slice(5), "hex")
+                );
+                let entryPoint = "approve";
                 // Set contract installation deploy (unsigned).
-                let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                let deploy = await makeDeploy(
+                    publicKey,
+                    contractHashAsByteArray,
+                    entryPoint,
+                    runtimeArgs,
+                    paymentAmount
+                );
                 console.log("make deploy: ", deploy);
                 try {
                     if (selectedWallet === "Casper") {
-                        let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                        console.log('result', result);
+                        let signedDeploy = await signdeploywithcaspersigner(
+                            deploy,
+                            publicKeyHex
+                        );
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                        console.log("result", result);
                     } else {
                         // let Torus = new Torus();
                         torus = new Torus();
-                        console.log('torus', torus);
+                        console.log("torus", torus);
                         await torus.init({
                             buildEnv: "testing",
                             showTorusButton: true,
@@ -410,37 +428,43 @@ function AddLiquidity(props) {
                         const casperService = new CasperServiceByJsonRPC(torus?.provider);
                         const deployRes = await casperService.deploy(deploy);
                         console.log("deployRes", deployRes.deploy_hash);
-                        console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                        let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                        console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                        console.log('result', result);
+                        console.log(
+                            `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                        );
+                        let result = await getDeploy(
+                            NODE_ADDRESS,
+                            deployRes.deploy_hash,
+                            enqueueSnackbar
+                        );
+                        console.log(
+                            `... Contract installed successfully.`,
+                            JSON.parse(JSON.stringify(result))
+                        );
+                        console.log("result", result);
                     }
-                    if (tokenApproved === 'tokenA') {
-                        setTokenAAllowance(amount * 10 ** 9)
+                    if (tokenApproved === "tokenA") {
+                        setTokenAAllowance(amount * 10 ** 9);
                     } else {
-                        setTokenBAllowance(amount * 10 ** 9)
+                        setTokenBAllowance(amount * 10 ** 9);
                     }
                     // console.log('result', result);
-                    handleCloseSigning()
+                    handleCloseSigning();
                     let variant = "success";
-                    enqueueSnackbar('Approved Successfully', { variant });
-                }
-                catch {
-                    handleCloseSigning()
+                    enqueueSnackbar("Approved Successfully", { variant });
+                } catch {
+                    handleCloseSigning();
                     let variant = "Error";
-                    enqueueSnackbar('Unable to Approve', { variant });
+                    enqueueSnackbar("Unable to Approve", { variant });
                 }
-            }
-            catch {
-                handleCloseSigning()
+            } catch {
+                handleCloseSigning();
                 let variant = "Error";
-                enqueueSnackbar('Input values are too large', { variant });
+                enqueueSnackbar("Input values are too large", { variant });
             }
-        }
-        else {
-            handleCloseSigning()
+        } else {
+            handleCloseSigning();
             let variant = "error";
-            enqueueSnackbar('Connect to Casper Signer Please', { variant });
+            enqueueSnackbar("Connect to Wallet Please", { variant });
         }
     }
     const getTokenBalance = useCallback(() => {
@@ -609,10 +633,14 @@ function AddLiquidity(props) {
         }
     }, [activePublicKey])
     async function addLiquidityMakeDeploy() {
-        handleShowSigning()
-        setIsLoading(true)
-        const publicKeyHex = activePublicKey
-        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
+        handleShowSigning();
+        setIsLoading(true);
+        const publicKeyHex = activePublicKey;
+        if (
+            publicKeyHex !== null &&
+            publicKeyHex !== "null" &&
+            publicKeyHex !== undefined
+        ) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
             const tokenAAddress = tokenA.address;
@@ -630,33 +658,47 @@ function AddLiquidity(props) {
             const pair = new CLByteArray(
                 Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
             );
-            if (tokenA.name === 'Casper') {
+            if (tokenA.name === "Casper") {
                 try {
                     const runtimeArgs = RuntimeArgs.fromMap({
                         token: new CLKey(_token_b),
                         amount_cspr_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
                         amount_token_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
-                        amount_cspr_min: CLValueBuilder.u256(convertToStr((token_AAmount - (token_AAmount) * slippage / 100)).toFixed(9)),
-                        amount_token_min: CLValueBuilder.u256(convertToStr((token_BAmount - (token_BAmount) * slippage / 100)).toFixed(9)),
+                        amount_cspr_min: CLValueBuilder.u256(convertToStr(Number(token_AAmount - (token_AAmount * slippage) / 100).toFixed(9))),
+                        amount_token_min: CLValueBuilder.u256(convertToStr(Number(token_BAmount - (token_BAmount * slippage) / 100).toFixed(9))),
                         to: createRecipientAddress(publicKey),
-                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
+                        purse: CLValueBuilder.uref(
+                            Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")),
+                            AccessRights.READ_ADD_WRITE
+                        ),
                         deadline: CLValueBuilder.u256(deadline),
-                        pair: new CLOption(Some(new CLKey(pair)))
+                        pair: new CLOption(Some(new CLKey(pair))),
                     });
-                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                    let entryPoint = 'add_liquidity_cspr_js_client';
+                    let contractHashAsByteArray = Uint8Array.from(
+                        Buffer.from(caller, "hex")
+                    );
+                    let entryPoint = "add_liquidity_cspr_js_client";
                     // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    let deploy = await makeDeploy(
+                        publicKey,
+                        contractHashAsByteArray,
+                        entryPoint,
+                        runtimeArgs,
+                        paymentAmount
+                    );
                     console.log("make deploy: ", deploy);
                     try {
                         if (selectedWallet === "Casper") {
-                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                            console.log('result', result);
+                            let signedDeploy = await signdeploywithcaspersigner(
+                                deploy,
+                                publicKeyHex
+                            );
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                            console.log("result", result);
                         } else {
                             // let Torus = new Torus();
                             torus = new Torus();
-                            console.log('torus', torus);
+                            console.log("torus", torus);
                             await torus.init({
                                 buildEnv: "testing",
                                 showTorusButton: true,
@@ -667,65 +709,89 @@ function AddLiquidity(props) {
                             const casperService = new CasperServiceByJsonRPC(torus?.provider);
                             const deployRes = await casperService.deploy(deploy);
                             console.log("deployRes", deployRes.deploy_hash);
-                            console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                            let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                            console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                            console.log('result', result);
+                            console.log(
+                                `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                            );
+                            let result = await getDeploy(
+                                NODE_ADDRESS,
+                                deployRes.deploy_hash,
+                                enqueueSnackbar
+                            );
+                            console.log(
+                                `... Contract installed successfully.`,
+                                JSON.parse(JSON.stringify(result))
+                            );
+                            console.log("result", result);
                         }
-                        setTokenAAllowance(0)
-                        setTokenBAllowance(0)
-                        setTokenAAmount(0)
-                        setTokenBAmount(0)
-                        getCurrencyBalance()
-                        handleCloseSigning()
+                        setTokenAAllowance(0);
+                        setTokenBAllowance(0);
+                        setTokenAAmount(0);
+                        setTokenBAmount(0);
+                        getCurrencyBalance();
+                        handleCloseSigning();
                         let variant = "success";
-                        enqueueSnackbar('Liquidity Added Successfully', { variant });
-                        setIsLoading(false)
-                        resetData()
-                    }
-                    catch {
-                        handleCloseSigning()
+                        enqueueSnackbar("Liquidity Added Successfully", { variant });
+                        setIsLoading(false);
+                        resetData();
+                    } catch {
+                        handleCloseSigning();
                         let variant = "Error";
-                        enqueueSnackbar('Unable to Add Liquidity', { variant });
-                        setIsLoading(false)
+                        enqueueSnackbar("Unable to Add Liquidity", { variant });
+                        setIsLoading(false);
                     }
-                }
-                catch {
-                    handleCloseSigning()
+                } catch {
+                    handleCloseSigning();
                     let variant = "Error";
-                    enqueueSnackbar('Input values are too large', { variant });
-                    setIsLoading(false)
+                    enqueueSnackbar("Input values are too large", { variant });
+                    setIsLoading(false);
                 }
-            }
-            else if (tokenB.name === 'Casper') {
+            } else if (tokenB.name === "Casper") {
                 try {
                     const runtimeArgs = RuntimeArgs.fromMap({
                         token: new CLKey(_token_a),
-                        amount_cspr_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
-                        amount_token_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
-                        amount_cspr_min: CLValueBuilder.u256(convertToStr((token_BAmount - (token_BAmount) * slippage / 100)).toFixed(9)),
-                        amount_token_min: CLValueBuilder.u256(convertToStr((token_AAmount - (token_AAmount) * slippage / 100)).toFixed(9)),
+                        amount_cspr_desired: CLValueBuilder.u256(
+                            convertToStr(token_BAmount)
+                        ),
+                        amount_token_desired: CLValueBuilder.u256(
+                            convertToStr(token_AAmount)
+                        ),
+                        amount_cspr_min: CLValueBuilder.u256(convertToStr(Number(token_BAmount - (token_BAmount * slippage) / 100).toFixed(9))),
+                        amount_token_min: CLValueBuilder.u256(convertToStr(Number(token_AAmount - (token_AAmount * slippage) / 100).toFixed(9))),
                         to: createRecipientAddress(publicKey),
-                        purse: CLValueBuilder.uref(Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")), AccessRights.READ_ADD_WRITE),
+                        purse: CLValueBuilder.uref(
+                            Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")),
+                            AccessRights.READ_ADD_WRITE
+                        ),
                         deadline: CLValueBuilder.u256(deadline),
-                        pair: new CLOption(Some(new CLKey(_token_a)))
+                        pair: new CLOption(Some(new CLKey(_token_a))),
                     });
 
-                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                    let entryPoint = 'add_liquidity_cspr_js_client';
+                    let contractHashAsByteArray = Uint8Array.from(
+                        Buffer.from(caller, "hex")
+                    );
+                    let entryPoint = "add_liquidity_cspr_js_client";
 
                     // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
+                    let deploy = await makeDeploy(
+                        publicKey,
+                        contractHashAsByteArray,
+                        entryPoint,
+                        runtimeArgs,
+                        paymentAmount
+                    );
                     console.log("make deploy: ", deploy);
                     try {
                         if (selectedWallet === "Casper") {
-                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                            console.log('result', result);
+                            let signedDeploy = await signdeploywithcaspersigner(
+                                deploy,
+                                publicKeyHex
+                            );
+                            let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                            console.log("result", result);
                         } else {
                             // let Torus = new Torus();
                             torus = new Torus();
-                            console.log('torus', torus);
+                            console.log("torus", torus);
                             await torus.init({
                                 buildEnv: "testing",
                                 showTorusButton: true,
@@ -736,110 +802,133 @@ function AddLiquidity(props) {
                             const casperService = new CasperServiceByJsonRPC(torus?.provider);
                             const deployRes = await casperService.deploy(deploy);
                             console.log("deployRes", deployRes.deploy_hash);
-                            console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                            let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                            console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                            console.log('result', result);
+                            console.log(
+                                `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                            );
+                            let result = await getDeploy(
+                                NODE_ADDRESS,
+                                deployRes.deploy_hash,
+                                enqueueSnackbar
+                            );
+                            console.log(
+                                `... Contract installed successfully.`,
+                                JSON.parse(JSON.stringify(result))
+                            );
+                            console.log("result", result);
                         }
-                        setTokenAAllowance(0)
-                        setTokenBAllowance(0)
-                        setTokenAAmount(0)
-                        setTokenBAmount(0)
-                        getCurrencyBalance()
-                        handleCloseSigning()
+                        setTokenAAllowance(0);
+                        setTokenBAllowance(0);
+                        setTokenAAmount(0);
+                        setTokenBAmount(0);
+                        getCurrencyBalance();
+                        handleCloseSigning();
                         let variant = "success";
-                        enqueueSnackbar('Liquidity Added Successfully', { variant });
-                        setIsLoading(false)
-                        resetData()
-                    }
-                    catch {
-                        handleCloseSigning()
+                        enqueueSnackbar("Liquidity Added Successfully", { variant });
+                        setIsLoading(false);
+                        resetData();
+                    } catch {
+                        handleCloseSigning();
                         let variant = "Error";
-                        enqueueSnackbar('Unable to Add Liquidity', { variant });
-                        setIsLoading(false)
+                        enqueueSnackbar("Unable to Add Liquidity", { variant });
+                        setIsLoading(false);
                     }
-                }
-                catch {
-                    handleCloseSigning()
+                } catch {
+                    handleCloseSigning();
                     let variant = "Error";
-                    enqueueSnackbar('Input values are too large', { variant });
-                    setIsLoading(false)
+                    enqueueSnackbar("Input values are too large", { variant });
+                    setIsLoading(false);
                 }
             } else {
                 // eslint-disable-next-line
-                console.log("token_AAmount - (token_BAmount) * slippage / 100", token_AAmount - (token_AAmount) * slippage / 100);
-                console.log("token_BAmount - (token_BAmount) * slippage / 100", token_BAmount - (token_BAmount) * slippage / 100);
+                console.log("token_AAmount", (token_AAmount - (token_AAmount * slippage) / 100).toFixed(9));
+                console.log("token_BAmount", token_BAmount - (token_BAmount * slippage) / 100);
+                // try {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                    token_a: new CLKey(_token_a),
+                    token_b: new CLKey(_token_b),
+                    amount_a_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
+                    amount_b_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
+                    amount_a_min: CLValueBuilder.u256(convertToStr(Number(token_AAmount - (token_AAmount * slippage) / 100).toFixed(9))),
+                    amount_b_min: CLValueBuilder.u256(convertToStr(Number(token_BAmount - (token_BAmount * slippage) / 100).toFixed(9))),
+                    to: createRecipientAddress(publicKey),
+                    deadline: CLValueBuilder.u256(deadline),
+                    pair: new CLOption(Some(new CLKey(pair))),
+                });
+
+                let contractHashAsByteArray = Uint8Array.from(
+                    Buffer.from(caller, "hex")
+                );
+                let entryPoint = "add_liquidity_js_client";
+
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(
+                    publicKey,
+                    contractHashAsByteArray,
+                    entryPoint,
+                    runtimeArgs,
+                    paymentAmount
+                );
+                console.log("make deploy: ", deploy);
                 try {
-                    const runtimeArgs = RuntimeArgs.fromMap({
-                        token_a: new CLKey(_token_a),
-                        token_b: new CLKey(_token_b),
-                        amount_a_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
-                        amount_b_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
-                        amount_a_min: CLValueBuilder.u256(convertToStr((token_AAmount - (token_AAmount) * slippage / 100)).toFixed(9)),
-                        amount_b_min: CLValueBuilder.u256(convertToStr((token_BAmount - (token_BAmount) * slippage / 100)).toFixed(9)),
-                        to: createRecipientAddress(publicKey),
-                        deadline: CLValueBuilder.u256(deadline),
-                        pair: new CLOption(Some(new CLKey(pair)))
-                    });
-
-                    let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-                    let entryPoint = 'add_liquidity_js_client';
-
-                    // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-                    console.log("make deploy: ", deploy);
-                    try {
-                        if (selectedWallet === "Casper") {
-                            let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                            let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                            console.log('result', result);
-                        } else {
-                            // let Torus = new Torus();
-                            torus = new Torus();
-                            console.log('torus', torus);
-                            await torus.init({
-                                buildEnv: "testing",
-                                showTorusButton: true,
-                                network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                            });
-                            console.log("Torus123", torus);
-                            console.log("torus", torus.provider);
-                            const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                            const deployRes = await casperService.deploy(deploy);
-                            console.log("deployRes", deployRes.deploy_hash);
-                            console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                            let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                            console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                            console.log('result', result);
-                        }
-                        let variant = "success";
-
-                        handleCloseSigning()
-                        enqueueSnackbar('Liquidity Added Successfully', { variant });
-                        setIsLoading(false)
-                        resetData()
-
+                    if (selectedWallet === "Casper") {
+                        let signedDeploy = await signdeploywithcaspersigner(
+                            deploy,
+                            publicKeyHex
+                        );
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                        console.log("result", result);
+                    } else {
+                        // let Torus = new Torus();
+                        torus = new Torus();
+                        console.log("torus", torus);
+                        await torus.init({
+                            buildEnv: "testing",
+                            showTorusButton: true,
+                            network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                        });
+                        console.log("Torus123", torus);
+                        console.log("torus", torus.provider);
+                        const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                        const deployRes = await casperService.deploy(deploy);
+                        console.log("deployRes", deployRes.deploy_hash);
+                        console.log(
+                            `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                        );
+                        let result = await getDeploy(
+                            NODE_ADDRESS,
+                            deployRes.deploy_hash,
+                            enqueueSnackbar
+                        );
+                        console.log(
+                            `... Contract installed successfully.`,
+                            JSON.parse(JSON.stringify(result))
+                        );
+                        console.log("result", result);
                     }
-                    catch {
-                        handleCloseSigning()
-                        let variant = "Error";
-                        enqueueSnackbar('Unable to Add Liquidity', { variant });
-                        setIsLoading(false)
-                    }
-                }
-                catch {
-                    handleCloseSigning()
+                    let variant = "success";
+
+                    handleCloseSigning();
+                    enqueueSnackbar("Liquidity Added Successfully", { variant });
+                    setIsLoading(false);
+                    resetData();
+                } catch {
+                    handleCloseSigning();
                     let variant = "Error";
-                    enqueueSnackbar('Input values are too large', { variant });
-                    setIsLoading(false)
+                    enqueueSnackbar("Unable to Add Liquidity", { variant });
+                    setIsLoading(false);
                 }
+                // } catch {
+                //   handleCloseSigning();
+                //   let variant = "Error";
+                //   enqueueSnackbar("Input values are too large", { variant });
+                //   setIsLoading(false);
+                // }
             }
-        }
-        else {
-            handleCloseSigning()
+        } else {
+            handleCloseSigning();
             let variant = "error";
-            enqueueSnackbar('Connect to Casper Signer Please', { variant });
-            setIsLoading(false)
+            enqueueSnackbar("Connect to Wallet Please", { variant });
+            setIsLoading(false);
         }
     }
     return (
@@ -1130,7 +1219,7 @@ function AddLiquidity(props) {
                                                                                     className="btn btn-block btn-lg"
                                                                                     disabled
                                                                                 >
-                                                                                    Connect to Signer First
+                                                                                    Connect to Wallet First
                                                                                 </button>
                                                                             </Col>
                                                                         )
@@ -1179,7 +1268,7 @@ function AddLiquidity(props) {
                                                                                     className="btn btn-block btn-lg"
                                                                                     disabled
                                                                                 >
-                                                                                    Connect to Signer First
+                                                                                    Connect to Wallet First
                                                                                 </button>
                                                                             </Col>
                                                                         )
@@ -1260,7 +1349,7 @@ function AddLiquidity(props) {
                                                                             className="btn btn-block btn-lg"
                                                                             disabled
                                                                         >
-                                                                            Connect to Casper Signer
+                                                                            Connect to Wallet
                                                                         </button>
                                                                     ) : (
                                                                         <button
