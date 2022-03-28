@@ -64,20 +64,43 @@ function HeaderHome(props) {
       window.removeEventListener("beforeunload", alertUser);
     };
   }, []);
-  const alertUser = (e) => {
-    localStorage.removeItem("selectedWallet")
-    localStorage.removeItem("Address")
+  const alertUser = async (e) => {
+    if (localStorage.getItem("selectedWallet") === "Torus") {
+      try {
+        console.log("logout", torus);
+        
+        setAccount("");
+        props.setTorus("");
+        props.setSelectedWallet();
+        localStorage.removeItem("Address")
+        localStorage.removeItem("selectedWallet")
+        await torus?.logout();
+        window.location.reload();
+      } catch (error) {
+        console.log("logout error", error);
+        let variant = "Error";
+        enqueueSnackbar('Unable to Disconnect', { variant });
+      }
+    }
+    else {
+      try {
+
+        Signer.disconnectFromSite()
+        Cookies.remove("Authorization");
+        localStorage.removeItem("Address")
+        localStorage.removeItem("selectedWallet")
+        props.setActivePublicKey("")
+        props.setSelectedWallet();
+      }
+      catch {
+        let variant = "Error";
+        enqueueSnackbar('Unable to Disconnect', { variant });
+      }
+    }
   };
 
   useEffect(() => {
     console.log("localStorage.getItem(selectedWallet)", localStorage.getItem("selectedWallet"));
-    // if (window.performance) {
-    //   if (performance.navigation.type == 1) {
-    //     alert( "This page is reloaded" );
-    //   } else {
-    //     alert( "This page is not reloaded");
-    //   }
-    // }
     if (props.selectedWallet === "Casper" || localStorage.getItem("selectedWallet") === "Casper") {
       setTimeout(async () => {
         try {
