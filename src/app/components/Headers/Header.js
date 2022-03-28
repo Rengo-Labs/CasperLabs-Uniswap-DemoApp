@@ -12,7 +12,6 @@ import "../../assets/plugins/fontawesome/css/all.min.css";
 import "../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import WalletModal from '../Modals/WalletModal';
 
-
 export const CHAINS = {
   CASPER_MAINNET: "casper",
   CASPER_TESTNET: "casper-test",
