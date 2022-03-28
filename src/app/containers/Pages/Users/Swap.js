@@ -1522,8 +1522,32 @@ function Swap(props) {
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
             <SigningModal show={openSigning} />
-            <TokenAModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenA} setToken={setTokenA} setTokenList={setTokenList} isTokenList={isTokenList} tokenList={tokenList} show={openTokenAModal} handleClose={handleCloseTokenAModal} activePublicKey={activePublicKey} />
-            <TokenBModal setTokenAAmount={setTokenAAmount} setTokenBAmount={setTokenBAmount} token={tokenB} setToken={setTokenB} setTokenList={setTokenList} isTokenList={isTokenList} tokenList={tokenList} show={openTokenBModal} handleClose={handleCloseTokenBModal} activePublicKey={activePublicKey} />
+            <TokenAModal
+        setTokenAAmount={setTokenAAmount}
+        setTokenBAmount={setTokenBAmount}
+        token={tokenA}
+        tokenB={tokenB}
+        setToken={setTokenA}
+        setTokenList={setTokenList}
+        isTokenList={isTokenList}
+        tokenList={tokenList}
+        show={openTokenAModal}
+        handleClose={handleCloseTokenAModal}
+        activePublicKey={activePublicKey}
+      />
+      <TokenBModal
+        setTokenAAmount={setTokenAAmount}
+        setTokenBAmount={setTokenBAmount}
+        token={tokenB}
+        tokenA={tokenA}
+        setToken={setTokenB}
+        setTokenList={setTokenList}
+        isTokenList={isTokenList}
+        tokenList={tokenList}
+        show={openTokenBModal}
+        handleClose={handleCloseTokenBModal}
+        activePublicKey={activePublicKey}
+      />
 
         </div >
     );

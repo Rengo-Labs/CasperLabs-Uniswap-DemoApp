@@ -27,33 +27,49 @@ function TokenBModal(props) {
                 </div>
             ) : (
                 <Modal.Body>
-                    {
-                        props.activePublicKey !== 'null' && props.activePublicKey !== null && props.activePublicKey !== undefined ? (
-                            props.tokenList.map((i, index) => (
-                                <div key={index}>
-                                    <Card onClick={() => {
-                                        props.setToken(i)
-                                        props.setTokenAAmount(0)
-                                        props.setTokenBAmount(0)
-                                        props.handleClose()
-                                    }} className='custom-card'>
-                                        <TokenContent i={i} activePublicKey={props.activePublicKey}></TokenContent>
+                    {props.activePublicKey !== 'null' && props.activePublicKey !== null && props.activePublicKey !== undefined ? (
+                        props.tokenList.map((i, index) => (
+                            <div key={index}>
+                                {props.tokenA && (props.tokenA.name === i.name || (props.tokenA.symbol === "WCSPR" && i.symbol === "CSPR" || props.tokenA.symbol === "CSPR" && i.symbol === "WCSPR")) ? (
+                                    <Card
+                                        className="custom-card"
+                                        style={{ borderRadius: "8px", marginBottom: '15px' }}
+                                    >
+                                        <TokenContent i={i}></TokenContent>
                                     </Card>
-                                    <hr></hr>
-                                </div>
-                            ))
-                        ) : (
-                            <Card style={{ marginBottom: '10px' }}>
-                                <CardContent >
-                                    <Alert style={{
-                                        marginBottom: '0px', flexGrow: 1,
-                                        width: '100%',
-                                    }} color="light">
-                                        Connect to a wallet to view token list.
-                                    </Alert>
-                                </CardContent>
-                            </Card>
-                        )
+                                ) : (
+
+                                    <Card
+                                        onClick={() => {
+                                            props.setToken(i);
+                                            props.setTokenAAmount(0);
+                                            props.setTokenBAmount(0);
+                                            props.handleClose();
+                                        }}
+                                        className="custom-card"
+                                        style={{ borderRadius: "8px" }}
+                                    >
+                                        <TokenContent
+                                            i={i}
+                                            activePublicKey={props.activePublicKey}
+                                        ></TokenContent>
+                                    </Card>
+                                )}
+                                <hr></hr>
+                            </div>
+                        ))
+                    ) : (
+                        <Card style={{ marginBottom: '10px' }}>
+                            <CardContent >
+                                <Alert style={{
+                                    marginBottom: '0px', flexGrow: 1,
+                                    width: '100%',
+                                }} color="light">
+                                    Connect to a wallet to view token list.
+                                </Alert>
+                            </CardContent>
+                        </Card>
+                    )
                     }
                 </Modal.Body>
             )}

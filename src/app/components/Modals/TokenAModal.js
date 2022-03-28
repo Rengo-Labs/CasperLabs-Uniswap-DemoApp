@@ -29,27 +29,32 @@ function TokenAModal(props) {
                 </div>
             ) : (
                 <Modal.Body>
-                    {
-                        props.activePublicKey !== 'null' && props.activePublicKey !== null && props.activePublicKey !== undefined ? (
+                    {props.activePublicKey !== 'null' && props.activePublicKey !== null && props.activePublicKey !== undefined ? (
                             props.tokenList.map((i, index) => (
                                 <div key={index}>
-                                    <Card onClick={() => {
-                                        // console.log("props.token", props.token);
-                                        // console.log("props.tokenList", props.tokenList);
-                                        // if (props.token) {
-                                        //     props.setTokenList(props.tokenList.splice(0, 0, props.token))
-                                        // }
-                                        // console.log("props.tokenList.splice(i, 1)", props.tokenList.splice(i, 2));
-                                        // props.setTokenList(props.tokenList.splice(i, 1))
-                                        props.setToken(i)
-                                        props.setTokenAAmount(0)
-                                        props.setTokenBAmount(0)
-                                        props.handleClose()
-                                    }} className='custom-card'>
-                                        <TokenContent i={i}></TokenContent>
-                                    </Card>
-                                    <hr></hr>
-                                </div >
+                                    {props.tokenB && (props.tokenB.name === i.name || (props.tokenB.symbol === "WCSPR" && i.symbol === "CSPR" || props.tokenB.symbol === "CSPR" && i.symbol === "WCSPR")) ? (
+                                        <Card
+                                            className="custom-card"
+                                            style={{ borderRadius: "8px", marginBottom: '15px' }}
+                                        >
+                                            <TokenContent i={i}></TokenContent>
+                                        </Card>
+                                    ) : (
+                                        <Card
+                                            onClick={() => {
+                                                props.setToken(i);
+                                                props.setTokenAAmount(0);
+                                                props.setTokenBAmount(0);
+                                                props.handleClose();
+                                            }}
+                                            className="custom-card"
+                                            style={{ borderRadius: "8px", marginBottom: '15px' }}
+                                        >
+                                            <TokenContent i={i}></TokenContent>
+                                        </Card>
+                                    )}
+
+                                </div>
                             ))
                         ) : (
                             <Card style={{ marginBottom: '10px' }}>
