@@ -1,7 +1,5 @@
 import Torus from "@toruslabs/casper-embed";
-import {
-  Signer
-} from 'casper-js-sdk';
+import { Signer } from 'casper-js-sdk';
 import Cookies from "js-cookie";
 import { useSnackbar } from 'notistack';
 import React, { useEffect, useState } from "react";
@@ -52,7 +50,7 @@ function HeaderHome(props) {
   let [signerLocked, setSignerLocked] = useState()
   let [signerConnected, setSignerConnected] = useState(false)
   let [isLoading, setIsLoading] = useState(false);
-  let [,setAccount] = useState("")
+  let [, setAccount] = useState("")
 
   const [openWalletModal, setOpenWalletModal] = useState(false);
   const handleCloseWalletModal = () => {
@@ -62,7 +60,25 @@ function HeaderHome(props) {
     setOpenWalletModal(true);
   };
   useEffect(() => {
+    window.addEventListener("beforeunload", alertUser);
+    return () => {
+      window.removeEventListener("beforeunload", alertUser);
+    };
+  }, []);
+  const alertUser = (e) => {
+    localStorage.removeItem("selectedWallet")
+    localStorage.removeItem("Address")
+  };
+
+  useEffect(() => {
     console.log("localStorage.getItem(selectedWallet)", localStorage.getItem("selectedWallet"));
+    // if (window.performance) {
+    //   if (performance.navigation.type == 1) {
+    //     alert( "This page is reloaded" );
+    //   } else {
+    //     alert( "This page is not reloaded");
+    //   }
+    // }
     if (props.selectedWallet === "Casper" || localStorage.getItem("selectedWallet") === "Casper") {
       setTimeout(async () => {
         try {
