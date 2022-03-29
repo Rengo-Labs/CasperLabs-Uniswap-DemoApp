@@ -44,12 +44,24 @@ function AllowanceModal(props) {
 
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="contained" style={{ margin: '10px', backgroundColor: '#ed0b25', color: 'white' }} onClick={() => props.increaseAndDecreaseAllowanceMakeDeploy(props.tokenAddress,props.tokenAmount, props.tokenApproved, true)}>
+                <button
+                    type="button"
+                    className="btn-block btn-outline-primary btn-lg"
+                    style={{
+                        borderRadius: '15px', fontSize: '15px', fontWeight: '600',
+                        padding: "10px",
+                    }} onClick={() => props.increaseAndDecreaseAllowanceMakeDeploy(props.tokenAddress, props.allowance, props.tokenApproved, true)}>
                     Increase Allowance
-                </Button>
-                <Button variant="contained" style={{ margin: '10px', backgroundColor: '#ed0b25', color: 'white' }} onClick={() => props.increaseAndDecreaseAllowanceMakeDeploy(props.tokenAddress, props.tokenAmount, props.tokenApproved, false)}>
+                </button>
+                <button
+                    type="button"
+                    className="btn-block btn-outline-primary btn-lg"
+                    style={{
+                        borderRadius: '15px', fontSize: '15px', fontWeight: '600',
+                        padding: "10px",
+                    }} onClick={() => props.increaseAndDecreaseAllowanceMakeDeploy(props.tokenAddress, props.allowance, props.tokenApproved, false)}>
                     Decrease Allowance
-                </Button>
+                </button>
             </Modal.Footer>
         </Modal>
 
