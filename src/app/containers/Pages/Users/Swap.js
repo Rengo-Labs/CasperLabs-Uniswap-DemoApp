@@ -167,7 +167,7 @@ function Swap(props) {
         // console.log('holdArr', holdArr);
         for (let i = 0; i < holdArr.length; i++) {
           let param = {
-            contractHash: holdArr[i].address.slice(5),
+            contractHash: holdArr[i].contractHash.slice(5),
             user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
           }
           await axios
@@ -257,7 +257,7 @@ function Swap(props) {
   useEffect(() => {
     if (tokenA && tokenA.name !== "Casper" && activePublicKey) {
       let balanceParam = {
-        contractHash: tokenA.address.slice(5),
+        contractHash: tokenA.contractHash.slice(5),
         user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
       }
       axios
@@ -274,7 +274,7 @@ function Swap(props) {
         });
 
       let allowanceParam = {
-        contractHash: tokenA.address.slice(5),
+        contractHash: tokenA.contractHash.slice(5),
         owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
         spender: ROUTER_PACKAGE_HASH
       }
@@ -327,7 +327,7 @@ function Swap(props) {
 
     if (tokenB && tokenB.name !== "Casper" && activePublicKey) {
       let param = {
-        contractHash: tokenB.address.slice(5),
+        contractHash: tokenB.contractHash.slice(5),
         user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
       }
       axios
@@ -553,24 +553,25 @@ function Swap(props) {
             );
             console.log("result", result);
           }
-          setTokenAAllowance(amount * 10 ** 9);
-
+          increase ? setTokenAAllowance(allowance + amount * 10 ** 9) :
+            setTokenAAllowance(allowance - amount * 10 ** 9)
+          handleCloseAllowance();
           handleCloseSigning();
           let variant = "success";
           increase ?
-              enqueueSnackbar("Allowance Increased Successfully", { variant })
-              :
-              enqueueSnackbar("Allowance Decreased Successfully", { variant })
+            enqueueSnackbar("Allowance Increased Successfully", { variant })
+            :
+            enqueueSnackbar("Allowance Decreased Successfully", { variant })
 
 
-      } catch {
+        } catch {
           handleCloseSigning();
           let variant = "Error";
           increase ?
-              enqueueSnackbar("Unable to Increase Allowance", { variant })
-              :
-              enqueueSnackbar("Unable to Decrease Allowance", { variant })
-      }
+            enqueueSnackbar("Unable to Increase Allowance", { variant })
+            :
+            enqueueSnackbar("Unable to Decrease Allowance", { variant })
+        }
       } catch {
         handleCloseSigning();
         let variant = "Error";
@@ -1412,7 +1413,7 @@ function Swap(props) {
                               {tokenA ? (
                                 <Accordion key={0} expanded={expanded === 0} onChange={handleChange(0)}>
                                   <AccordionSummary
-                                    expandIcon={tokenA.address !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                    expandIcon={tokenA.contractHash !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
                                     aria-controls="panel1bh-content"
                                     id="panel1bh-header"
                                   >
@@ -1422,12 +1423,12 @@ function Swap(props) {
                                       subheader={tokenA.symbol}
                                     />
                                   </AccordionSummary>
-                                  {tokenA.address !== "" ? (
+                                  {tokenA.contractHash !== "" ? (
                                     <AccordionDetails >
                                       <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
                                         <CardContent>
                                           <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                            <strong>Contract Hash: </strong>{tokenA.address}
+                                            <strong>Contract Hash: </strong>{tokenA.contractHash}
                                           </Typography>
                                           <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
                                             <strong>Package Hash: </strong>{tokenA.packageHash}
@@ -1442,7 +1443,7 @@ function Swap(props) {
                               {tokenB ? (
                                 <Accordion key={1} expanded={expanded === 1} onChange={handleChange(1)}>
                                   <AccordionSummary
-                                    expandIcon={tokenB.address !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                    expandIcon={tokenB.contractHash !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
                                     aria-controls="panel1bh-content"
                                     id="panel1bh-header"
                                   >
@@ -1452,12 +1453,12 @@ function Swap(props) {
                                       subheader={tokenB.symbol}
                                     />
                                   </AccordionSummary>
-                                  {tokenB.address !== "" ? (
+                                  {tokenB.contractHash !== "" ? (
                                     <AccordionDetails >
                                       <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
                                         <CardContent>
                                           <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                            <strong>Contract Hash: </strong>{tokenB.address}
+                                            <strong>Contract Hash: </strong>{tokenB.contractHash}
                                           </Typography>
                                           <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
                                             <strong>Package Hash: </strong>{tokenB.packageHash}
@@ -1495,7 +1496,7 @@ function Swap(props) {
                                       // setApproveAIsLoading(true)
                                       setAllowance(tokenAAllowance)
                                       handleShowAllowance();
-                                      // await approveMakeDeploy(tokenA.address, tokenAAmount)
+                                      // await approveMakeDeploy(tokenA.contractHash, tokenAAmount)
                                       // setApproveAIsLoading(false)
                                     }}
                                   >
@@ -1630,7 +1631,7 @@ function Swap(props) {
         </div>
       </div>
       <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
-      <AllowanceModal allowance={allowance} setAllowance={setAllowance} show={openAllowance} handleClose={handleCloseAllowance} approvalAmount={tokenAAmount} tokenAddress={tokenA?.address} tokenAmount={tokenAAmount} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
+      <AllowanceModal allowance={allowance} setAllowance={setAllowance} show={openAllowance} handleClose={handleCloseAllowance} approvalAmount={tokenAAmount} tokenAddress={tokenA?.contractHash} tokenAmount={tokenAAmount} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
       <SigningModal show={openSigning} />
       <TokenAModal
         setTokenAAmount={setTokenAAmount}

@@ -63,6 +63,7 @@ function RemoveLiquidity(props) {
     let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
     let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [pair, setPairHash] = useState();
+    let [pairPackageHash, setPairPackageHash] = useState();
     let [liquidity, setLiquidity] = useState();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
@@ -102,13 +103,13 @@ function RemoveLiquidity(props) {
                 // console.log('resresres', res)
                 console.log(res.data.tokens)
                 for (let i = 0; i < res.data.tokens.length; i++) {
-                    let address = res.data.tokens[i].address.toLowerCase();
+                    let address = res.data.tokens[i].packageHash.toLowerCase();
                     if (address.includes(tokenAAddress.toLowerCase())) {
-                        console.log('res.data.tokensA.address', res.data.tokens[i].address);
+                        console.log('res.data.tokensA.contractHash', res.data.tokens[i].contractHash);
                         setTokenA(res.data.tokens[i])
                     }
                     if (address.includes(tokenBAddress.toLowerCase())) {
-                        console.log('res.data.tokensB.address', res.data.tokens[i].address);
+                        console.log('res.data.tokensB.contractHash', res.data.tokens[i].contractHash);
                         setTokenB(res.data.tokens[i])
                     }
 
@@ -191,6 +192,19 @@ function RemoveLiquidity(props) {
                         setTokenAAmount((res.data.userpairs[i].rat0 / 10 ** 9))
                         setTokenBAmount((res.data.userpairs[i].rat1 / 10 ** 9))
                         setPairHash(res.data.userpairs[i].pair)
+                        let params = {
+                            packageHash: res.data.userpairs[i].pair,
+                        };
+                        axios
+                            .post("/getContractHashAgainstPackageHash", params)
+                            .then((res2) => {
+                                console.log("res2", res2);
+                                setPairPackageHash(res2.data.Data.contractHash);
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                                console.log(error.response);
+                            });
                         setTokenAAmountPercent(((res.data.userpairs[i].rat0 * value / 100) / 10 ** 9))
                         setTokenBAmountPercent(((res.data.userpairs[i].rat1 * value / 100) / 10 ** 9))
 
@@ -466,8 +480,8 @@ function RemoveLiquidity(props) {
         ) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
-            const tokenAAddress = tokenA.address;
-            const tokenBAddress = tokenB.address;
+            const tokenAAddress = tokenA.packageHash;
+            const tokenBAddress = tokenB.packageHash;
             const token_AAmount = tokenAAmountPercent.toFixed(5);
             const token_BAmount = tokenBAmountPercent.toFixed(5);
             const deadline = 1739598100811;
@@ -578,11 +592,11 @@ function RemoveLiquidity(props) {
             let cspr_Amount;
             let token_Amount;
             if (tokenA.symbol === "WCSPR") {
-                token = tokenB.address;
+                token = tokenB.contractHash;
                 cspr_Amount = tokenAAmountPercent.toFixed(9);
                 token_Amount = tokenBAmountPercent.toFixed(9);
             } else {
-                token = tokenA.address;
+                token = tokenA.contractHash;
                 cspr_Amount = tokenBAmountPercent.toFixed(9);
                 token_Amount = tokenAAmountPercent.toFixed(9);
             }
@@ -1060,7 +1074,7 @@ function RemoveLiquidity(props) {
                 </div>
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
-            <AllowanceModal allowance={aAllowance} setAllowance={setAAllowance} show={openAAllowance} handleClose={handleCloseAAllowance} approvalAmount={liquidity} tokenAddress={pair} tokenAmount={liquidity} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
+            <AllowanceModal allowance={aAllowance} setAllowance={setAAllowance} show={openAAllowance} handleClose={handleCloseAAllowance} approvalAmount={liquidity} tokenAddress={pairPackageHash} tokenAmount={liquidity} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
             <SigningModal show={openSigning} />
         </div >
     );
