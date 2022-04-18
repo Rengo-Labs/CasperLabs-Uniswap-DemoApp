@@ -25,6 +25,7 @@ import { createRecipientAddress } from '../../../components/blockchain/Recipient
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import { convertToStr } from '../../../components/ConvertToString/ConvertToString';
 import HeaderHome, { CHAINS, SUPPORTED_NETWORKS } from "../../../components/Headers/Header";
+import AllowanceModal from '../../../components/Modals/AllowanceModal';
 import SigningModal from '../../../components/Modals/SigningModal';
 import SlippageModal from '../../../components/Modals/SlippageModal';
 import TokenAModal from '../../../components/Modals/TokenAModal';
@@ -45,6 +46,8 @@ function AddLiquidity(props) {
     let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
     let [torus, setTorus] = useState();
     let [mainPurse, setMainPurse] = useState();
+    const [aAllowance, setAAllowance] = useState(0);
+    const [bAllowance, setBAllowance] = useState(0);
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
     let [tokenAAmount, setTokenAAmount] = useState(0);
@@ -91,6 +94,20 @@ function AddLiquidity(props) {
     };
     const handleShowTokenBModal = () => {
         setOpenTokenBModal(true);
+    };
+    const [openAAllowance, setOpenAAllowance] = useState(false);
+    const handleCloseAAllowance = () => {
+        setOpenAAllowance(false);
+    };
+    const handleShowAAllowance = () => {
+        setOpenAAllowance(true);
+    };
+    const [openBAllowance, setOpenBAllowance] = useState(false);
+    const handleCloseBAllowance = () => {
+        setOpenBAllowance(false);
+    };
+    const handleShowBAllowance = () => {
+        setOpenBAllowance(true);
     };
     const [expanded, setExpanded] = React.useState(false);
     const handleChange = (panel) => (event, isExpanded) => {
@@ -159,7 +176,7 @@ function AddLiquidity(props) {
                 console.log('holdArr', holdArr);
                 for (let i = 0; i < holdArr.length; i++) {
                     let param = {
-                        contractHash: holdArr[i].address.slice(5),
+                        contractHash: holdArr[i].contractHash.slice(5),
                         user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
                     }
                     await axios
@@ -236,12 +253,12 @@ function AddLiquidity(props) {
                                             let address1 = res1.data.pairList[i].token1.id.toLowerCase();
                                             console.log("address0", address0);
                                             console.log("address1", address1);
-                                            if ((address0.toLowerCase() === tokenA.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.address.slice(5).toLowerCase())) {
+                                            if ((address0.toLowerCase() === tokenA.packageHash.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.packageHash.slice(5).toLowerCase())) {
                                                 setIsInvalidPair(false)
                                                 liquiditySetter(res1.data.pairList[i])
                                                 getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
                                                 break;
-                                            } else if ((address0.toLowerCase() === tokenB.address.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.address.slice(5).toLowerCase())) {
+                                            } else if ((address0.toLowerCase() === tokenB.packageHash.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.packageHash.slice(5).toLowerCase())) {
                                                 setIsInvalidPair(false)
                                                 liquiditySetter(res1.data.pairList[i])
                                                 getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
@@ -444,8 +461,10 @@ function AddLiquidity(props) {
                     }
                     if (tokenApproved === "tokenA") {
                         setTokenAAllowance(amount * 10 ** 9);
+                        handleCloseAAllowance();
                     } else {
                         setTokenBAllowance(amount * 10 ** 9);
+                        handleCloseBAllowance();
                     }
                     // console.log('result', result);
                     handleCloseSigning();
@@ -467,9 +486,113 @@ function AddLiquidity(props) {
             enqueueSnackbar("Connect to Wallet Please", { variant });
         }
     }
+    async function increaseAndDecreaseAllowanceMakeDeploy(contractHash, amount, tokenApproved, increase) {
+        handleShowSigning();
+        console.log("contractHash", contractHash);
+        const publicKeyHex = activePublicKey;
+        if (
+            publicKeyHex !== null &&
+            publicKeyHex !== "null" &&
+            publicKeyHex !== undefined
+        ) {
+            const publicKey = CLPublicKey.fromHex(publicKeyHex);
+            const spender = ROUTER_PACKAGE_HASH;
+            const spenderByteArray = new CLByteArray(
+                Uint8Array.from(Buffer.from(spender, "hex"))
+            );
+            const paymentAmount = 5000000000;
+            try {
+                const runtimeArgs = RuntimeArgs.fromMap({
+                    spender: createRecipientAddress(spenderByteArray),
+                    amount: CLValueBuilder.u256(convertToStr(amount)),
+                });
+                let contractHashAsByteArray = Uint8Array.from(
+                    Buffer.from(contractHash.slice(5), "hex")
+                );
+                let entryPoint = increase ? "increase_allowance" : "decrease_allowance";
+                // Set contract installation deploy (unsigned).
+                let deploy = await makeDeploy(
+                    publicKey,
+                    contractHashAsByteArray,
+                    entryPoint,
+                    runtimeArgs,
+                    paymentAmount
+                );
+                console.log("make deploy: ", deploy);
+                try {
+                    if (selectedWallet === "Casper") {
+                        let signedDeploy = await signdeploywithcaspersigner(
+                            deploy,
+                            publicKeyHex
+                        );
+                        let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                        console.log("result", result);
+                    } else {
+                        // let Torus = new Torus();
+                        torus = new Torus();
+                        console.log("torus", torus);
+                        await torus.init({
+                            buildEnv: "testing",
+                            showTorusButton: true,
+                            network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                        });
+                        console.log("Torus123", torus);
+                        console.log("torus", torus.provider);
+                        const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                        const deployRes = await casperService.deploy(deploy);
+                        console.log("deployRes", deployRes.deploy_hash);
+                        console.log(
+                            `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                        );
+                        let result = await getDeploy(
+                            NODE_ADDRESS,
+                            deployRes.deploy_hash,
+                            enqueueSnackbar
+                        );
+                        console.log(
+                            `... Contract installed successfully.`,
+                            JSON.parse(JSON.stringify(result))
+                        );
+                        console.log("result", result);
+                    }
+                    if (tokenApproved === "tokenA") {
+                        setTokenAAllowance(amount * 10 ** 9);
+                        handleCloseAAllowance();
+                    } else {
+                        setTokenBAllowance(amount * 10 ** 9);
+                        handleCloseBAllowance();
+                    }
+                    // console.log('result', result);
+                    handleCloseSigning();
+                    let variant = "success";
+                    increase ?
+                        enqueueSnackbar("Allowance Increased Successfully", { variant })
+                        :
+                        enqueueSnackbar("Allowance Decreased Successfully", { variant })
+
+
+                } catch {
+                    handleCloseSigning();
+                    let variant = "Error";
+                    increase ?
+                        enqueueSnackbar("Unable to Increase Allowance", { variant })
+                        :
+                        enqueueSnackbar("Unable to Decrease Allowance", { variant })
+                }
+            } catch {
+                handleCloseSigning();
+                let variant = "Error";
+                enqueueSnackbar("Input values are not Valid", { variant });
+            }
+        } else {
+            handleCloseSigning();
+            let variant = "error";
+            enqueueSnackbar("Connect to Wallet Please", { variant });
+        }
+    }
     const getTokenBalance = useCallback(() => {
         let balanceParam = {
-            contractHash: tokenA.address.slice(5),
+            contractHash: tokenA.contractHash.slice(5),
             user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
         }
         axios
@@ -486,7 +609,7 @@ function AddLiquidity(props) {
             });
 
         let allowanceParam = {
-            contractHash: tokenA.address.slice(5),
+            contractHash: tokenA.contractHash.slice(5),
             owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
             spender: ROUTER_PACKAGE_HASH
         }
@@ -545,7 +668,7 @@ function AddLiquidity(props) {
     useEffect(() => {
         if (tokenB && tokenB.name !== "Casper" && activePublicKey) {
             let balanceParam = {
-                contractHash: tokenB.address.slice(5),
+                contractHash: tokenB.contractHash.slice(5),
                 user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
             }
             axios
@@ -562,7 +685,7 @@ function AddLiquidity(props) {
                 });
 
             let allowanceParam = {
-                contractHash: tokenB.address.slice(5),
+                contractHash: tokenB.contractHash.slice(5),
                 owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
                 spender: ROUTER_PACKAGE_HASH
             }
@@ -643,8 +766,8 @@ function AddLiquidity(props) {
         ) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
-            const tokenAAddress = tokenA.address;
-            const tokenBAddress = tokenB.address;
+            const tokenAAddress = tokenA.packageHash;
+            const tokenBAddress = tokenB.packageHash;
             const token_AAmount = tokenAAmount;
             const token_BAmount = tokenBAmount;
             const deadline = 1739598100811;
@@ -1120,7 +1243,7 @@ function AddLiquidity(props) {
                                                                 {tokenA ? (
                                                                     <Accordion key={0} expanded={expanded === 0} onChange={handleChange(0)}>
                                                                         <AccordionSummary
-                                                                            expandIcon={tokenA.address !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                                                            expandIcon={tokenA.contractHash !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
                                                                             aria-controls="panel1bh-content"
                                                                             id="panel1bh-header"
                                                                         >
@@ -1130,12 +1253,12 @@ function AddLiquidity(props) {
                                                                                 subheader={tokenA.symbol}
                                                                             />
                                                                         </AccordionSummary>
-                                                                        {tokenA.address !== "" ? (
+                                                                        {tokenA.contractHash !== "" ? (
                                                                             <AccordionDetails >
                                                                                 <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
                                                                                     <CardContent>
                                                                                         <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                            <strong>Contract Hash: </strong>{tokenA.address}
+                                                                                            <strong>Contract Hash: </strong>{tokenA.contractHash}
                                                                                         </Typography>
                                                                                         <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
                                                                                             <strong>Package Hash: </strong>{tokenA.packageHash}
@@ -1150,7 +1273,7 @@ function AddLiquidity(props) {
                                                                 {tokenB ? (
                                                                     <Accordion style={{ marginBottom: '10px' }} key={1} expanded={expanded === 1} onChange={handleChange(1)}>
                                                                         <AccordionSummary
-                                                                            expandIcon={tokenB.address !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                                                            expandIcon={tokenB.contractHash !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
                                                                             aria-controls="panel1bh-content"
                                                                             id="panel1bh-header"
                                                                         >
@@ -1160,12 +1283,12 @@ function AddLiquidity(props) {
                                                                                 subheader={tokenB.symbol}
                                                                             />
                                                                         </AccordionSummary>
-                                                                        {tokenB.address !== "" ? (
+                                                                        {tokenB.contractHash !== "" ? (
                                                                             <AccordionDetails >
                                                                                 <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
                                                                                     <CardContent>
                                                                                         <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
-                                                                                            <strong>Contract Hash: </strong>{tokenB.address}
+                                                                                            <strong>Contract Hash: </strong>{tokenB.contractHash}
                                                                                         </Typography>
                                                                                         <Typography style={{ margin: '10px' }} variant="body2" color="textSecondary" component="p">
                                                                                             <strong>Package Hash: </strong>{tokenB.packageHash}
@@ -1202,11 +1325,13 @@ function AddLiquidity(props) {
                                                                         ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined ? (
                                                                             <Col>
                                                                                 <button
+                                                                                    type="button"
                                                                                     className="btn btn-block btn-lg"
                                                                                     onClick={async () => {
-                                                                                        setApproveAIsLoading(true)
-                                                                                        await approveMakeDeploy(tokenA.address, tokenAAmount, 'tokenA')
-                                                                                        setApproveAIsLoading(false)
+                                                                                        handleShowAAllowance()
+                                                                                        // setApproveAIsLoading(true)
+                                                                                        // await approveMakeDeploy(tokenA.contractHash, tokenAAmount, 'tokenA')
+                                                                                        // setApproveAIsLoading(false)
                                                                                     }
                                                                                     }
                                                                                 >
@@ -1251,11 +1376,13 @@ function AddLiquidity(props) {
                                                                         ) : activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined ? (
                                                                             <Col>
                                                                                 <button
+                                                                                    type="button"
                                                                                     className="btn btn-block btn-lg"
                                                                                     onClick={async () => {
-                                                                                        setApproveBIsLoading(true)
-                                                                                        await approveMakeDeploy(tokenB.address, tokenBAmount, 'tokenB')
-                                                                                        setApproveBIsLoading(false)
+                                                                                        handleShowBAllowance()
+                                                                                        // setApproveBIsLoading(true)
+                                                                                        // await approveMakeDeploy(tokenB.contractHash, tokenBAmount, 'tokenB')
+                                                                                        // setApproveBIsLoading(false)
                                                                                     }
                                                                                     }
                                                                                 >
@@ -1423,6 +1550,8 @@ function AddLiquidity(props) {
                 </div>
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
+            <AllowanceModal allowance={aAllowance} setAllowance={setAAllowance} show={openAAllowance} handleClose={handleCloseAAllowance} approvalAmount={tokenAAmount} tokenAddress={tokenA?.contractHash} tokenAmount={tokenAAmount} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
+            <AllowanceModal allowance={bAllowance} setAllowance={setBAllowance} show={openBAllowance} handleClose={handleCloseBAllowance} approvalAmount={tokenBAmount} tokenAddress={tokenB?.contractHash} tokenAmount={tokenBAmount} tokenApproved='tokenB' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
             <SigningModal show={openSigning} />
             <TokenAModal
                 setTokenAAmount={setTokenAAmount}

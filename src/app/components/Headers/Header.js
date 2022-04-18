@@ -68,7 +68,6 @@ function HeaderHome(props) {
     if (localStorage.getItem("selectedWallet") === "Torus") {
       try {
         console.log("logout", torus);
-        
         setAccount("");
         props.setTorus("");
         props.setSelectedWallet();

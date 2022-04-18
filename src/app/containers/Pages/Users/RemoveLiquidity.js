@@ -1,4 +1,4 @@
-import { Avatar, Box, Card, CardContent, CardHeader, Checkbox, FormControlLabel, FormGroup, Slider, Typography } from '@material-ui/core/';
+import { Accordion, AccordionSummary, Avatar, Box, Card, CardContent, CardHeader, Checkbox, FormControlLabel, FormGroup, Slider, Typography } from '@material-ui/core/';
 import Torus from "@toruslabs/casper-embed";
 import axios from "axios";
 import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLPublicKey, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
@@ -22,6 +22,7 @@ import { createRecipientAddress } from '../../../components/blockchain/Recipient
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import { convertToStr } from '../../../components/ConvertToString/ConvertToString';
 import HeaderHome, { CHAINS, SUPPORTED_NETWORKS } from "../../../components/Headers/Header";
+import AllowanceModal from '../../../components/Modals/AllowanceModal';
 import SigningModal from '../../../components/Modals/SigningModal';
 import SlippageModal from '../../../components/Modals/SlippageModal';
 
@@ -58,9 +59,11 @@ function RemoveLiquidity(props) {
     let [pairAllowance, setpairAllowance] = useState(0);
     let [tokenAAmount, setTokenAAmount] = useState(0);
     let [tokenBAmount, setTokenBAmount] = useState(0);
+    const [aAllowance, setAAllowance] = useState(0);
     let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
     let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [pair, setPairHash] = useState();
+    let [pairPackageHash, setPairPackageHash] = useState();
     let [liquidity, setLiquidity] = useState();
     let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
     let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
@@ -84,6 +87,13 @@ function RemoveLiquidity(props) {
     const handleShowSigning = () => {
         setOpenSigning(true);
     };
+    const [openAAllowance, setOpenAAllowance] = useState(false);
+    const handleCloseAAllowance = () => {
+        setOpenAAllowance(false);
+    };
+    const handleShowAAllowance = () => {
+        setOpenAAllowance(true);
+    };
 
     let [isLoading, setIsLoading] = useState(false);
     useEffect(() => {
@@ -93,13 +103,13 @@ function RemoveLiquidity(props) {
                 // console.log('resresres', res)
                 console.log(res.data.tokens)
                 for (let i = 0; i < res.data.tokens.length; i++) {
-                    let address = res.data.tokens[i].address.toLowerCase();
+                    let address = res.data.tokens[i].packageHash.toLowerCase();
                     if (address.includes(tokenAAddress.toLowerCase())) {
-                        console.log('res.data.tokensA.address', res.data.tokens[i].address);
+                        console.log('res.data.tokensA.contractHash', res.data.tokens[i].contractHash);
                         setTokenA(res.data.tokens[i])
                     }
                     if (address.includes(tokenBAddress.toLowerCase())) {
-                        console.log('res.data.tokensB.address', res.data.tokens[i].address);
+                        console.log('res.data.tokensB.contractHash', res.data.tokens[i].contractHash);
                         setTokenB(res.data.tokens[i])
                     }
 
@@ -182,6 +192,19 @@ function RemoveLiquidity(props) {
                         setTokenAAmount((res.data.userpairs[i].rat0 / 10 ** 9))
                         setTokenBAmount((res.data.userpairs[i].rat1 / 10 ** 9))
                         setPairHash(res.data.userpairs[i].pair)
+                        let params = {
+                            packageHash: res.data.userpairs[i].pair,
+                        };
+                        axios
+                            .post("/getContractHashAgainstPackageHash", params)
+                            .then((res2) => {
+                                console.log("res2", res2);
+                                setPairPackageHash(res2.data.Data.contractHash);
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                                console.log(error.response);
+                            });
                         setTokenAAmountPercent(((res.data.userpairs[i].rat0 * value / 100) / 10 ** 9))
                         setTokenBAmountPercent(((res.data.userpairs[i].rat1 * value / 100) / 10 ** 9))
 
@@ -333,6 +356,118 @@ function RemoveLiquidity(props) {
             enqueueSnackbar('Connect to Wallet Please', { variant });
         }
     }
+    async function increaseAndDecreaseAllowanceMakeDeploy(contractHash, amount, tokenApproved, increase) {
+        handleShowSigning();
+        const publicKeyHex = activePublicKey;
+        if (
+            publicKeyHex !== null &&
+            publicKeyHex !== "null" &&
+            publicKeyHex !== undefined
+        ) {
+            const publicKey = CLPublicKey.fromHex(publicKeyHex);
+            const spender = ROUTER_PACKAGE_HASH;
+            const caller = contractHash;
+            const spenderByteArray = new CLByteArray(
+                Uint8Array.from(Buffer.from(spender, "hex"))
+            );
+            const paymentAmount = 5000000000;
+            const runtimeArgs = RuntimeArgs.fromMap({
+                spender: createRecipientAddress(spenderByteArray),
+                amount: CLValueBuilder.u256(convertToStr(amount)),
+            });
+
+            let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+            let entryPoint = increase ? "increase_allowance" : "decrease_allowance";
+
+            // Set contract installation deploy (unsigned).
+            let deploy = await makeDeploy(
+                publicKey,
+                contractHashAsByteArray,
+                entryPoint,
+                runtimeArgs,
+                paymentAmount
+            );
+            console.log("make deploy: ", deploy);
+            try {
+                if (selectedWallet === "Casper") {
+                    let signedDeploy = await signdeploywithcaspersigner(
+                        deploy,
+                        publicKeyHex
+                    );
+                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    console.log("result", result);
+                } else {
+                    // let Torus = new Torus();
+                    torus = new Torus();
+                    console.log("torus", torus);
+                    // Slider;
+                    await torus.init({
+                        buildEnv: "testing",
+                        showTorusButton: true,
+                        network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
+                    });
+                    console.log("Torus123", torus);
+                    console.log("torus", torus.provider);
+                    const casperService = new CasperServiceByJsonRPC(torus?.provider);
+                    const deployRes = await casperService.deploy(deploy);
+                    console.log("deployRes", deployRes.deploy_hash);
+                    console.log(
+                        `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                    );
+                    let result = await getDeploy(
+                        NODE_ADDRESS,
+                        deployRes.deploy_hash,
+                        enqueueSnackbar
+                    );
+                    console.log(
+                        `... Contract installed successfully.`,
+                        JSON.parse(JSON.stringify(result))
+                    );
+                    console.log("result", result);
+                }
+                handleCloseSigning();
+                let allowanceParam = {
+                    contractHash: pair,
+                    owner: CLPublicKey.fromHex(activePublicKey)
+                        .toAccountHashStr()
+                        .slice(13),
+                    spender: ROUTER_PACKAGE_HASH,
+                };
+                console.log("allowanceParam0", allowanceParam);
+                axios
+                    .post("/allowanceagainstownerandspenderpaircontract", allowanceParam)
+                    .then((res) => {
+                        console.log("allowanceagainstownerandspenderpaircontract", res);
+                        console.log(res.data);
+                        setpairAllowance(res.data.allowance);
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        console.log(error.response);
+                    });
+
+                let variant = "success";
+                increase ?
+                    enqueueSnackbar("Allowance Increased Successfully", { variant })
+                    :
+                    enqueueSnackbar("Allowance Decreased Successfully", { variant })
+
+
+            } catch {
+                handleCloseSigning();
+                let variant = "Error";
+                increase ?
+                    enqueueSnackbar("Unable to Increase Allowance", { variant })
+                    :
+                    enqueueSnackbar("Unable to Decrease Allowance", { variant })
+            }
+        } else {
+            handleCloseSigning();
+            let variant = "error";
+            enqueueSnackbar("Connect to Wallet Please", { variant });
+        }
+
+    }
 
     async function RemoveLiquidityMakeDeploy() {
         handleShowSigning();
@@ -345,8 +480,8 @@ function RemoveLiquidity(props) {
         ) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
-            const tokenAAddress = tokenA.address;
-            const tokenBAddress = tokenB.address;
+            const tokenAAddress = tokenA.packageHash;
+            const tokenBAddress = tokenB.packageHash;
             const token_AAmount = tokenAAmountPercent.toFixed(5);
             const token_BAmount = tokenBAmountPercent.toFixed(5);
             const deadline = 1739598100811;
@@ -457,11 +592,11 @@ function RemoveLiquidity(props) {
             let cspr_Amount;
             let token_Amount;
             if (tokenA.symbol === "WCSPR") {
-                token = tokenB.address;
+                token = tokenB.contractHash;
                 cspr_Amount = tokenAAmountPercent.toFixed(9);
                 token_Amount = tokenBAmountPercent.toFixed(9);
             } else {
-                token = tokenA.address;
+                token = tokenA.contractHash;
                 cspr_Amount = tokenBAmountPercent.toFixed(9);
                 token_Amount = tokenAAmountPercent.toFixed(9);
             }
@@ -615,56 +750,176 @@ function RemoveLiquidity(props) {
 
                                                                 {tokenA && tokenB ? (
                                                                     <>
-                                                                        <Card>
-                                                                            <CardContent>
-                                                                                <Row>
-                                                                                    <Col>
-                                                                                        <CardHeader
-                                                                                            title={numeral(tokenAAmountPercent).format('0,0.000000000')}
+                                                                        <Accordion
+                                                                            key={0}
+                                                                            style={{
+                                                                                borderRadius: "0px 0px",
+                                                                            }}
+                                                                        >
+                                                                            <AccordionSummary
+                                                                                expandIcon={
+                                                                                    <Typography
+                                                                                        variant="h5"
+                                                                                        style={{
+                                                                                            color: "#000027",
+                                                                                            fontWeight: "550",
+                                                                                        }}
+                                                                                        gutterBottom
+                                                                                    >
+                                                                                        <strong>
+                                                                                            {numeral((liquidity * value) / 100
+                                                                                            ).format("0,0.000000000")}
+                                                                                        </strong>
+                                                                                    </Typography>
+                                                                                }
+                                                                                aria-controls="panel1bh-content"
+                                                                                id="panel1bh-header"
+                                                                            >
+                                                                                <CardHeader
+                                                                                    avatar={
+                                                                                        <div style={{ display: 'flex' }}>
+                                                                                            <Avatar
+                                                                                                src={tokenA.logoURI}
+                                                                                                aria-label="Artist"
+                                                                                            />
+                                                                                            <Avatar
+                                                                                                src={tokenB.logoURI}
+                                                                                                aria-label="Artist"
+                                                                                            />
+                                                                                        </div>
+                                                                                    }
+                                                                                    title={tokenA.name + '-' + tokenB.name}
+                                                                                    subheader={tokenA.symbol + '-' + tokenB.symbol}
+                                                                                />
+
+                                                                            </AccordionSummary>
+                                                                        </Accordion>
+                                                                        <Accordion
+                                                                            key={1}
+                                                                            style={{
+                                                                                borderRadius: "0px 0px",
+                                                                            }}
+                                                                        >
+                                                                            <AccordionSummary
+                                                                                expandIcon={
+                                                                                    <Typography
+                                                                                        variant="h5"
+                                                                                        style={{
+                                                                                            color: "#000027",
+                                                                                            fontWeight: "550",
+                                                                                        }}
+                                                                                        gutterBottom
+                                                                                    >
+                                                                                        <strong>
+                                                                                            {numeral(
+                                                                                                tokenAAmountPercent
+                                                                                            ).format("0,0.000000000")}
+                                                                                        </strong>
+                                                                                    </Typography>
+                                                                                }
+                                                                                aria-controls="panel1bh-content"
+                                                                                id="panel1bh-header"
+                                                                            >
+                                                                                <CardHeader
+                                                                                    avatar={
+                                                                                        <Avatar
+                                                                                            src={tokenA.logoURI}
+                                                                                            aria-label="Artist"
                                                                                         />
-                                                                                    </Col>
-                                                                                    <Col>
-                                                                                        <CardHeader
-                                                                                            avatar={<Avatar src={tokenA.logoURI} aria-label="Artist" />}
-                                                                                            title={tokenA.name}
-                                                                                        /></Col>
-                                                                                </Row>
-                                                                                <Row>
-                                                                                    <Col>
-                                                                                        <CardHeader
-                                                                                            title={numeral(tokenBAmountPercent).format('0,0.000000000')}
+                                                                                    }
+                                                                                    title={tokenA.name}
+                                                                                    subheader={tokenA.symbol}
+                                                                                />
+                                                                            </AccordionSummary>
+                                                                        </Accordion>
+                                                                        <Accordion
+                                                                            key={2}
+                                                                            style={{
+                                                                                borderRadius: "0px 0px ",
+                                                                            }}
+                                                                        >
+                                                                            <AccordionSummary
+                                                                                expandIcon={
+                                                                                    <Typography
+                                                                                        variant="h5"
+                                                                                        style={{
+                                                                                            color: "#000027",
+                                                                                            fontWeight: "550",
+                                                                                        }}
+                                                                                        gutterBottom
+                                                                                    >
+                                                                                        <strong>
+                                                                                            {numeral(
+                                                                                                tokenBAmountPercent
+                                                                                            ).format("0,0.000000000")}
+                                                                                        </strong>
+                                                                                    </Typography>
+                                                                                }
+                                                                                aria-controls="panel1bh-content"
+                                                                                id="panel1bh-header"
+                                                                            >
+                                                                                <CardHeader
+                                                                                    avatar={
+                                                                                        <Avatar
+                                                                                            src={tokenB.logoURI}
+                                                                                            aria-label="Artist"
                                                                                         />
-                                                                                    </Col>
-                                                                                    <Col>
-                                                                                        <CardHeader
-                                                                                            avatar={<Avatar src={tokenB.logoURI} aria-label="Artist" />}
-                                                                                            title={tokenB.name}
-                                                                                        />
-                                                                                    </Col>
-                                                                                </Row>
-                                                                            </CardContent>
-                                                                        </Card>
+                                                                                    }
+                                                                                    title={tokenB.name}
+                                                                                    subheader={tokenB.symbol}
+                                                                                />
+                                                                            </AccordionSummary>
+                                                                        </Accordion>
                                                                         <br />
-                                                                        {activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined ? (
-                                                                            <Row style={{ marginBottom: '20px' }}>
-                                                                                <Col xs={2} md={2}>
-                                                                                    <CardHeader
-                                                                                        subheader={'Price'}
-                                                                                    />
+                                                                        {activePublicKey !== "null" &&
+                                                                            activePublicKey !== null &&
+                                                                            activePublicKey !== undefined ? (
+                                                                            <Row
+                                                                                style={{
+                                                                                    color: "#000027",
+                                                                                    fontWeight: "550",
+                                                                                }}
+                                                                            >
+                                                                                <Col
+                                                                                    xs={{ span: 2, offset: 1 }}
+                                                                                    md={{ span: 2, offset: 1 }}
+                                                                                >
+                                                                                    <Typography
+                                                                                        variant="body2"
+                                                                                        component="p"
+                                                                                    >
+                                                                                        Price
+                                                                                    </Typography>
                                                                                 </Col>
-                                                                                <Col xs={10} md={10}>
-                                                                                    <CardContent className="text-right" >
-                                                                                        <Typography variant="body2" component="p">
-                                                                                            {`1 ${tokenA.name} = ${numeral(tokenBAmountPercent / tokenAAmountPercent).format('0,0.000000000')} ${tokenB.name}`}
+                                                                                <Col xs={9} md={9}>
+                                                                                    <CardContent
+                                                                                        style={{ padding: "0px" }}
+                                                                                        className="text-right"
+                                                                                    >
+                                                                                        <Typography
+                                                                                            variant="body2"
+                                                                                            component="p"
+                                                                                        >
+                                                                                            {`1 ${tokenA.name} = ${numeral(
+                                                                                                tokenBAmountPercent /
+                                                                                                tokenAAmountPercent
+                                                                                            ).format("0,0.000000000")} ${tokenB.name
+                                                                                                }`}
                                                                                         </Typography>
-                                                                                        <Typography variant="body2" component="p">
-                                                                                            {`1 ${tokenB.name} = ${numeral(tokenAAmountPercent / tokenBAmountPercent).format('0,0.000000000')} ${tokenA.name}`}
+                                                                                        <Typography
+                                                                                            variant="body2"
+                                                                                            component="p"
+                                                                                        >
+                                                                                            {`1 ${tokenB.name} = ${numeral(
+                                                                                                tokenAAmountPercent /
+                                                                                                tokenBAmountPercent
+                                                                                            ).format("0,0.000000000")} ${tokenA.name
+                                                                                                }`}
                                                                                         </Typography>
                                                                                     </CardContent>
                                                                                 </Col>
                                                                             </Row>
-
-                                                                        ) : (null)}
+                                                                        ) : null}
                                                                     </>
                                                                 ) : (
                                                                     null
@@ -689,11 +944,13 @@ function RemoveLiquidity(props) {
                                                                         </button>
                                                                     ) : (
                                                                         <button
+                                                                            type="button"
                                                                             className="btn btn-block btn-lg"
                                                                             onClick={async () => {
-                                                                                setApproveAIsLoading(true)
-                                                                                await approveMakeDeploy()
-                                                                                setApproveAIsLoading(false)
+                                                                                handleShowAAllowance()
+                                                                                // setApproveAIsLoading(true)
+                                                                                // await approveMakeDeploy()
+                                                                                // setApproveAIsLoading(false)
                                                                             }}>
                                                                             Approve {tokenA.symbol}-{tokenB.symbol}
                                                                         </button>
@@ -817,6 +1074,7 @@ function RemoveLiquidity(props) {
                 </div>
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
+            <AllowanceModal allowance={aAllowance} setAllowance={setAAllowance} show={openAAllowance} handleClose={handleCloseAAllowance} approvalAmount={liquidity} tokenAddress={pairPackageHash} tokenAmount={liquidity} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
             <SigningModal show={openSigning} />
         </div >
     );
