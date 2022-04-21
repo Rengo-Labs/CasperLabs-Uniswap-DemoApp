@@ -18,7 +18,7 @@ function WalletModal(props) {
                 <Modal.Title>Select Wallet </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Card onClick={() => {
+                {/* <Card onClick={() => {
                     props.torusLogin()
                     props.setSelectedWallet('Torus')
                     localStorage.setItem('selectedWallet','Torus')
@@ -29,10 +29,10 @@ function WalletModal(props) {
                         subheader="Connect to Torus Waller"
                     />
                 </Card>
-                <hr></hr>
+                <hr></hr> */}
                 <Card onClick={() => {
                     props.casperLogin()
-                    localStorage.setItem('selectedWallet','Casper')
+                    localStorage.setItem('selectedWallet', 'Casper')
                     props.setSelectedWallet('Casper')
                 }} className='custom-card'>
                     <CardHeader

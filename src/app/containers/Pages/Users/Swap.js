@@ -1,10 +1,11 @@
 import { FormControl, FormHelperText, Input } from "@material-ui/core";
 import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardContent, CardHeader } from '@material-ui/core/';
+import OutlinedInput from "@material-ui/core/OutlinedInput";
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Torus from "@toruslabs/casper-embed";
 import axios from "axios";
-import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLList, CLPublicKey, CLString, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
+import { AccessRights, CasperServiceByJsonRPC, CLByteArray, CLKey, CLList, CLPublicKey, CLString, CLValueBuilder, RuntimeArgs } from 'casper-js-sdk';
 import { useSnackbar } from 'notistack';
 import numeral from "numeral";
 import React, { useCallback, useEffect, useState } from "react";
@@ -19,6 +20,7 @@ import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/b
 import { getDeploy } from "../../../components/blockchain/GetDeploy/GetDeploy";
 import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
 import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
+import { makeDeployWasm } from "../../../components/blockchain/MakeDeploy/MakeDeployWasm";
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
@@ -594,7 +596,7 @@ function Swap(props) {
       publicKeyHex !== undefined
     ) {
       const deadline = 1739598100811;
-      const paymentAmount = 5000000000;
+      const paymentAmount = 10000000000;
       if (inputSelection === "tokenA") {
         if (tokenA.name === "Casper") {
           console.log("swap_exact_cspr_for_token");
@@ -614,6 +616,9 @@ function Swap(props) {
           console.log("_paths", _paths);
           try {
             const runtimeArgs = RuntimeArgs.fromMap({
+              amount: CLValueBuilder.u512(convertToStr(amount_in)),
+              destination_entrypoint: CLValueBuilder.string("swap_exact_cspr_for_tokens"),
+              router_hash: new CLKey(new CLByteArray(Uint8Array.from(Buffer.from(ROUTER_PACKAGE_HASH, "hex")))),
               amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
               amount_out_min: CLValueBuilder.u256(
                 convertToStr(amount_out_min - (amount_out_min * slippage) / 100)
@@ -633,10 +638,15 @@ function Swap(props) {
             let entryPoint = "swap_exact_cspr_for_tokens_js_client";
 
             // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(
+            // let deploy = await makeDeploy(
+            //   publicKey,
+            //   contractHashAsByteArray,
+            //   entryPoint,
+            //   runtimeArgs,
+            //   paymentAmount
+            // );
+            let deploy = await makeDeployWasm(
               publicKey,
-              contractHashAsByteArray,
-              entryPoint,
               runtimeArgs,
               paymentAmount
             );
@@ -665,19 +675,19 @@ function Swap(props) {
                 );
                 const deployRes = await casperService.deploy(deploy);
                 console.log("deployRes", deployRes.deploy_hash);
-                console.log(
-                  `... Contract installation deployHash: ${deployRes.deploy_hash}`
-                );
-                let result = await getDeploy(
-                  NODE_ADDRESS,
-                  deployRes.deploy_hash,
-                  enqueueSnackbar
-                );
-                console.log(
-                  `... Contract installed successfully.`,
-                  JSON.parse(JSON.stringify(result))
-                );
-                console.log("result", result);
+                // console.log(
+                //   `... Contract installation deployHash: ${deployRes.deploy_hash}`
+                // );
+                // let result = await getDeploy(
+                //   NODE_ADDRESS,
+                //   deployRes.deploy_hash,
+                //   enqueueSnackbar
+                // );
+                // console.log(
+                //   `... Contract installed successfully.`,
+                //   JSON.parse(JSON.stringify(result))
+                // );
+                // console.log("result", result);
               }
 
               handleCloseSigning();
@@ -720,6 +730,9 @@ function Swap(props) {
           );
           try {
             const runtimeArgs = RuntimeArgs.fromMap({
+              amount: CLValueBuilder.u512(convertToStr(amount_in)),
+              destination_entrypoint: CLValueBuilder.string("swap_exact_tokens_for_cspr"),
+              router_hash: new CLKey(new CLByteArray(Uint8Array.from(Buffer.from(ROUTER_PACKAGE_HASH, "hex")))),
               amount_in: CLValueBuilder.u256(convertToStr(amount_in)),
               amount_out_min: CLValueBuilder.u256(
                 convertToStr(amount_out_min - (amount_out_min * slippage) / 100)
@@ -738,10 +751,15 @@ function Swap(props) {
             let entryPoint = "swap_exact_tokens_for_cspr_js_client";
 
             // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(
+            // let deploy = await makeDeploy(
+            //   publicKey,
+            //   contractHashAsByteArray,
+            //   entryPoint,
+            //   runtimeArgs,
+            //   paymentAmount
+            // );
+            let deploy = await makeDeployWasm(
               publicKey,
-              contractHashAsByteArray,
-              entryPoint,
               runtimeArgs,
               paymentAmount
             );
@@ -926,6 +944,9 @@ function Swap(props) {
           );
           try {
             const runtimeArgs = RuntimeArgs.fromMap({
+              amount: CLValueBuilder.u512(convertToStr(tokenBAmount)),
+              destination_entrypoint: CLValueBuilder.string("swap_cspr_for_exact_tokens"),
+              router_hash: new CLKey(new CLByteArray(Uint8Array.from(Buffer.from(ROUTER_PACKAGE_HASH, "hex")))),
               amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
               amount_in_max: CLValueBuilder.u256(
                 convertToStr(
@@ -947,10 +968,15 @@ function Swap(props) {
             let entryPoint = "swap_cspr_for_exact_tokens_js_client";
 
             // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(
+            // let deploy = await makeDeploy(
+            //   publicKey,
+            //   contractHashAsByteArray,
+            //   entryPoint,
+            //   runtimeArgs,
+            //   paymentAmount
+            // );
+            let deploy = await makeDeployWasm(
               publicKey,
-              contractHashAsByteArray,
-              entryPoint,
               runtimeArgs,
               paymentAmount
             );
@@ -1025,6 +1051,9 @@ function Swap(props) {
           console.log("_paths", _paths);
           try {
             const runtimeArgs = RuntimeArgs.fromMap({
+              amount: CLValueBuilder.u512(convertToStr(tokenBAmount)),
+              destination_entrypoint: CLValueBuilder.string("swap_tokens_for_exact_cspr"),
+              router_hash: new CLKey(new CLByteArray(Uint8Array.from(Buffer.from(ROUTER_PACKAGE_HASH, "hex")))),
               amount_out: CLValueBuilder.u256(convertToStr(tokenBAmount)),
               amount_in_max: CLValueBuilder.u256(
                 convertToStr(
@@ -1045,10 +1074,15 @@ function Swap(props) {
             let entryPoint = "swap_tokens_for_exact_cspr_js_client";
 
             // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(
+            // let deploy = await makeDeploy(
+            //   publicKey,
+            //   contractHashAsByteArray,
+            //   entryPoint,
+            //   runtimeArgs,
+            //   paymentAmount
+            // );
+            let deploy = await makeDeployWasm(
               publicKey,
-              contractHashAsByteArray,
-              entryPoint,
               runtimeArgs,
               paymentAmount
             );
@@ -1413,7 +1447,7 @@ function Swap(props) {
                               {tokenA ? (
                                 <Accordion key={0} expanded={expanded === 0} onChange={handleChange(0)}>
                                   <AccordionSummary
-                                    expandIcon={tokenA.contractHash !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                    expandIcon={tokenA.contractHash !== "" && tokenA.contractHash !== undefined && tokenA.contractHash !== null ? (<i className="fas fa-chevron-down"></i>) : (null)}
                                     aria-controls="panel1bh-content"
                                     id="panel1bh-header"
                                   >
@@ -1423,7 +1457,7 @@ function Swap(props) {
                                       subheader={tokenA.symbol}
                                     />
                                   </AccordionSummary>
-                                  {tokenA.contractHash !== "" ? (
+                                  {tokenA.contractHash !== "" && tokenA.contractHash !== undefined && tokenA.contractHash !== null ? (
                                     <AccordionDetails >
                                       <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
                                         <CardContent>
@@ -1443,7 +1477,7 @@ function Swap(props) {
                               {tokenB ? (
                                 <Accordion key={1} expanded={expanded === 1} onChange={handleChange(1)}>
                                   <AccordionSummary
-                                    expandIcon={tokenB.contractHash !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                    expandIcon={tokenB.contractHash !== "" && tokenB.contractHash !== undefined && tokenB.contractHash !== null ? (<i className="fas fa-chevron-down"></i>) : (null)}
                                     aria-controls="panel1bh-content"
                                     id="panel1bh-header"
                                   >
@@ -1453,7 +1487,7 @@ function Swap(props) {
                                       subheader={tokenB.symbol}
                                     />
                                   </AccordionSummary>
-                                  {tokenB.contractHash !== "" ? (
+                                  {tokenB.contractHash !== "" && tokenB.contractHash !== undefined && tokenB.contractHash !== null ? (
                                     <AccordionDetails >
                                       <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
                                         <CardContent>

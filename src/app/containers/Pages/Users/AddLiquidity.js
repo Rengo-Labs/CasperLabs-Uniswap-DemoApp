@@ -1,4 +1,5 @@
 import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardContent, CardHeader, FormControl, FormHelperText, Input } from '@material-ui/core/';
+import OutlinedInput from "@material-ui/core/OutlinedInput";
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Torus from "@toruslabs/casper-embed";
@@ -19,6 +20,7 @@ import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/b
 import { getDeploy } from '../../../components/blockchain/GetDeploy/GetDeploy';
 import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
 import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
+import { makeDeployWasm } from '../../../components/blockchain/MakeDeploy/MakeDeployWasm';
 import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
 import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
@@ -30,6 +32,7 @@ import SigningModal from '../../../components/Modals/SigningModal';
 import SlippageModal from '../../../components/Modals/SlippageModal';
 import TokenAModal from '../../../components/Modals/TokenAModal';
 import TokenBModal from '../../../components/Modals/TokenBModal';
+// import {Wasm} from '../../../components/blockchain/Wasms/purse-proxy.wasm';
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -390,102 +393,6 @@ function AddLiquidity(props) {
     }, [activePublicKey, tokenA, tokenB]);
 
 
-    async function approveMakeDeploy(contractHash, amount, tokenApproved) {
-        handleShowSigning();
-        console.log("contractHash", contractHash);
-        const publicKeyHex = activePublicKey;
-        if (
-            publicKeyHex !== null &&
-            publicKeyHex !== "null" &&
-            publicKeyHex !== undefined
-        ) {
-            const publicKey = CLPublicKey.fromHex(publicKeyHex);
-            const spender = ROUTER_PACKAGE_HASH;
-            const spenderByteArray = new CLByteArray(
-                Uint8Array.from(Buffer.from(spender, "hex"))
-            );
-            const paymentAmount = 5000000000;
-            try {
-                const runtimeArgs = RuntimeArgs.fromMap({
-                    spender: createRecipientAddress(spenderByteArray),
-                    amount: CLValueBuilder.u256(convertToStr(amount)),
-                });
-                let contractHashAsByteArray = Uint8Array.from(
-                    Buffer.from(contractHash.slice(5), "hex")
-                );
-                let entryPoint = "approve";
-                // Set contract installation deploy (unsigned).
-                let deploy = await makeDeploy(
-                    publicKey,
-                    contractHashAsByteArray,
-                    entryPoint,
-                    runtimeArgs,
-                    paymentAmount
-                );
-                console.log("make deploy: ", deploy);
-                try {
-                    if (selectedWallet === "Casper") {
-                        let signedDeploy = await signdeploywithcaspersigner(
-                            deploy,
-                            publicKeyHex
-                        );
-                        let result = await putdeploy(signedDeploy, enqueueSnackbar);
-                        console.log("result", result);
-                    } else {
-                        // let Torus = new Torus();
-                        torus = new Torus();
-                        console.log("torus", torus);
-                        await torus.init({
-                            buildEnv: "testing",
-                            showTorusButton: true,
-                            network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                        });
-                        console.log("Torus123", torus);
-                        console.log("torus", torus.provider);
-                        const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                        const deployRes = await casperService.deploy(deploy);
-                        console.log("deployRes", deployRes.deploy_hash);
-                        console.log(
-                            `... Contract installation deployHash: ${deployRes.deploy_hash}`
-                        );
-                        let result = await getDeploy(
-                            NODE_ADDRESS,
-                            deployRes.deploy_hash,
-                            enqueueSnackbar
-                        );
-                        console.log(
-                            `... Contract installed successfully.`,
-                            JSON.parse(JSON.stringify(result))
-                        );
-                        console.log("result", result);
-                    }
-                    if (tokenApproved === "tokenA") {
-                        setTokenAAllowance(amount * 10 ** 9);
-                        handleCloseAAllowance();
-                    } else {
-                        setTokenBAllowance(amount * 10 ** 9);
-                        handleCloseBAllowance();
-                    }
-                    // console.log('result', result);
-                    handleCloseSigning();
-                    let variant = "success";
-                    enqueueSnackbar("Approved Successfully", { variant });
-                } catch {
-                    handleCloseSigning();
-                    let variant = "Error";
-                    enqueueSnackbar("Unable to Approve", { variant });
-                }
-            } catch {
-                handleCloseSigning();
-                let variant = "Error";
-                enqueueSnackbar("Input values are too large", { variant });
-            }
-        } else {
-            handleCloseSigning();
-            let variant = "error";
-            enqueueSnackbar("Connect to Wallet Please", { variant });
-        }
-    }
     async function increaseAndDecreaseAllowanceMakeDeploy(contractHash, amount, tokenApproved, increase) {
         handleShowSigning();
         console.log("contractHash", contractHash);
@@ -757,6 +664,7 @@ function AddLiquidity(props) {
     }, [activePublicKey])
     async function addLiquidityMakeDeploy() {
         handleShowSigning();
+
         setIsLoading(true);
         const publicKeyHex = activePublicKey;
         if (
@@ -766,24 +674,27 @@ function AddLiquidity(props) {
         ) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
-            const tokenAAddress = tokenA.packageHash;
-            const tokenBAddress = tokenB.packageHash;
+            const tokenAAddress = tokenA?.packageHash;
+            const tokenBAddress = tokenB?.packageHash;
             const token_AAmount = tokenAAmount;
             const token_BAmount = tokenBAmount;
             const deadline = 1739598100811;
             const paymentAmount = 10000000000;
-            const _token_a = new CLByteArray(
-                Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
-            );
-            const _token_b = new CLByteArray(
-                Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
-            );
-            const pair = new CLByteArray(
-                Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
-            );
+
+
+            console.log("tokenA.name", tokenA.name);
             if (tokenA.name === "Casper") {
+                const _token_b = new CLByteArray(
+                    Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+                );
+                const pair = new CLByteArray(
+                    Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+                );
                 try {
+                    console.log("tokenA.name", tokenA.name);
                     const runtimeArgs = RuntimeArgs.fromMap({
+                        amount: CLValueBuilder.u512(convertToStr(token_AAmount)),
+                        destination_entrypoint: CLValueBuilder.string("add_liquidity_cspr"),
                         token: new CLKey(_token_b),
                         amount_cspr_desired: CLValueBuilder.u256(convertToStr(token_AAmount)),
                         amount_token_desired: CLValueBuilder.u256(convertToStr(token_BAmount)),
@@ -796,16 +707,11 @@ function AddLiquidity(props) {
                         ),
                         deadline: CLValueBuilder.u256(deadline),
                         pair: new CLOption(Some(new CLKey(pair))),
+                        router_hash: new CLKey(new CLByteArray(Uint8Array.from(Buffer.from(ROUTER_PACKAGE_HASH, "hex")))),
                     });
-                    let contractHashAsByteArray = Uint8Array.from(
-                        Buffer.from(caller, "hex")
-                    );
-                    let entryPoint = "add_liquidity_cspr_js_client";
                     // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(
+                    let deploy = await makeDeployWasm(
                         publicKey,
-                        contractHashAsByteArray,
-                        entryPoint,
                         runtimeArgs,
                         paymentAmount
                     );
@@ -817,7 +723,7 @@ function AddLiquidity(props) {
                                 publicKeyHex
                             );
                             let result = await putdeploy(signedDeploy, enqueueSnackbar);
-                            console.log("result", result);
+                            // console.log("result", result);
                         } else {
                             // let Torus = new Torus();
                             torus = new Torus();
@@ -865,12 +771,17 @@ function AddLiquidity(props) {
                 } catch {
                     handleCloseSigning();
                     let variant = "Error";
-                    enqueueSnackbar("Input values are too large", { variant });
+                    enqueueSnackbar("Input values are not Valid", { variant });
                     setIsLoading(false);
                 }
             } else if (tokenB.name === "Casper") {
+                const _token_a = new CLByteArray(
+                    Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
+                );
                 try {
                     const runtimeArgs = RuntimeArgs.fromMap({
+                        amount: CLValueBuilder.u512(convertToStr(token_BAmount)),
+                        destination_entrypoint: CLValueBuilder.string("add_liquidity_cspr"),
                         token: new CLKey(_token_a),
                         amount_cspr_desired: CLValueBuilder.u256(
                             convertToStr(token_BAmount)
@@ -887,18 +798,11 @@ function AddLiquidity(props) {
                         ),
                         deadline: CLValueBuilder.u256(deadline),
                         pair: new CLOption(Some(new CLKey(_token_a))),
+                        router_hash: new CLKey(new CLByteArray(Uint8Array.from(Buffer.from(ROUTER_PACKAGE_HASH, "hex")))),
                     });
-
-                    let contractHashAsByteArray = Uint8Array.from(
-                        Buffer.from(caller, "hex")
-                    );
-                    let entryPoint = "add_liquidity_cspr_js_client";
-
                     // Set contract installation deploy (unsigned).
-                    let deploy = await makeDeploy(
+                    let deploy = await makeDeployWasm(
                         publicKey,
-                        contractHashAsByteArray,
-                        entryPoint,
                         runtimeArgs,
                         paymentAmount
                     );
@@ -965,6 +869,15 @@ function AddLiquidity(props) {
                 // eslint-disable-next-line
                 console.log("token_AAmount", (token_AAmount - (token_AAmount * slippage) / 100).toFixed(9));
                 console.log("token_BAmount", token_BAmount - (token_BAmount * slippage) / 100);
+                const _token_a = new CLByteArray(
+                    Uint8Array.from(Buffer.from(tokenAAddress.slice(5), "hex"))
+                );
+                const _token_b = new CLByteArray(
+                    Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+                );
+                const pair = new CLByteArray(
+                    Uint8Array.from(Buffer.from(tokenBAddress.slice(5), "hex"))
+                );
                 // try {
                 const runtimeArgs = RuntimeArgs.fromMap({
                     token_a: new CLKey(_token_a),
@@ -1243,7 +1156,7 @@ function AddLiquidity(props) {
                                                                 {tokenA ? (
                                                                     <Accordion key={0} expanded={expanded === 0} onChange={handleChange(0)}>
                                                                         <AccordionSummary
-                                                                            expandIcon={tokenA.contractHash !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                                                            expandIcon={tokenA.contractHash !== "" && tokenA.contractHash !== undefined && tokenA.contractHash !== null ? (<i className="fas fa-chevron-down"></i>) : (null)}
                                                                             aria-controls="panel1bh-content"
                                                                             id="panel1bh-header"
                                                                         >
@@ -1253,7 +1166,7 @@ function AddLiquidity(props) {
                                                                                 subheader={tokenA.symbol}
                                                                             />
                                                                         </AccordionSummary>
-                                                                        {tokenA.contractHash !== "" ? (
+                                                                        {tokenA.contractHash !== "" && tokenA.contractHash !== undefined && tokenA.contractHash !== null ? (
                                                                             <AccordionDetails >
                                                                                 <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
                                                                                     <CardContent>
@@ -1273,7 +1186,7 @@ function AddLiquidity(props) {
                                                                 {tokenB ? (
                                                                     <Accordion style={{ marginBottom: '10px' }} key={1} expanded={expanded === 1} onChange={handleChange(1)}>
                                                                         <AccordionSummary
-                                                                            expandIcon={tokenB.contractHash !== "" ? (<i className="fas fa-chevron-down"></i>) : (null)}
+                                                                            expandIcon={tokenB.contractHash !== "" && tokenB.contractHash !== undefined && tokenB.contractHash !== null ? (<i className="fas fa-chevron-down"></i>) : (null)}
                                                                             aria-controls="panel1bh-content"
                                                                             id="panel1bh-header"
                                                                         >
@@ -1283,7 +1196,7 @@ function AddLiquidity(props) {
                                                                                 subheader={tokenB.symbol}
                                                                             />
                                                                         </AccordionSummary>
-                                                                        {tokenB.contractHash !== "" ? (
+                                                                        {tokenB.contractHash !== "" && tokenB.contractHash !== undefined && tokenB.contractHash !== null ? (
                                                                             <AccordionDetails >
                                                                                 <Card style={{ backgroundColor: '#e846461F' }} className={classes.root}>
                                                                                     <CardContent>

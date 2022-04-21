@@ -15,9 +15,10 @@ import "../../../assets/plugins/fontawesome/css/fontawesome.min.css";
 import { ROUTER_CONTRACT_HASH, ROUTER_PACKAGE_HASH } from '../../../components/blockchain/AccountHashes/Addresses';
 import { getDeploy } from '../../../components/blockchain/GetDeploy/GetDeploy';
 import { getStateRootHash } from '../../../components/blockchain/GetStateRootHash/GetStateRootHash';
-import { makeDeploy } from '../../../components/blockchain/MakeDeploy/MakeDeploy';
-import { NODE_ADDRESS } from '../../../components/blockchain/NodeAddress/NodeAddress';
-import { putdeploy } from '../../../components/blockchain/PutDeploy/PutDeploy';
+import { makeDeploy } from "../../../components/blockchain/MakeDeploy/MakeDeploy";
+import { makeDeployWasm } from "../../../components/blockchain/MakeDeploy/MakeDeployWasm";
+import { NODE_ADDRESS } from "../../../components/blockchain/NodeAddress/NodeAddress";
+import { putdeploy, removeLiquidityPutDeploy } from "../../../components/blockchain/PutDeploy/PutDeploy";
 import { createRecipientAddress } from '../../../components/blockchain/RecipientAddress/RecipientAddress';
 import { signdeploywithcaspersigner } from '../../../components/blockchain/SignDeploy/SignDeploy';
 import { convertToStr } from '../../../components/ConvertToString/ConvertToString';
@@ -51,7 +52,7 @@ const marks = [
 ];
 
 function RemoveLiquidity(props) {
-    let { tokenAAddress, tokenBAddress } = useParams()
+    let { tokenAAddress, tokenBAddress } = useParams();
     const { enqueueSnackbar } = useSnackbar();
     let [tokenA, setTokenA] = useState();
     let [tokenB, setTokenB] = useState();
@@ -59,14 +60,18 @@ function RemoveLiquidity(props) {
     let [pairAllowance, setpairAllowance] = useState(0);
     let [tokenAAmount, setTokenAAmount] = useState(0);
     let [tokenBAmount, setTokenBAmount] = useState(0);
-    const [aAllowance, setAAllowance] = useState(0);
     let [tokenAAmountPercent, setTokenAAmountPercent] = useState(tokenAAmount);
     let [tokenBAmountPercent, setTokenBAmountPercent] = useState(tokenBAmount);
     let [pair, setPairHash] = useState();
     let [pairPackageHash, setPairPackageHash] = useState();
     let [liquidity, setLiquidity] = useState();
-    let [activePublicKey, setActivePublicKey] = useState(localStorage.getItem("Address"));
-    let [selectedWallet, setSelectedWallet] = useState(localStorage.getItem("selectedWallet"));
+    const [aAllowance, setAAllowance] = useState(0);
+    let [activePublicKey, setActivePublicKey] = useState(
+        localStorage.getItem("Address")
+    );
+    let [selectedWallet, setSelectedWallet] = useState(
+        localStorage.getItem("selectedWallet")
+    );
     let [torus, setTorus] = useState();
     const [value, setValue] = useState(25);
     let [approveAIsLoading, setApproveAIsLoading] = useState(false);
@@ -98,100 +103,132 @@ function RemoveLiquidity(props) {
     let [isLoading, setIsLoading] = useState(false);
     useEffect(() => {
         axios
-            .get('/tokensList')
+            .get("/tokensList")
             .then((res) => {
-                // console.log('resresres', res)
-                console.log(res.data.tokens)
+                console.log('resresres', res)
+                console.log(res.data.tokens);
                 for (let i = 0; i < res.data.tokens.length; i++) {
                     let address = res.data.tokens[i].packageHash.toLowerCase();
                     if (address.includes(tokenAAddress.toLowerCase())) {
-                        console.log('res.data.tokensA.contractHash', res.data.tokens[i].contractHash);
-                        setTokenA(res.data.tokens[i])
+                        console.log("res.data.tokensA.contractHash", res.data.tokens[i].contractHash);
+                        setTokenA(res.data.tokens[i]);
                     }
                     if (address.includes(tokenBAddress.toLowerCase())) {
-                        console.log('res.data.tokensB.contractHash', res.data.tokens[i].contractHash);
-                        setTokenB(res.data.tokens[i])
+                        console.log("res.data.tokensB.contractHash", res.data.tokens[i].contractHash);
+                        setTokenB(res.data.tokens[i]);
                     }
-
                 }
             })
             .catch((error) => {
-                console.log(error)
-                console.log(error.response)
-            })
+                console.log(error);
+                console.log(error.response);
+            });
         // eslint-disable-next-line
     }, []);
     const getPairs = useCallback(() => {
         let param = {
-            user: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex")
-        }
+            user: Buffer.from(
+                CLPublicKey.fromHex(activePublicKey).toAccountHash()
+            ).toString("hex"),
+        };
         axios
-            .post('/getpairagainstuser', param)
+            .post("/getpairagainstuser", param)
             .then(async (res) => {
-                console.log('9', res)
-                console.log(res.data.userpairs)
+                console.log("9", res);
+                console.log(res.data.userpairs);
                 for (let i = 0; i < res.data.userpairs.length; i++) {
                     let address0 = res.data.pairsdata[i].token0.id.toLowerCase();
                     let address1 = res.data.pairsdata[i].token1.id.toLowerCase();
-                    if ((address0.includes(tokenAAddress.toLowerCase()) && address1.includes(tokenBAddress.toLowerCase())) || (address0.includes(tokenBAddress.toLowerCase()) && address1.includes(tokenAAddress.toLowerCase()))) {
-                        let pathParamsArr = [
-                        ]
-                        if (address0.includes(tokenAAddress.toLowerCase()) && address1.includes(tokenBAddress.toLowerCase())) {
+                    if (
+                        (address0.includes(tokenAAddress.toLowerCase()) &&
+                            address1.includes(tokenBAddress.toLowerCase())) ||
+                        (address0.includes(tokenBAddress.toLowerCase()) &&
+                            address1.includes(tokenAAddress.toLowerCase()))
+                    ) {
+                        let pathParamsArr = [];
+                        if (
+                            address0.includes(tokenAAddress.toLowerCase()) &&
+                            address1.includes(tokenBAddress.toLowerCase())
+                        ) {
                             pathParamsArr = [
                                 res.data.pairsdata[i].token0.symbol,
                                 res.data.pairsdata[i].token1.symbol,
-                            ]
-                        }
-                        else if (address0.includes(tokenBAddress.toLowerCase()) && address1.includes(tokenAAddress.toLowerCase())) {
+                            ];
+                        } else if (
+                            address0.includes(tokenBAddress.toLowerCase()) &&
+                            address1.includes(tokenAAddress.toLowerCase())
+                        ) {
                             pathParamsArr = [
                                 res.data.pairsdata[i].token1.symbol,
                                 res.data.pairsdata[i].token0.symbol,
-                            ]
+                            ];
                         }
 
                         let pathResParam = {
-                            path: pathParamsArr
-                        }
+                            path: pathParamsArr,
+                        };
                         console.log("pathResParam", pathResParam);
                         await axios
-                            .post('/getpathreserves', pathResParam)
+                            .post("/getpathreserves", pathResParam)
                             .then((res1) => {
-                                console.log('getpathreserves', res1)
+                                console.log("getpathreserves", res1);
                                 if (res1.data.reserve0 && res1.data.reserve1) {
                                     let rat0 = res1.data.reserve0;
                                     let rat1 = res1.data.reserve1;
                                     console.log("rat0", rat0);
                                     console.log("rat1", rat1);
-                                    console.log("res.data.userpairs[i].reserve0", res.data.userpairs[i].reserve0);
-                                    console.log("res.data.userpairs[i].reserve1", res.data.userpairs[i].reserve1);
-                                    if (rat0 < rat1 && parseInt(res.data.userpairs[i].reserve0) < parseInt(res.data.userpairs[i].reserve1)) {
-                                        console.log('1');
-                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve1
-                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve0
-                                    } else if (rat0 < rat1 && parseInt(res.data.userpairs[i].reserve0) > parseInt(res.data.userpairs[i].reserve1)) {
-                                        console.log('2');
-                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve0
-                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve1
-                                    } else if (rat0 > rat1 && parseInt(res.data.userpairs[i].reserve0) < parseInt(res.data.userpairs[i].reserve1)) {
-                                        console.log('3');
-                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve0
-                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve1
-                                    } else if (rat0 > rat1 && parseInt(res.data.userpairs[i].reserve0) > parseInt(res.data.userpairs[i].reserve1)) {
-                                        console.log('4');
-                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve1
-                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve0
+                                    console.log(
+                                        "res.data.userpairs[i].reserve0",
+                                        res.data.userpairs[i].reserve0
+                                    );
+                                    console.log(
+                                        "res.data.userpairs[i].reserve1",
+                                        res.data.userpairs[i].reserve1
+                                    );
+                                    if (
+                                        rat0 < rat1 &&
+                                        parseInt(res.data.userpairs[i].reserve0) <
+                                        parseInt(res.data.userpairs[i].reserve1)
+                                    ) {
+                                        console.log("1");
+                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve1;
+                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve0;
+                                    } else if (
+                                        rat0 < rat1 &&
+                                        parseInt(res.data.userpairs[i].reserve0) >
+                                        parseInt(res.data.userpairs[i].reserve1)
+                                    ) {
+                                        console.log("2");
+                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve0;
+                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve1;
+                                    } else if (
+                                        rat0 > rat1 &&
+                                        parseInt(res.data.userpairs[i].reserve0) <
+                                        parseInt(res.data.userpairs[i].reserve1)
+                                    ) {
+                                        console.log("3");
+                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve0;
+                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve1;
+                                    } else if (
+                                        rat0 > rat1 &&
+                                        parseInt(res.data.userpairs[i].reserve0) >
+                                        parseInt(res.data.userpairs[i].reserve1)
+                                    ) {
+                                        console.log("4");
+                                        res.data.userpairs[i].rat0 = res.data.userpairs[i].reserve1;
+                                        res.data.userpairs[i].rat1 = res.data.userpairs[i].reserve0;
                                     }
                                 }
                             })
                             .catch((error) => {
-                                console.log(error)
-                                console.log(error.response)
-                            })
-                        console.log('res.data.pairsdata', res.data.pairsdata[i]);
-                        console.log('res.data.userpairs', res.data.userpairs[i]);
-                        setTokenAAmount((res.data.userpairs[i].rat0 / 10 ** 9))
-                        setTokenBAmount((res.data.userpairs[i].rat1 / 10 ** 9))
-                        setPairHash(res.data.userpairs[i].pair)
+                                console.log(error);
+                                console.log(error.response);
+                            });
+                        console.log("res.data.pairsdata", res.data.pairsdata[i]);
+                        console.log("res.data.userpairs", res.data.userpairs[i]);
+                        setTokenAAmount(res.data.userpairs[i].rat0 / 10 ** 9);
+                        setTokenBAmount(res.data.userpairs[i].rat1 / 10 ** 9);
+                        setPairHash(res.data.userpairs[i].pair);
                         let params = {
                             packageHash: res.data.userpairs[i].pair,
                         };
@@ -205,157 +242,99 @@ function RemoveLiquidity(props) {
                                 console.log(error);
                                 console.log(error.response);
                             });
-                        setTokenAAmountPercent(((res.data.userpairs[i].rat0 * value / 100) / 10 ** 9))
-                        setTokenBAmountPercent(((res.data.userpairs[i].rat1 * value / 100) / 10 ** 9))
+                        setTokenAAmountPercent(
+                            (res.data.userpairs[i].rat0 * value) / 100 / 10 ** 9
+                        );
+                        setTokenBAmountPercent(
+                            (res.data.userpairs[i].rat1 * value) / 100 / 10 ** 9
+                        );
 
                         let param = {
-                            to: Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"),
-                            pairid: res.data.userpairs[i].pair
-                        }
-                        console.log('await Signer.getSelectedPublicKeyBase64()',
-                            Buffer.from(CLPublicKey.fromHex(activePublicKey).toAccountHash()).toString("hex"))
+                            to: Buffer.from(
+                                CLPublicKey.fromHex(activePublicKey).toAccountHash()
+                            ).toString("hex"),
+                            pairid: res.data.userpairs[i].pair,
+                        };
+                        console.log(
+                            "await Signer.getSelectedPublicKeyBase64()",
+                            Buffer.from(
+                                CLPublicKey.fromHex(activePublicKey).toAccountHash()
+                            ).toString("hex")
+                        );
 
                         axios
-                            .post('/liquidityagainstuserandpair', param)
+                            .post("/liquidityagainstuserandpair", param)
                             .then((res1) => {
-                                console.log('liquidityagainstuserandpair', res1)
-                                setLiquidity(res1.data.liquidity / 10 ** 9)
-                                console.log("res1.data.liquidity", res1.data.liquidity)
+                                console.log("liquidityagainstuserandpair", res1);
+                                setLiquidity(res1.data.liquidity / 10 ** 9);
+                                console.log("res1.data.liquidity", res1.data.liquidity);
                             })
                             .catch((error) => {
-                                console.log(error)
-                                console.log(error.response)
-                            })
+                                console.log(error);
+                                console.log(error.response);
+                            });
                         let allowanceParam = {
                             contractHash: res.data.userpairs[i].pair,
-                            owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
-                            spender: ROUTER_PACKAGE_HASH
-                        }
-                        console.log('allowanceParam0', allowanceParam);
+                            owner: CLPublicKey.fromHex(activePublicKey)
+                                .toAccountHashStr()
+                                .slice(13),
+                            spender: ROUTER_PACKAGE_HASH,
+                        };
+                        console.log("allowanceParam0", allowanceParam);
                         axios
-                            .post('/allowanceagainstownerandspenderpaircontract', allowanceParam)
+                            .post(
+                                "/allowanceagainstownerandspenderpaircontract",
+                                allowanceParam
+                            )
                             .then((res) => {
-                                console.log('allowanceagainstownerandspenderpaircontract', res)
-                                console.log(res.data)
-                                setpairAllowance(res.data.allowance)
-
+                                console.log("allowanceagainstownerandspenderpaircontract", res);
+                                console.log(res.data);
+                                setpairAllowance(res.data.allowance);
                             })
                             .catch((error) => {
-                                console.log(error)
-                                console.log(error.response)
-                            })
-
+                                console.log(error);
+                                console.log(error.response);
+                            });
                     }
                 }
             })
             .catch((error) => {
-                console.log(error)
-                console.log(error.response)
-            })
-    })
+                console.log(error);
+                console.log(error.response);
+            });
+    }, [activePublicKey, tokenAAddress, tokenBAddress, value]);
     useEffect(() => {
-        if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
-            getPairs()
-        }// eslint-disable-next-line
+        if (
+            activePublicKey !== "null" &&
+            activePublicKey !== null &&
+            activePublicKey !== undefined
+        ) {
+            getPairs();
+        } // eslint-disable-next-line
     }, [tokenAAddress, tokenBAddress, activePublicKey]);
     useEffect(() => {
-        if (activePublicKey !== 'null' && activePublicKey !== null && activePublicKey !== undefined) {
-            const client = new CasperServiceByJsonRPC(
-                NODE_ADDRESS
-            );
-            getStateRootHash(NODE_ADDRESS).then(stateRootHash => {
-                console.log('stateRootHash', stateRootHash);
-                client.getBlockState(
-                    stateRootHash,
-                    CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
-                    []
-                ).then(result => {
-                    console.log('result', result.Account.mainPurse);
-                    setMainPurse(result.Account.mainPurse)
-                });
-            })
+        if (
+            activePublicKey !== "null" &&
+            activePublicKey !== null &&
+            activePublicKey !== undefined
+        ) {
+            const client = new CasperServiceByJsonRPC(NODE_ADDRESS);
+            getStateRootHash(NODE_ADDRESS).then((stateRootHash) => {
+                console.log("stateRootHash", stateRootHash);
+                client
+                    .getBlockState(
+                        stateRootHash,
+                        CLPublicKey.fromHex(activePublicKey).toAccountHashStr(),
+                        []
+                    )
+                    .then((result) => {
+                        console.log("result", result.Account.mainPurse);
+                        setMainPurse(result.Account.mainPurse);
+                    });
+            });
         }
     }, [activePublicKey]);
 
-    async function approveMakeDeploy() {
-        handleShowSigning()
-        const publicKeyHex = activePublicKey
-        if (publicKeyHex !== null && publicKeyHex !== 'null' && publicKeyHex !== undefined) {
-            const publicKey = CLPublicKey.fromHex(publicKeyHex);
-            const spender = ROUTER_PACKAGE_HASH;
-            const caller = pair;
-            const spenderByteArray = new CLByteArray(Uint8Array.from(Buffer.from(spender, 'hex')));
-            const paymentAmount = 5000000000;
-            const runtimeArgs = RuntimeArgs.fromMap({
-                spender: createRecipientAddress(spenderByteArray),
-                amount: CLValueBuilder.u256(convertToStr(liquidity * value / 100))
-            });
-
-            let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-            let entryPoint = 'approve';
-
-            // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(publicKey, contractHashAsByteArray, entryPoint, runtimeArgs, paymentAmount)
-            console.log("make deploy: ", deploy);
-            try {
-                if (selectedWallet === "Casper") {
-                    let signedDeploy = await signdeploywithcaspersigner(deploy, publicKeyHex)
-                    let result = await putdeploy(signedDeploy, enqueueSnackbar)
-                    console.log('result', result);
-                } else {
-                    // let Torus = new Torus();
-                    torus = new Torus();
-                    console.log('torus', torus);
-                    await torus.init({
-                        buildEnv: "testing",
-                        showTorusButton: true,
-                        network: SUPPORTED_NETWORKS[CHAINS.CASPER_TESTNET],
-                    });
-                    console.log("Torus123", torus);
-                    console.log("torus", torus.provider);
-                    const casperService = new CasperServiceByJsonRPC(torus?.provider);
-                    const deployRes = await casperService.deploy(deploy);
-                    console.log("deployRes", deployRes.deploy_hash);
-                    console.log(`... Contract installation deployHash: ${deployRes.deploy_hash}`);
-                    let result = await getDeploy(NODE_ADDRESS, deployRes.deploy_hash, enqueueSnackbar);
-                    console.log(`... Contract installed successfully.`, JSON.parse(JSON.stringify(result)));
-                    console.log('result', result);
-                }
-                handleCloseSigning()
-                let allowanceParam = {
-                    contractHash: pair,
-                    owner: CLPublicKey.fromHex(activePublicKey).toAccountHashStr().slice(13),
-                    spender: ROUTER_PACKAGE_HASH
-                }
-                console.log('allowanceParam0', allowanceParam);
-                axios
-                    .post('/allowanceagainstownerandspenderpaircontract', allowanceParam)
-                    .then((res) => {
-                        console.log('allowanceagainstownerandspenderpaircontract', res)
-                        console.log(res.data)
-                        setpairAllowance(res.data.allowance)
-
-                    })
-                    .catch((error) => {
-                        console.log(error)
-                        console.log(error.response)
-                    })
-
-                let variant = "success";
-                enqueueSnackbar('Approved Successfully', { variant });
-            }
-            catch {
-                handleCloseSigning()
-                let variant = "Error";
-                enqueueSnackbar('Unable to Approve', { variant });
-            }
-        }
-        else {
-            handleCloseSigning()
-            let variant = "error";
-            enqueueSnackbar('Connect to Wallet Please', { variant });
-        }
-    }
     async function increaseAndDecreaseAllowanceMakeDeploy(contractHash, amount, tokenApproved, increase) {
         handleShowSigning();
         const publicKeyHex = activePublicKey;
@@ -425,6 +404,7 @@ function RemoveLiquidity(props) {
                     );
                     console.log("result", result);
                 }
+                handleCloseAAllowance();
                 handleCloseSigning();
                 let allowanceParam = {
                     contractHash: pair,
@@ -478,6 +458,8 @@ function RemoveLiquidity(props) {
             publicKeyHex !== "null" &&
             publicKeyHex !== undefined
         ) {
+            console.log("tokenA", tokenA);
+            console.log("tokenB", tokenB);
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
             const caller = ROUTER_CONTRACT_HASH;
             const tokenAAddress = tokenA.packageHash;
@@ -565,7 +547,7 @@ function RemoveLiquidity(props) {
                 getPairs();
                 enqueueSnackbar("Liquidity Removed Successfully", { variant });
                 setIsLoading(false);
-                window.location.reload(false);
+                // window.location.reload(false);
             } catch {
                 handleCloseSigning();
                 let variant = "Error";
@@ -579,6 +561,7 @@ function RemoveLiquidity(props) {
         }
     }
     async function RemoveLiquidityCSPRMakeDeploy() {
+        handleShowSigning();
         setIsLoading(true);
         const publicKeyHex = activePublicKey;
         if (
@@ -587,27 +570,31 @@ function RemoveLiquidity(props) {
             publicKeyHex !== undefined
         ) {
             const publicKey = CLPublicKey.fromHex(publicKeyHex);
-            const caller = ROUTER_CONTRACT_HASH;
+            // const caller = ROUTER_CONTRACT_HASH;
             let token;
             let cspr_Amount;
             let token_Amount;
             if (tokenA.symbol === "WCSPR") {
-                token = tokenB.contractHash;
+                token = tokenB.packageHash;
                 cspr_Amount = tokenAAmountPercent.toFixed(9);
                 token_Amount = tokenBAmountPercent.toFixed(9);
             } else {
-                token = tokenA.contractHash;
+                token = tokenA.packageHash;
                 cspr_Amount = tokenBAmountPercent.toFixed(9);
                 token_Amount = tokenAAmountPercent.toFixed(9);
             }
             const deadline = 1739598100811;
-            const paymentAmount = 5000000000;
+            const paymentAmount = 8000000000;
 
             console.log("token", token);
             const _token = new CLByteArray(
                 Uint8Array.from(Buffer.from(token.slice(5), "hex"))
             );
+            ;
             const runtimeArgs = RuntimeArgs.fromMap({
+                amount: CLValueBuilder.u512(convertToStr(Number(cspr_Amount - (cspr_Amount * slippage) / 100).toFixed(9))),
+                destination_entrypoint: CLValueBuilder.string("remove_liquidity_cspr"),
+                router_hash: new CLKey(new CLByteArray(Uint8Array.from(Buffer.from(ROUTER_PACKAGE_HASH, "hex")))),
                 token: new CLKey(_token),
                 liquidity: CLValueBuilder.u256(convertToStr((liquidity * value) / 100)),
                 amount_cspr_min: CLValueBuilder.u256(
@@ -621,20 +608,22 @@ function RemoveLiquidity(props) {
                     )
                 ),
                 to: createRecipientAddress(publicKey),
-                to_purse: CLValueBuilder.uref(
-                    Uint8Array.from(Buffer.from(mainPurse.slice(5, 69), "hex")),
-                    AccessRights.READ_ADD_WRITE
-                ),
                 deadline: CLValueBuilder.u256(deadline),
             });
-            let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
-            let entryPoint = "remove_liquidity_cspr_js_client";
+            console.log("runtimeArgs", runtimeArgs);
+            // let contractHashAsByteArray = Uint8Array.from(Buffer.from(caller, "hex"));
+            // let entryPoint = "remove_liquidity_cspr_js_client";
 
             // Set contract installation deploy (unsigned).
-            let deploy = await makeDeploy(
+            // let deploy = await makeDeploy(
+            //   publicKey,
+            //   contractHashAsByteArray,
+            //   entryPoint,
+            //   runtimeArgs,
+            //   paymentAmount
+            // );
+            let deploy = await makeDeployWasm(
                 publicKey,
-                contractHashAsByteArray,
-                entryPoint,
                 runtimeArgs,
                 paymentAmount
             );
@@ -645,7 +634,7 @@ function RemoveLiquidity(props) {
                         deploy,
                         publicKeyHex
                     );
-                    let result = await putdeploy(signedDeploy, enqueueSnackbar);
+                    let result = await removeLiquidityPutDeploy(signedDeploy, enqueueSnackbar, activePublicKey);
                     console.log("result", result);
                 } else {
                     // let Torus = new Torus();
@@ -680,7 +669,7 @@ function RemoveLiquidity(props) {
                 getPairs();
                 enqueueSnackbar("Liquidity Removed Successfully", { variant });
                 setIsLoading(false);
-                window.location.reload(false);
+                // window.location.reload(false);
             } catch {
                 handleCloseSigning();
                 let variant = "Error";
@@ -695,9 +684,9 @@ function RemoveLiquidity(props) {
     }
     function valuetext(value) {
         // console.log('value', value);
-        setValue(value)
-        setTokenAAmountPercent(tokenAAmount * value / 100)
-        setTokenBAmountPercent(tokenBAmount * value / 100)
+        setValue(value);
+        setTokenAAmountPercent((tokenAAmount * value) / 100);
+        setTokenBAmountPercent((tokenBAmount * value) / 100);
         return `${value}%`;
     }
     return (
