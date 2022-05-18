@@ -375,7 +375,7 @@ function Tokens(props) {
                                             {row.symbol}
                                           </TableCell>
                                           <TableCell align="left">
-                                            {shortenAddress(row.address)}
+                                            {shortenAddress(row.contractHash)}
                                           </TableCell>
                                           <TableCell align="left">
                                             {shortenAddress(row.packageHash)}
