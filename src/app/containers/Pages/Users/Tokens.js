@@ -217,7 +217,7 @@ function Tokens(props) {
         ) {
           for (let i = 0; i < holdArr.length; i++) {
             let param = {
-              contractHash: holdArr[i].address.slice(5),
+              contractHash: holdArr[i].contractHash.slice(5),
               user: Buffer.from(
                 CLPublicKey.fromHex(activePublicKey).toAccountHash()
               ).toString("hex"),
