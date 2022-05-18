@@ -13,7 +13,7 @@ if (process.env.REACT_APP_BACKEND_SERVER_ADDRESS)
   axios.defaults.baseURL = `${process.env.REACT_APP_BACKEND_SERVER_ADDRESS}`;
 // else axios.defaults.baseURL = `http://localhost:3000`;
 // else axios.defaults.baseURL = `https://casper-uniswap-v2-graphql.herokuapp.com/`;
-else axios.defaults.baseURL = `http://v2casperswapgraphqlbackend-env.eba-npfjx8q6.us-east-1.elasticbeanstalk.com/`;
+else axios.defaults.baseURL = `https://v2casperswapgraphqlbackend-env.eba-npfjx8q6.us-east-1.elasticbeanstalk.com/`;
 
 
 ReactDOM.render(<App />, document.getElementById("root"));
