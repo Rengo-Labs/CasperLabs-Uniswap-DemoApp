@@ -464,10 +464,12 @@ function RemoveLiquidity(props) {
             const caller = ROUTER_CONTRACT_HASH;
             const tokenAAddress = tokenA.packageHash;
             const tokenBAddress = tokenB.packageHash;
-            const token_AAmount = tokenAAmountPercent.toFixed(5);
-            const token_BAmount = tokenBAmountPercent.toFixed(5);
+            const token_AAmount = tokenAAmountPercent.toFixed(9);
+            const token_BAmount = tokenBAmountPercent.toFixed(9);
             const deadline = 1739598100811;
             const paymentAmount = 5000000000;
+            console.log("token_AAmount", token_AAmount);
+            console.log("token_BAmount", token_BAmount);
 
             console.log("tokenAAddress", tokenAAddress);
             const _token_a = new CLByteArray(
