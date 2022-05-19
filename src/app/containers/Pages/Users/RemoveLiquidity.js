@@ -1065,7 +1065,7 @@ function RemoveLiquidity(props) {
                 </div>
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
-            <AllowanceModal allowance={aAllowance} setAllowance={setAAllowance} show={openAAllowance} handleClose={handleCloseAAllowance} approvalAmount={liquidity} tokenAddress={pairPackageHash} tokenAmount={liquidity} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
+            <AllowanceModal allowance={aAllowance} setAllowance={setAAllowance} show={openAAllowance} handleClose={handleCloseAAllowance} approvalAmount={parseInt((liquidity * 10 ** 9) * value / 100) - pairAllowance} tokenAddress={pairPackageHash} tokenAmount={liquidity} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
             <SigningModal show={openSigning} />
         </div >
     );

@@ -13,7 +13,7 @@ function AllowanceModal(props) {
                 <Modal.Title>Allowance Settings <i className="fas fa-cog"></i> </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Typography variant="h6" gutterBottom  >Increase/Decrease Allowance</Typography>
+                <Typography variant="h6" gutterBottom  >Increase Allowance</Typography>
             </Modal.Body>
             <Modal.Body>
 
@@ -22,17 +22,12 @@ function AllowanceModal(props) {
                         step="0.0001"
                         type='number'
                         min={0}
+                        disabled
                         id="standard-adornment-weight"
-                        value={props.allowance}
+                        value={props.approvalAmount / 10 ** 9}
                         onChange={(evt) => {
-                            console.log("evt.target.value", evt.target.value);
                             console.log("props.approvalAmount", props.approvalAmount);
-                            if (evt.target.value >= 0) {
-                                props.setAllowance(evt.target.value)
-                            }
-                            else {
-                                props.setAllowance(0)
-                            }
+                            props.setAllowance(props.approvalAmount / 10 ** 9)
                         }}
                         aria-describedby="standard-weight-helper-text"
                         inputProps={{
@@ -50,18 +45,18 @@ function AllowanceModal(props) {
                     style={{
                         borderRadius: '15px', fontSize: '15px', fontWeight: '600',
                         padding: "10px",
-                    }} onClick={() => props.increaseAndDecreaseAllowanceMakeDeploy(props.tokenAddress, props.allowance, props.tokenApproved, true)}>
+                    }} onClick={() => props.increaseAndDecreaseAllowanceMakeDeploy(props.tokenAddress, props.approvalAmount / 10 ** 9, props.tokenApproved, true)}>
                     Increase Allowance
                 </button>
-                <button
+                {/* <button
                     type="button"
                     className="btn-block btn-outline-primary btn-lg"
                     style={{
                         borderRadius: '15px', fontSize: '15px', fontWeight: '600',
                         padding: "10px",
-                    }} onClick={() => props.increaseAndDecreaseAllowanceMakeDeploy(props.tokenAddress, props.allowance, props.tokenApproved, false)}>
+                    }} onClick={() => props.increaseAndDecreaseAllowanceMakeDeploy(props.tokenAddress, props.approvalAmount, props.tokenApproved, false)}>
                     Decrease Allowance
-                </button>
+                </button> */}
             </Modal.Footer>
         </Modal>
 

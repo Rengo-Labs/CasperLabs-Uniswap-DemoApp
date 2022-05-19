@@ -555,8 +555,8 @@ function Swap(props) {
             );
             console.log("result", result);
           }
-          increase ? setTokenAAllowance(allowance + amount * 10 ** 9) :
-            setTokenAAllowance(allowance - amount * 10 ** 9)
+          increase ? setTokenAAllowance(tokenAAmount * 10 ** 9) :
+            setTokenAAllowance(tokenAAmount * 10 ** 9)
           handleCloseAllowance();
           handleCloseSigning();
           let variant = "success";
@@ -1665,7 +1665,7 @@ function Swap(props) {
         </div>
       </div>
       <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
-      <AllowanceModal allowance={allowance} setAllowance={setAllowance} show={openAllowance} handleClose={handleCloseAllowance} approvalAmount={tokenAAmount} tokenAddress={tokenA?.contractHash} tokenAmount={tokenAAmount} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
+      <AllowanceModal allowance={allowance} setAllowance={setAllowance} show={openAllowance} handleClose={handleCloseAllowance} approvalAmount={tokenAAmount * 10 ** 9 - tokenAAllowance} tokenAddress={tokenA?.contractHash} tokenAmount={tokenAAmount} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
       <SigningModal show={openSigning} />
       <TokenAModal
         setTokenAAmount={setTokenAAmount}

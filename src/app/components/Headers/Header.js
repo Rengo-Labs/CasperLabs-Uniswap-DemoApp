@@ -99,68 +99,67 @@ function HeaderHome(props) {
   };
 
   useEffect(() => {
-    console.log("localStorage.getItem(selectedWallet)", localStorage.getItem("selectedWallet"));
-    if (props.selectedWallet === "Casper" || localStorage.getItem("selectedWallet") === "Casper") {
-      setTimeout(async () => {
-        try {
-          const connected = await checkConnection();
-          setSignerConnected(connected)
-        } catch (err) {
-          console.log(err)
-        }
-      }, 100);
-      if (signerConnected) {
-        handleCloseWalletModal()
-        let res = getActiveKeyFromSigner()
-        localStorage.setItem("Address", res)
-        props.setActivePublicKey(res)
+    // console.log("localStorage.getItem(selectedWallet)", localStorage.getItem("selectedWallet"));
+    // if (props.selectedWallet === "Casper" || localStorage.getItem("selectedWallet") === "Casper") {
+    setTimeout(async () => {
+      try {
+        const connected = await checkConnection();
+        setSignerConnected(connected)
+      } catch (err) {
+        console.log(err)
       }
-      window.addEventListener('signer:connected', msg => {
-        handleCloseWalletModal()
-        setSignerLocked(!msg.detail.isUnlocked)
-        setSignerConnected(true)
-        localStorage.setItem("Address", msg.detail.activeKey)
-        props.setActivePublicKey(msg.detail.activeKey)
-      });
-      window.addEventListener('signer:disconnected', msg => {
-        setSignerLocked(!msg.detail.isUnlocked)
-        setSignerConnected(false)
-        localStorage.setItem("Address", msg.detail.activeKey)
-        props.setActivePublicKey(msg.detail.activeKey)
-      });
-      window.addEventListener('signer:tabUpdated', msg => {
-        setSignerLocked(!msg.detail.isUnlocked)
-        setSignerConnected(msg.detail.isConnected)
-        localStorage.setItem("Address", msg.detail.activeKey)
-        props.setActivePublicKey(msg.detail.activeKey)
-      });
-      window.addEventListener('signer:activeKeyChanged', msg => {
-        localStorage.setItem("Address", msg.detail.activeKey)
-        props.setActivePublicKey(msg.detail.activeKey)
-      });
-      window.addEventListener('signer:locked', msg => {
-        setSignerLocked(!msg.detail.isUnlocked);
-        localStorage.setItem("Address", msg.detail.activeKey)
-        props.setActivePublicKey(msg.detail.activeKey)
-      });
-      window.addEventListener('signer:unlocked', msg => {
-        handleCloseWalletModal()
-        setSignerLocked(!msg.detail.isUnlocked)
-        setSignerConnected(msg.detail.isConnected)
-        localStorage.setItem("Address", msg.detail.activeKey)
-        props.setActivePublicKey(msg.detail.activeKey)
-      });
-      window.addEventListener('signer:initialState', msg => {
-        console.log("Initial State: ", msg.detail);
-        handleCloseWalletModal()
-        setSignerLocked(!msg.detail.isUnlocked)
-        setSignerConnected(msg.detail.isConnected)
-        localStorage.setItem("Address", msg.detail.activeKey)
-        props.setActivePublicKey(msg.detail.activeKey)
-      });
+    }, 100);
+    if (signerConnected) {
+      handleCloseWalletModal()
+      let res = getActiveKeyFromSigner()
+      localStorage.setItem("Address", res)
+      props.setActivePublicKey(res)
     }
-    // eslint-disable-next-line
-  }, [props.selectedWallet]);
+    window.addEventListener('signer:connected', msg => {
+      handleCloseWalletModal()
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(true)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:disconnected', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(false)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:tabUpdated', msg => {
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(msg.detail.isConnected)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:activeKeyChanged', msg => {
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:locked', msg => {
+      setSignerLocked(!msg.detail.isUnlocked);
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:unlocked', msg => {
+      handleCloseWalletModal()
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(msg.detail.isConnected)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    window.addEventListener('signer:initialState', msg => {
+      console.log("Initial State: ", msg.detail);
+      handleCloseWalletModal()
+      setSignerLocked(!msg.detail.isUnlocked)
+      setSignerConnected(msg.detail.isConnected)
+      localStorage.setItem("Address", msg.detail.activeKey)
+      props.setActivePublicKey(msg.detail.activeKey)
+    });
+    // }
+  }, []);
 
 
   const login = async () => {

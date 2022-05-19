@@ -463,10 +463,13 @@ function AddLiquidity(props) {
                         console.log("result", result);
                     }
                     if (tokenApproved === "tokenA") {
-                        setTokenAAllowance(amount * 10 ** 9);
+                        console.log("tokenAAmount * 10 ** 9 ", tokenAAmount * 10 ** 9);
+                        console.log("amount * 10 ** 9", amount * 10 ** 9);
+                        console.log("tokenAAmount * 10 ** 9 + amount * 10 ** 9", tokenAAmount * 10 ** 9 + amount * 10 ** 9);
+                        setTokenAAllowance(tokenAAmount * 10 ** 9);
                         handleCloseAAllowance();
                     } else {
-                        setTokenBAllowance(amount * 10 ** 9);
+                        setTokenBAllowance(tokenBAmount * 10 ** 9);
                         handleCloseBAllowance();
                     }
                     // console.log('result', result);
@@ -1463,8 +1466,8 @@ function AddLiquidity(props) {
                 </div>
             </div>
             <SlippageModal slippage={slippage} setSlippage={setSlippage} show={openSlippage} handleClose={handleCloseSlippage} />
-            <AllowanceModal allowance={aAllowance} setAllowance={setAAllowance} show={openAAllowance} handleClose={handleCloseAAllowance} approvalAmount={tokenAAmount} tokenAddress={tokenA?.contractHash} tokenAmount={tokenAAmount} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
-            <AllowanceModal allowance={bAllowance} setAllowance={setBAllowance} show={openBAllowance} handleClose={handleCloseBAllowance} approvalAmount={tokenBAmount} tokenAddress={tokenB?.contractHash} tokenAmount={tokenBAmount} tokenApproved='tokenB' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
+            <AllowanceModal allowance={aAllowance} setAllowance={setAAllowance} show={openAAllowance} handleClose={handleCloseAAllowance} approvalAmount={tokenAAmount * 10 ** 9 - tokenAAllowance} tokenAddress={tokenA?.contractHash} tokenAmount={tokenAAmount} tokenApproved='tokenA' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
+            <AllowanceModal allowance={bAllowance} setAllowance={setBAllowance} show={openBAllowance} handleClose={handleCloseBAllowance} approvalAmount={tokenBAmount * 10 ** 9 - tokenBAllowance} tokenAddress={tokenB?.contractHash} tokenAmount={tokenBAmount} tokenApproved='tokenB' increaseAndDecreaseAllowanceMakeDeploy={increaseAndDecreaseAllowanceMakeDeploy} />
             <SigningModal show={openSigning} />
             <TokenAModal
                 setTokenAAmount={setTokenAAmount}
