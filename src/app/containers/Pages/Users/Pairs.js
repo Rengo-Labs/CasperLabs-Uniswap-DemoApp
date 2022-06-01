@@ -286,7 +286,7 @@ function Pairs(props) {
                     >
                       <Box sx={{ width: "100%" }}>
                         <Paper sx={{ width: "100%", mb: 2 }}>
-                          <EnhancedTableToolbar />
+                          {/* <EnhancedTableToolbar /> */}
                           <TableContainer>
                             {isPairList ? (
                               <div

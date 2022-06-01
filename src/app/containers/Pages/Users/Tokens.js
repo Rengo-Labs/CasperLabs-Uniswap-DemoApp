@@ -306,7 +306,7 @@ function Tokens(props) {
                     >
                       <Box sx={{ width: "100%" }}>
                         <Paper sx={{ width: "100%", mb: 2 }}>
-                          <EnhancedTableToolbar />
+                          {/* <EnhancedTableToolbar /> */}
                           <TableContainer>
                             {!istokenList ? (
                               <div
