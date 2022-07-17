@@ -101,11 +101,11 @@ export default function HeaderMenuAppBar(props) {
             <NavLink to={"/"}>
               <img
                 src={logo}
-                alt={"Casper Swap"}
+                alt={"Demo Swap"}
                 width="80"
                 height="70"
               />
-              Casper Swap
+              Demo Swap
             </NavLink>
           </div>
           <div>
