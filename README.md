@@ -47,4 +47,5 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 ## Attributions
 Logo by The Icon Z from Noun Project
+
 [Graphic frame vector](https://www.freepik.com/vectors/graphic-frame) created by rawpixel.com - www.freepik.com
