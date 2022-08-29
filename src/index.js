@@ -12,7 +12,7 @@ import axios from "axios";
 if (process.env.REACT_APP_BACKEND_SERVER_ADDRESS)
   axios.defaults.baseURL = `${process.env.REACT_APP_BACKEND_SERVER_ADDRESS}`;
 // else axios.defaults.baseURL = `http://localhost:3000`;
-else axios.defaults.baseURL = `https://api.casperswap.xyz/`;
+else axios.defaults.baseURL = `http://graphqlbackendfinalized-env.eba-n4mfh6c2.us-east-1.elasticbeanstalk.com/`;
 
 
 ReactDOM.render(<App />, document.getElementById("root"));
