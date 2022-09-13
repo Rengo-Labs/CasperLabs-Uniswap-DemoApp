@@ -169,12 +169,12 @@ function RemoveLiquidity(props) {
                         };
                         console.log("pathResParam", pathResParam);
                         await axios
-                            .post("/getpathreserves", pathResParam)
+                            .post("/getexchangerates", pathResParam)
                             .then((res1) => {
-                                console.log("getpathreserves", res1);
-                                if (res1.data.reserve0 && res1.data.reserve1) {
-                                    let rat0 = res1.data.reserve0;
-                                    let rat1 = res1.data.reserve1;
+                                console.log("getexchangerates", res1);
+                                if (res1.data.rate0 && res1.data.rat1) {
+                                    let rat0 = res1.data.rate0;
+                                    let rat1 = res1.data.rate1;
                                     console.log("rat0", rat0);
                                     console.log("rat1", rat1);
                                     console.log(
@@ -594,7 +594,7 @@ function RemoveLiquidity(props) {
             );
             ;
             const runtimeArgs = RuntimeArgs.fromMap({
-                amount: CLValueBuilder.u512(convertToStr(Number(cspr_Amount - (cspr_Amount * slippage) / 100).toFixed(9))),
+                // amount: CLValueBuilder.u512(convertToStr(Number(cspr_Amount - (cspr_Amount * slippage) / 100).toFixed(9))),
                 destination_entrypoint: CLValueBuilder.string("remove_liquidity_cspr"),
                 router_hash: new CLKey(new CLByteArray(Uint8Array.from(Buffer.from(ROUTER_PACKAGE_HASH, "hex")))),
                 token: new CLKey(_token),

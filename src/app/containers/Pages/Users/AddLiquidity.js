@@ -239,12 +239,12 @@ function AddLiquidity(props) {
                 }
                 console.log("pathResParam", pathResParam);
                 axios
-                    .post('/getpathreserves', pathResParam)
+                    .post('/getexchangerates', pathResParam)
                     .then((res) => {
-                        console.log('getpathreserves', res)
-                        if (res.data.reserve0 && res.data.reserve1) {
-                            setRatio0(res.data.reserve0)
-                            setRatio1(res.data.reserve1)
+                        console.log('getexchangerates', res)
+                        if (res.data.rate0 && res.data.rate1) {
+                            setRatio0(res.data.rate0)
+                            setRatio1(res.data.rate1)
                             axios
                                 .get('/getpairlist')
                                 .then((res1) => {
@@ -259,12 +259,12 @@ function AddLiquidity(props) {
                                             if ((address0.toLowerCase() === tokenA.packageHash.slice(5).toLowerCase() && address1.toLowerCase() === tokenB.packageHash.slice(5).toLowerCase())) {
                                                 setIsInvalidPair(false)
                                                 liquiditySetter(res1.data.pairList[i])
-                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                getUserReservers(res1.data.pairList[i], res.data.rate0, res.data.rate1)
                                                 break;
                                             } else if ((address0.toLowerCase() === tokenB.packageHash.slice(5).toLowerCase() && address1.toLowerCase() === tokenA.packageHash.slice(5).toLowerCase())) {
                                                 setIsInvalidPair(false)
                                                 liquiditySetter(res1.data.pairList[i])
-                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                getUserReservers(res1.data.pairList[i], res.data.rate0, res.data.rate1)
                                                 break;
                                             } else {
                                                 setIsInvalidPair(true)
@@ -280,25 +280,25 @@ function AddLiquidity(props) {
                                                 console.log('1', res1.data.pairList[i]);
                                                 setIsInvalidPair(false)
                                                 liquiditySetter(res1.data.pairList[i])
-                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                getUserReservers(res1.data.pairList[i], res.data.rate0, res.data.rate1)
                                                 break;
                                             } else if (name0 === "Wrapped Casper" && tokenB.name === "Casper" && tokenA.name === name1) {
                                                 console.log('2', res1.data.pairList[i]);
                                                 setIsInvalidPair(false)
                                                 liquiditySetter(res1.data.pairList[i])
-                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                getUserReservers(res1.data.pairList[i], res.data.rate0, res.data.rate1)
                                                 break;
                                             } else if (name1 === "Wrapped Casper" && tokenA.name === "Casper" && tokenB.name === name0) {
                                                 console.log('3', res1.data.pairList[i]);
                                                 setIsInvalidPair(false)
                                                 liquiditySetter(res1.data.pairList[i])
-                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                getUserReservers(res1.data.pairList[i], res.data.rate0, res.data.rate1)
                                                 break;
                                             } else if (name1 === "Wrapped Casper" && tokenB.name === "Casper" && tokenA.name === name0) {
                                                 console.log('4', res1.data.pairList[i]);
                                                 setIsInvalidPair(false)
                                                 liquiditySetter(res1.data.pairList[i])
-                                                getUserReservers(res1.data.pairList[i], res.data.reserve0, res.data.reserve1)
+                                                getUserReservers(res1.data.pairList[i], res.data.rate0, res.data.rate1)
                                                 break;
                                             } else {
                                                 setIsInvalidPair(true)

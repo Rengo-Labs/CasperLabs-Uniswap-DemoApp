@@ -61,12 +61,12 @@ function Pool(props) {
                         }
                         console.log("pathResParam", pathResParam);
                         await axios
-                            .post('/getpathreserves', pathResParam)
+                            .post('/getexchangerates', pathResParam)
                             .then((res1) => {
-                                console.log('getpathreserves', res1)
-                                if (res1.data.reserve0 && res1.data.reserve1) {
-                                    let rat0 = res1.data.reserve0;
-                                    let rat1 = res1.data.reserve1;
+                                console.log('getexchangerates', res1)
+                                if (res1.data.rate0 && res1.data.rate1) {
+                                    let rat0 = res1.data.rate0;
+                                    let rat1 = res1.data.rate1;
                                     console.log("rat0", rat0);
                                     console.log("rat1", rat1);
                                     console.log("res.data.userpairs[i].reserve0", res.data.userpairs[i].reserve0);
