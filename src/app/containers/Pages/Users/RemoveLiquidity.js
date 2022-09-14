@@ -172,7 +172,7 @@ function RemoveLiquidity(props) {
                             .post("/getexchangerates", pathResParam)
                             .then((res1) => {
                                 console.log("getexchangerates", res1);
-                                if (res1.data.rate0 && res1.data.rat1) {
+                                if (res1.data.rate0 && res1.data.rate1) {
                                     let rat0 = res1.data.rate0;
                                     let rat1 = res1.data.rate1;
                                     console.log("rat0", rat0);
