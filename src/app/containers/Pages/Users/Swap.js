@@ -228,12 +228,12 @@ function Swap(props) {
           }
           console.log("pathResParam", pathResParam);
           axios
-            .post('/getpathreserves', pathResParam)
+            .post('/getexchangerates', pathResParam)
             .then((res) => {
-              console.log('getpathreserves', res)
-              if (res.data.reserve0 && res.data.reserve1) {
-                setReserve0(res.data.reserve0)
-                setReserve1(res.data.reserve1)
+              console.log('getexchangerates', res)
+              if (res.data.rate0 && res.data.rate1) {
+                setReserve0(res.data.rate0)
+                setReserve1(res.data.rate1)
               } else {
                 setReserve0(1)
                 setReserve1(1)

@@ -1,0 +1,5 @@
+<<<<<<< HEAD
+export const NODE_ADDRESS = 'https://casperlabs-proxy-server.herokuapp.com/http://44.208.234.65:7777/rpc'
+=======
+export const NODE_ADDRESS = 'https://casperlabs-proxy-server.herokuapp.com/http://44.208.234.65:7777/rpc'
+>>>>>>> 9950c6e4ca8f0e7955e84d0aedcfd5d0c3919805
