@@ -3763,10 +3763,10 @@ caseless@~0.12.0:
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
   integrity sha512-4tYFyifaFfGacoiObjJegolkwSU4xQNGbVgUiNYVUxbQ2x2lUsFvY4hVgVzGiIe6WLOPqycWXA40l+PWsxthUw==
 
-casper-js-sdk@^2.7.5:
-  version "2.9.1"
-  resolved "https://registry.yarnpkg.com/casper-js-sdk/-/casper-js-sdk-2.9.1.tgz#bbadfe10a0f7e6471c88560e17c16afd1df7f1bd"
-  integrity sha512-UO0meYMucBqoNfplhSys4ELis0e0HDcJRpJa5/e1TIEfCwHGSt30PbHoJ/UXWzWR3nk4YSddQJ3coHCF7IrZoA==
+casper-js-sdk@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/casper-js-sdk/-/casper-js-sdk-2.10.0.tgz#5aab937fbe4b839b998158e58afc70215843aad7"
+  integrity sha512-UYOxsIiAAekfR+OaC5rU84iCouWPrnIGEvXzcvXlh5TurI9KingC536fTrztR06Q3DVN1scTsnCy9imDHxTMbQ==
   dependencies:
     "@ethersproject/bignumber" "^5.0.8"
     "@ethersproject/bytes" "^5.0.5"
