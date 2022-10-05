@@ -1,6 +1,6 @@
 import { SnackbarProvider } from 'notistack';
 import React from "react";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AddLiquidity from "../Pages/Users/AddLiquidity";
 import HomeScreen from "../Pages/Users/HomeScreen";
 import Pairs from "../Pages/Users/Pairs";
@@ -13,42 +13,34 @@ function App() {
 
   const LoginRegisterRedirectCheck = ({ path, ...rest }) => {
     if (path === "/pool") {
-      return <Route component={Pool} />;
+      return <Route element={Pool} />;
     } else if (path === "/pool/addLiquidity") {
-      return <Route component={AddLiquidity} />
+      return <Route element={AddLiquidity} />
     } else if (path === "/pool/removeLiquidity") {
-      return <Route component={RemoveLiquidity} />
+      return <Route element={RemoveLiquidity} />
     } else if (path === "/swap") {
-      return <Route component={Swap} />;
+      return <Route element={Swap} />;
     } else if (path === "/tokens") {
-      return <Route component={Tokens} />;
+      return <Route element={Tokens} />;
     } else if (path === "/pairs") {
-      return <Route component={Pairs} />;
+      return <Route element={Pairs} />;
     } else {
-      return <Route component={HomeScreen} />;
+      return <Route element={HomeScreen} />;
     }
   };
 
   return (
     <SnackbarProvider maxSnack={3}>
       <BrowserRouter>
-        <Switch>
-          <LoginRegisterRedirectCheck exact path="/" />
-          {/* <LoginRegisterRedirectCheck exact path="/login" /> */}
-          <LoginRegisterRedirectCheck exact path="/register" />
-          <LoginRegisterRedirectCheck exact path="/marketPlace" />
-          <LoginRegisterRedirectCheck exact path="/admin-login" />
-          <LoginRegisterRedirectCheck exact path="/login" />
-          {/* <LoginRegisterRedirectCheck exact path="/" /> */}
-
-          <Route exact path="/pool" component={Pool} />
-          <Route exact path="/pool/addLiquidity" component={AddLiquidity} />
-          <Route exact path="/pool/removeLiquidity/:tokenAAddress/:tokenBAddress" component={RemoveLiquidity} />
-          <Route path="/swap" component={Swap} />
-          <Route path="/tokens" component={Tokens} />
-          <Route path="/pairs" component={Pairs} />
-
-        </Switch>
+        <Routes>
+          <Route exact path="/" element={<HomeScreen />} />;
+          <Route exact path="/pool" element={<Pool />} />
+          <Route exact path="/pool/addLiquidity" element={<AddLiquidity />} />
+          <Route exact path="/pool/removeLiquidity/:tokenAAddress/:tokenBAddress" element={RemoveLiquidity} />
+          <Route path="/swap" element={<Swap />} />
+          <Route path="/tokens" element={<Tokens />} />
+          <Route path="/pairs" element={<Pairs />} />
+        </Routes>
       </BrowserRouter>
     </SnackbarProvider>
   );
