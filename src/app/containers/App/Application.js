@@ -36,7 +36,7 @@ function App() {
           <Route exact path="/" element={<HomeScreen />} />;
           <Route exact path="/pool" element={<Pool />} />
           <Route exact path="/pool/addLiquidity" element={<AddLiquidity />} />
-          <Route exact path="/pool/removeLiquidity/:tokenAAddress/:tokenBAddress" element={RemoveLiquidity} />
+          <Route exact path="/pool/removeLiquidity/:tokenAAddress/:tokenBAddress" element={<RemoveLiquidity/>} />
           <Route path="/swap" element={<Swap />} />
           <Route path="/tokens" element={<Tokens />} />
           <Route path="/pairs" element={<Pairs />} />
