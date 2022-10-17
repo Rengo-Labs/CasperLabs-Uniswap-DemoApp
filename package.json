@@ -13,7 +13,7 @@
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "^5.10.6",
     "@mui/lab": "^5.0.0-alpha.102",
-    "@mui/material": "^5.10.8",
+    "@mui/material": "^5.10.9",
     "@mui/styled-engine": "^5.10.8",
     "@testing-library/jest-dom": "^5.16.5",
     "@toruslabs/casper-embed": "^2.0.1",
