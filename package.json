@@ -14,7 +14,7 @@
     "@mui/icons-material": "^5.10.9",
     "@mui/lab": "^5.0.0-alpha.110",
     "@mui/material": "^5.11.0",
-    "@mui/styled-engine": "^5.10.8",
+    "@mui/styled-engine": "^5.11.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@toruslabs/casper-embed": "^2.0.1",
     "axios": "^1.1.3",
