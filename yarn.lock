@@ -3780,10 +3780,10 @@ case-sensitive-paths-webpack-plugin@^2.4.0:
   resolved "https://registry.yarnpkg.com/case-sensitive-paths-webpack-plugin/-/case-sensitive-paths-webpack-plugin-2.4.0.tgz#db64066c6422eed2e08cc14b986ca43796dbc6d4"
   integrity sha512-roIFONhcxog0JSSWbvVAh3OocukmSgpqOH6YpMkCvav/ySIV3JKg4Dc8vYtQjYi/UxpNE36r/9v+VqTQqgkYmw==
 
-casper-js-sdk@^2.10.0:
-  version "2.10.0"
-  resolved "https://registry.yarnpkg.com/casper-js-sdk/-/casper-js-sdk-2.10.0.tgz#5aab937fbe4b839b998158e58afc70215843aad7"
-  integrity sha512-UYOxsIiAAekfR+OaC5rU84iCouWPrnIGEvXzcvXlh5TurI9KingC536fTrztR06Q3DVN1scTsnCy9imDHxTMbQ==
+casper-js-sdk@^2.10.2:
+  version "2.10.2"
+  resolved "https://registry.yarnpkg.com/casper-js-sdk/-/casper-js-sdk-2.10.2.tgz#0dd48ea98bf91edd68afcdcc1ddd3be5ee308cf7"
+  integrity sha512-/HEztcdxFZtqJ3Jz1fiZu6QilDosBbuhyau4qiA1trNeywg8vY2TrF+/A12N+JEXL9T5xcNxJG605d3rfBBAhQ==
   dependencies:
     "@ethersproject/bignumber" "^5.0.8"
     "@ethersproject/bytes" "^5.0.5"
@@ -3799,7 +3799,7 @@ casper-js-sdk@^2.10.0:
     humanize-duration "^3.24.0"
     key-encoder "^2.0.3"
     reflect-metadata "^0.1.13"
-    ts-results "^3.2.1"
+    ts-results "npm:@casperlabs/ts-results@^3.3.5"
     tweetnacl-ts "^1.0.3"
     tweetnacl-util "^0.15.0"
     typedjson "^1.6.0-rc2"
@@ -10307,10 +10307,17 @@ tryer@^1.0.1:
   resolved "https://registry.yarnpkg.com/tryer/-/tryer-1.0.1.tgz#f2c85406800b9b0f74c9f7465b81eaad241252f8"
   integrity sha512-c3zayb8/kWWpycWYg87P71E1S1ZL6b6IJxfb5fvsUgsf0S2MVGaDhDXXjDMpdCpfWXqptc+4mXwmiy1ypXqRAA==
 
-ts-results@^3.2.1, ts-results@^3.3.0:
+ts-results@^3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/ts-results/-/ts-results-3.3.0.tgz#68623a6c18e65556287222dab76498a28154922f"
   integrity sha512-FWqxGX2NHp5oCyaMd96o2y2uMQmSu8Dey6kvyuFdRJ2AzfmWo3kWa4UsPlCGlfQ/qu03m09ZZtppMoY8EMHuiA==
+
+"ts-results@npm:@casperlabs/ts-results@^3.3.5":
+  version "3.3.5"
+  resolved "https://registry.yarnpkg.com/@casperlabs/ts-results/-/ts-results-3.3.5.tgz#cc95b8612768d7f794c37a4ca9b46122c04b1f40"
+  integrity sha512-ymSQqqb4mOSet592li02u1Gd28LoOFJUm6R3jkdNQ+nqsnbHvN+izBigtP4aYmNwh6gFyCwDgjYporEJgDT4eA==
+  dependencies:
+    tslib "^2.4.1"
 
 tsconfig-paths@^3.14.1:
   version "3.14.1"
@@ -10331,6 +10338,11 @@ tslib@^2.0.1, tslib@^2.0.3, tslib@^2.3.1, tslib@^2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.0.tgz#7cecaa7f073ce680a05847aa77be941098f36dc3"
   integrity sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==
+
+tslib@^2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.1.tgz#0d0bfbaac2880b91e22df0768e55be9753a5b17e"
+  integrity sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==
 
 tsutils@^3.21.0:
   version "3.21.0"
